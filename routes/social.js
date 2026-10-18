@@ -313,6 +313,13 @@ router.post("/conversations", exigirLogin, (req, res) => {
     WHERE product_id = ? AND buyer_id = ?
   `).get(productId, buyerId);
 
+  // If the seller has an active store, count the first contact by this customer.
+  const loja = db.prepare('SELECT id FROM stores WHERE user_id = ? AND is_active = 1').get(produto.user_id);
+  if (loja) {
+    db.prepare(`INSERT INTO store_contacts(store_id,customer_user_id,product_id,channel,contact_key)
+      VALUES(?,?,?,'message',?) ON CONFLICT(store_id,contact_key) DO NOTHING`)
+      .run(loja.id, buyerId, productId, `${buyerId}:message`);
+  }
   res.status(200).json({ conversa });
 });
 

@@ -12,7 +12,7 @@ const exigirLogin = require("../middleware/auth");
 
 const router = express.Router();
 
-const pastaUploads = path.join(__dirname, "..", "uploads");
+const pastaUploads = process.env.UPLOADS_DIR || path.join(__dirname, "..", "uploads");
 
 fs.mkdirSync(pastaUploads, { recursive: true });
 

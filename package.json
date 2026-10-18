@@ -1,12 +1,12 @@
 {
   "name": "bisno-marketplace",
-  "version": "2.0.0",
-  "description": "Bisno — marketplace de anúncios para Angola",
+  "version": "3.0.0",
+  "description": "Bisno — marketplace social e sistema de lojas para Angola",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check routes/auth.js && node --check routes/products.js && node --check routes/social.js && node --check data/database.js && node --check public/script.js",
+    "check": "node --check server.js && node --check routes/auth.js && node --check routes/products.js && node --check routes/social.js && node --check data/database.js && node --check public/script.js && node --check routes/stores.js",
     "test": "npm run check"
   },
   "keywords": [],

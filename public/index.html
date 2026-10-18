@@ -147,6 +147,31 @@
         <p>Telefone: <strong id="telefone-utilizador"></strong></p>
       </div>
 
+      <!-- LOJA DO UTILIZADOR: ativação e painel privado -->
+      <section id="bisno-store-panel" class="painel-secundario bisno-store-panel">
+        <div class="store-panel-heading">
+          <div><p class="store-eyebrow">BISNO LOJAS</p><h3>Minha loja</h3><p>Ativa a tua loja e acompanha o interesse real dos clientes.</p></div>
+          <span class="store-status" id="store-status">Ainda não ativada</span>
+        </div>
+        <form id="form-ativar-loja" class="store-activation-form">
+          <label for="store-name">Nome da loja</label><input id="store-name" name="name" maxlength="80" placeholder="Ex.: Loja do João" required>
+          <label for="store-city">Cidade ou província</label><input id="store-city" name="city" maxlength="100" placeholder="Ex.: N'dalatando">
+          <label for="store-description">Descrição da loja</label><textarea id="store-description" name="description" maxlength="500" rows="3" placeholder="O que vendes? O que os clientes devem saber?"></textarea>
+          <button type="submit" id="store-save-button">Ativar a minha loja</button>
+          <p id="store-form-feedback" class="store-feedback" aria-live="polite"></p>
+        </form>
+        <div id="store-dashboard" hidden>
+          <div class="store-stats-grid">
+            <article class="store-stat"><span>Visitas à loja</span><strong id="store-stat-views">0</strong><small>Visitas únicas por dia</small></article>
+            <article class="store-stat"><span>Seguidores</span><strong id="store-stat-followers">0</strong><small>Pessoas que seguem a loja</small></article>
+            <article class="store-stat"><span>Contactos</span><strong id="store-stat-contacts">0</strong><small>Clientes que contactaram</small></article>
+            <article class="store-stat"><span>Anúncios</span><strong id="store-stat-products">0</strong><small>Produtos no catálogo</small></article>
+          </div>
+          <div class="store-dashboard-actions"><button type="button" id="store-refresh-button" class="botao-secundario">Atualizar estatísticas</button><button type="button" id="store-copy-link-button" class="botao-secundario">Copiar link da loja</button></div>
+          <p class="store-analytics-note">Visualizações, seguidores e contactos são contabilizados separadamente. Os contactos são contados por cliente e canal, para evitar duplicações repetidas.</p>
+        </div>
+      </section>
+
 <!-- NOTIFICAÇÕES DO BISNO -->
 <section id="area-notificacoes" class="painel-secundario">
   <h3>

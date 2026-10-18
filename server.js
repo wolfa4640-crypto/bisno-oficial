@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: false, limit: "2mb" }));
 app.use("/api/auth", rateLimit({ windowMs: 15 * 60 * 1000, limit: 40, standardHeaders: true, legacyHeaders: false }));
 app.use("/api", rateLimit({ windowMs: 60 * 1000, limit: 180, standardHeaders: true, legacyHeaders: false }));
 
-const dataDir = path.join(__dirname, "data");
+const dataDir = process.env.DATA_DIR || path.join(__dirname, "data");
 fs.mkdirSync(dataDir, { recursive: true });
 if (isProduction && process.env.RENDER && !process.env.ALLOW_EPHEMERAL_STORAGE) {
   console.warn("AVISO: no Render, o armazenamento local pode ser temporário. Configure um disco persistente antes de depender dos dados.");
@@ -42,6 +42,7 @@ app.get("/api/health", (_req, res) => res.json({ estado: "ok", servico: "Bisno",
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/social", require("./routes/social"));
+app.use("/api/stores", require("./routes/stores"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
 app.use(express.static(path.join(__dirname, "public"), { dotfiles: "deny", index: "index.html", maxAge: isProduction ? "1h" : 0 }));
 app.use((req, res) => {

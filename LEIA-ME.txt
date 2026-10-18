@@ -1,32 +1,39 @@
-BISNO — MARKETPLACE PARA ANGOLA (v2.0)
-======================================
+BISNO MARKETPLACE SOCIAL v3.0 — SISTEMA DE LOJAS
 
-Este pacote mantém o projeto Bisno e acrescenta melhorias de segurança básica e persistência das sessões: armazenamento SQLite para sessões (elimina o aviso MemoryStore), cabeçalhos Helmet, limitação de pedidos e configuração de publicação.
+Inclui o marketplace inicial, contas, anúncios, perfis, mensagens/notificações já existentes e sistema de lojas:
+- qualquer utilizador autenticado pode ativar uma loja na própria conta;
+- painel privado da loja com visitas, seguidores, contactos e quantidade de anúncios;
+- contagem separada de visualizações da loja, seguidores e contactos iniciados por conversa;
+- cada visitante é contado no máximo uma vez por dia por loja (por sessão);
+- seguir/contatar a própria loja é bloqueado;
+- estatísticas armazenadas em SQLite.
 
-FUNCIONALIDADES PRESENTES NO PROJETO
-- Registo e autenticação de utilizadores.
-- Publicação, pesquisa e visualização de anúncios.
-- Imagens, perfil e informação de contacto de vendedores.
-- Mensagens, conversas e notificações do marketplace.
-- Interface responsiva para computador e telemóvel.
-- Base de dados SQLite no diretório data/.
+EXECUÇÃO LOCAL
+1. Instala Node.js LTS.
+2. Na pasta que contém server.js, executa: npm install
+3. Define SESSION_SECRET com pelo menos 32 caracteres aleatórios.
+4. Executa: npm start
+5. Abre http://localhost:3000
 
-PUBLICAR NO RENDER
-1. Carrega os ficheiros e pastas mantendo a estrutura, incluindo public/, routes/, middleware/, data/ e uploads/.
-2. Não carregues node_modules/ nem .env.
-3. No Render, configura Build Command: npm install
-4. Configura Start Command: npm start (ou node server.js).
-5. Adiciona Environment Variable: SESSION_SECRET com um segredo aleatório forte de pelo menos 32 caracteres.
-6. Define NODE_ENV=production.
-7. Faz deploy e consulta os logs. O aviso MemoryStore deve desaparecer porque as sessões usam SQLiteStore.
+RENDER
+Build Command: npm install
+Start Command: npm start
+Environment: NODE_ENV=production, SESSION_SECRET=<chave aleatória com pelo menos 32 caracteres>.
 
-IMPORTANTE SOBRE DADOS PERMANENTES
-A sessão agora é guardada em SQLite em vez da memória do processo. No entanto, tanto a base de dados marketplace.db como as sessões e as imagens em uploads/ dependem do disco local. No plano gratuito do Render, o disco local pode ser efémero; para um marketplace público, configura um Persistent Disk ou migra a base de dados para PostgreSQL e as imagens para armazenamento de objetos persistente. Não publiques dados de utilizadores ou segredos no repositório.
+PERSISTÊNCIA REAL NO RENDER
+A instância gratuita padrão pode perder os ficheiros locais ao reiniciar ou fazer deploy. Para preservar base de dados, sessões e fotografias, adiciona um Persistent Disk (plano que suporte disco) com mount path /var/data e configura:
+DATA_DIR=/var/data
+UPLOADS_DIR=/var/data/uploads
+A aplicação cria a pasta de uploads automaticamente. A base de dados SQLite e a base de sessões ficarão dentro do disco persistente. Não guardar SESSION_SECRET no repositório.
 
-ANTES DE SUBSTITUIR A VERSÃO ONLINE
-- Faz uma cópia de segurança da base de dados e dos uploads.
-- O esquema existente usa a base de dados data/marketplace.db; mantém esse ficheiro se quiseres preservar os anúncios e contas que contém.
-- Depois do deploy, testa registo, login, atualizar a página, publicar anúncio com foto, pesquisa, mensagens e notificações usando duas contas diferentes.
+TESTES
+Executa npm test para verificar sintaxe. Isto não substitui um teste end-to-end no Render.
 
-LIMITES CONHECIDOS
-Este pacote é uma melhoria de código e configuração, não uma certificação de produção. É necessário testar as rotas reais no Render. Para uma versão de produção mais robusta ainda se recomenda verificação de e-mail, recuperação de palavra-passe, moderação/denúncia de anúncios, proteção contra spam mais específica, backups automáticos, monitorização, armazenamento permanente das imagens e base de dados gerida.
+MÉTRICAS
+- Visitas: abertura de perfil público da loja, deduplicada por sessão e dia.
+- Seguidores: contas únicas que seguem a loja.
+- Contactos: clientes únicos por canal; o contacto interno é registado quando começa uma conversa sobre um anúncio. O endpoint de contacto WhatsApp está disponível para ligar ao botão WhatsApp na interface.
+- Anúncios: número de produtos do proprietário.
+
+PAGAMENTOS
+O Bisno não processa pagamentos. Comprador e vendedor combinam pagamento e entrega diretamente.

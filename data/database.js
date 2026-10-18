@@ -2,7 +2,9 @@
 const Database = require("better-sqlite3");
 const path = require("path");
 
-const caminho = path.join(__dirname, "marketplace.db");
+const caminho = process.env.DATA_DIR
+  ? path.join(process.env.DATA_DIR, "marketplace.db")
+  : path.join(__dirname, "marketplace.db");
 
 const db = new Database(caminho);
 
