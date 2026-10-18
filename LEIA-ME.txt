@@ -1,0 +1,39 @@
+BISNO — INSTALAÇÃO E EXECUÇÃO
+
+1. Instala Node.js LTS (recomendado: versão 20 ou 22).
+2. Extrai esta pasta para um local simples, por exemplo C:\Bisno.
+3. Copia .env.example para um ficheiro chamado .env.
+4. Abre .env e substitui SESSION_SECRET por um segredo aleatório com pelo menos 32 caracteres. Não partilhes esse ficheiro.
+5. Abre o terminal nesta pasta e executa: npm install
+6. Executa: npm test
+7. Inicia o site com: npm start
+8. Abre http://localhost:3000 no navegador.
+
+DESENVOLVIMENTO
+- npm run dev reinicia o servidor quando os ficheiros Node.js mudam.
+- GET /api/health confirma que o servidor responde.
+
+DADOS E SEGURANÇA
+- A base de dados fica em data/marketplace.db.
+- As imagens carregadas ficam em uploads/.
+- Faz cópias de segurança da base de dados e da pasta uploads regularmente.
+- Não publiques nem envies o ficheiro .env, passwords, dados pessoais ou uma base de dados real.
+- Em produção, usa HTTPS e configura NODE_ENV=production. Se estiveres atrás de um proxy HTTPS, configura TRUST_PROXY=1 apenas quando o proxy for de confiança.
+- O armazenamento de sessões padrão do Express é adequado para desenvolvimento, não para uma instalação pública com tráfego real; em produção, configura um armazenamento persistente de sessões.
+
+TESTES
+npm test verifica a sintaxe dos ficheiros JavaScript principais. Isto não substitui testes funcionais completos com contas e dados de teste.
+
+MELHORIAS VISUAIS DESTA VERSÃO
+- Nova camada de design responsivo em public/bisno-pro.css.
+- Navegação superior com atalhos para início, pesquisa, produtos, venda, conta e mensagens.
+- Estilo renovado para cabeçalho, cartões, formulários, filtros, áreas de conta e rodapé.
+- A navegação para publicar e mensagens verifica se há sessão iniciada antes de abrir a área correspondente.
+- Os estilos originais são mantidos; a camada bisno-pro.css é carregada depois deles para aplicar o novo visual.
+
+
+NAVEGACAO ATUALIZADA
+- A navegacao mostra uma area por vez: Inicio, Mensagens, Publicar (+) e Perfil.
+- Em telemoveis, a barra fica fixa na parte inferior para facilitar o uso.
+- Perfil agrupa os dados da conta, notificacoes, perfil do vendedor e anuncios publicados.
+- Publicar e Mensagens exigem sessao iniciada.

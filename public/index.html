@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#176b45">
+  <meta name="description" content="Bisno — compra e vende produtos em Angola. Encontra telemóveis, informática, moda e muito mais.">
+  <title>Bisno | Compra e vende em Angola</title>
+
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/bisno-pro.css">
+  <script src="/script.js" defer></script>
+</head>
+
+<body>
+  <!-- CABEÇALHO -->
+  <header class="topo">
+    <div class="topo-conteudo">
+      <a class="logo" href="/" aria-label="Bisno - página inicial">
+        <span class="logo-simbolo">B</span>
+        <span class="logo-texto">
+          <strong>Bisno</strong>
+          <small>O mercado é teu.</small>
+        </span>
+      </a>
+
+      <div class="topo-slogan">
+        Compra e vende em Angola
+      </div>
+
+      <span class="topo-slogan topo-slogan-secundario">O teu mercado, num só lugar</span>
+    </div>
+  </header>
+
+  <nav class="bisno-nav" aria-label="Navegação principal">
+    <div class="bisno-nav-inner">
+      <a href="#area-produtos" data-bisno-page="home" class="is-active"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></a>
+      <a href="#area-notificacoes" data-bisno-page="notifications"><span class="nav-icon" aria-hidden="true">♧</span><span>Notificações</span><span class="nav-badge" id="badge-notificacoes" hidden>0</span></a>
+      <a href="#area-mensagens" data-bisno-page="messages"><span class="nav-icon" aria-hidden="true">✉</span><span>Mensagens</span><span class="nav-badge" id="badge-mensagens" hidden>0</span></a>
+      <a href="#area-publicar" data-bisno-page="publish" class="nav-publish" aria-label="Publicar anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></a>
+      <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- MENSAGENS DA APLICAÇÃO -->
+    <div id="mensagem" role="status" aria-live="polite"></div>
+
+    <!-- AUTENTICAÇÃO -->
+    <section id="area-autenticacao" class="painel">
+      <h2>Bem-vindo ao Bisno</h2>
+      <p>Encontra o que procuras ou publica o teu próprio anúncio.</p>
+
+      <div class="abas">
+        <button type="button" id="aba-login" class="aba">
+          Entrar
+        </button>
+
+        <button type="button" id="aba-registo" class="aba">
+          Criar conta
+        </button>
+      </div>
+
+      <form id="form-login">
+        <h3>Entrar na conta</h3>
+
+        <label for="login-email">E-mail</label>
+        <input
+          id="login-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="O teu e-mail"
+          required
+        >
+
+        <label for="login-password">Palavra-passe</label>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="A tua palavra-passe"
+          required
+        >
+
+        <button type="submit">Entrar</button>
+      </form>
+
+      <form id="form-registo" hidden>
+        <h3>Criar conta</h3>
+
+        <label for="registo-nome">Nome completo</label>
+        <input
+          id="registo-nome"
+          name="name"
+          type="text"
+          autocomplete="name"
+          placeholder="O teu nome"
+          required
+        >
+
+        <label for="registo-email">E-mail</label>
+        <input
+          id="registo-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="O teu e-mail"
+          required
+        >
+
+        <label for="registo-telefone">Telefone</label>
+        <input
+          id="registo-telefone"
+          name="phone"
+          type="tel"
+          autocomplete="tel"
+          placeholder="Ex.: 923000000"
+          required
+        >
+
+        <label for="registo-password">
+          Palavra-passe (mínimo 8 caracteres)
+        </label>
+        <input
+          id="registo-password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        >
+
+        <button type="submit">Criar conta</button>
+      </form>
+    </section>
+
+    <!-- ÁREA DA CONTA -->
+    <section id="area-conta" class="painel" hidden>
+      <h2>Minha conta</h2>
+      <p>Gere os teus dados e acompanha os teus anúncios.</p>
+
+      <div class="dados-conta">
+        <p>Nome: <strong id="nome-utilizador"></strong></p>
+        <p>E-mail: <strong id="email-utilizador"></strong></p>
+        <p>Telefone: <strong id="telefone-utilizador"></strong></p>
+      </div>
+
+<!-- NOTIFICAÇÕES DO BISNO -->
+<section id="area-notificacoes" class="painel-secundario">
+  <h3>
+    🔔 Notificações
+    <span id="contador-notificacoes">0</span>
+  </h3>
+
+  <button type="button" id="botao-atualizar-notificacoes">
+    Atualizar notificações
+  </button>
+
+  <div id="lista-notificacoes" aria-live="polite">
+    <p>As tuas notificações aparecerão aqui.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- CHAT INTERNO -->
+<section id="area-mensagens" class="painel-secundario bisno-mensagens">
+  <header class="mensagens-cabecalho"><div><h3>Mensagens</h3><p>As tuas conversas com compradores e vendedores</p></div><button type="button" id="botao-atualizar-conversas" class="botao-icone" aria-label="Atualizar conversas" title="Atualizar conversas">↻</button></header>
+
+  <div id="lista-conversas" aria-live="polite">
+    <p>As tuas conversas aparecerão aqui.</p>
+  </div>
+
+  <div id="painel-chat" hidden>
+    <header class="chat-cabecalho"><button type="button" id="botao-voltar-conversas" aria-label="Voltar às conversas">←</button><div class="avatar-chat" id="avatar-chat">?</div><div class="chat-identidade"><h4 id="titulo-conversa">Conversa</h4><p id="estado-chat">Conversa no Bisno</p></div><button type="button" id="botao-ver-perfil-chat" hidden>Ver perfil</button></header>
+
+    <div
+      id="lista-mensagens"
+      role="log"
+      aria-live="polite"
+      aria-label="Mensagens da conversa"
+    >
+      <p>A carregar mensagens...</p>
+    </div>
+
+    <form id="form-enviar-mensagem">
+      <label class="sr-only" for="texto-mensagem">Escreve uma mensagem</label>
+      <textarea
+        id="texto-mensagem"
+        name="body"
+        rows="3"
+        maxlength="3000"
+        placeholder="Escreve uma mensagem..."
+        required
+      ></textarea>
+
+      <button type="submit" aria-label="Enviar mensagem">Enviar</button>
+      <button type="button" id="botao-fechar-chat">
+        Fechar conversa
+      </button>
+    </form>
+  </div>
+</section>
+
+<hr>
+
+<!-- PERFIL DO VENDEDOR -->
+      <section id="perfil-vendedor" class="painel-secundario">
+        <h3>Perfil do vendedor</h3>
+
+        <div class="perfil-resumo">
+          <img
+            id="foto-perfil"
+            src=""
+            alt="Fotografia do perfil"
+            width="120"
+            height="120"
+            hidden
+          >
+
+          <p id="perfil-sem-foto">
+            Ainda não tens fotografia de perfil.
+          </p>
+        </div>
+
+        <p id="perfil-nome"></p>
+
+        <form id="form-perfil" enctype="multipart/form-data">
+          <label for="perfil-nome-input">Nome</label>
+          <input
+            id="perfil-nome-input"
+            name="name"
+            type="text"
+            required
+          >
+
+          <label for="perfil-telefone-input">Telefone</label>
+          <input
+            id="perfil-telefone-input"
+            name="phone"
+            type="tel"
+            required
+          >
+
+          <label for="perfil-foto-input">
+            Fotografia (JPEG, PNG ou WEBP; máximo 5 MB)
+          </label>
+          <input
+            id="perfil-foto-input"
+            name="avatar"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+          >
+
+          <button type="submit">Guardar perfil</button>
+        </form>
+      </section>
+
+      <hr>
+
+      <!-- OS MEUS ANÚNCIOS -->
+      <section id="area-meus-anuncios" class="painel-secundario">
+        <h2>Os meus anúncios</h2>
+        <p>Consulta e gere os produtos que publicaste no Bisno.</p>
+
+        <button type="button" id="botao-atualizar-anuncios">
+          Atualizar os meus anúncios
+        </button>
+
+        <div
+          id="lista-meus-anuncios"
+          class="lista-produtos"
+          aria-live="polite"
+        >
+          <p>Os teus anúncios aparecerão aqui.</p>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- PUBLICAR ANÚNCIO -->
+      <section id="area-publicar" class="painel-secundario">
+        <h2>Publicar um anúncio</h2>
+        <p>
+          Apresenta o teu produto e permite que compradores
+          entrem em contacto contigo.
+        </p>
+
+        <form id="form-anuncio" enctype="multipart/form-data">
+          <label for="anuncio-nome">Nome do produto</label>
+          <input
+            id="anuncio-nome"
+            name="name"
+            type="text"
+            placeholder="Ex.: Samsung Galaxy A14"
+            required
+          >
+
+          <label for="anuncio-descricao">Descrição</label>
+          <textarea
+            id="anuncio-descricao"
+            name="description"
+            rows="4"
+            placeholder="Descreve o estado e as características do produto."
+            required
+          ></textarea>
+
+          <label for="anuncio-preco">Preço em Kz</label>
+          <input
+            id="anuncio-preco"
+            name="price"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Ex.: 85000"
+            required
+          >
+
+          <label for="anuncio-estado">Estado do produto</label>
+          <select id="anuncio-estado" name="condition" required>
+            <option value="">Seleciona o estado</option>
+            <option value="Novo">Novo</option>
+            <option value="Usado">Usado</option>
+          </select>
+
+          <label for="anuncio-categoria">Categoria</label>
+          <select id="anuncio-categoria" name="category" required>
+            <option value="">Seleciona a categoria</option>
+            <option value="Telemóveis">Telemóveis</option>
+            <option value="Informática">Informática</option>
+            <option value="Electrodomésticos">Electrodomésticos</option>
+            <option value="Moda">Moda</option>
+            <option value="Veículos">Veículos</option>
+            <option value="Casa e Jardim">Casa e Jardim</option>
+            <option value="Desporto">Desporto</option>
+            <option value="Outros">Outros</option>
+          </select>
+
+          <label for="anuncio-cidade">Província ou cidade</label>
+          <input
+            id="anuncio-cidade"
+            name="city"
+            type="text"
+            placeholder="Ex.: Luanda"
+            required
+          >
+
+          <label for="anuncio-bairro">Bairro</label>
+          <input
+            id="anuncio-bairro"
+            name="neighborhood"
+            type="text"
+            placeholder="Ex.: Maianga"
+            required
+          >
+
+          <label for="anuncio-whatsapp">Número de WhatsApp</label>
+          <input
+            id="anuncio-whatsapp"
+            name="whatsapp"
+            type="tel"
+            placeholder="Ex.: 923000000"
+            required
+          >
+
+          <label for="anuncio-imagem">Fotografia do produto</label>
+          <input
+            id="anuncio-imagem"
+            name="image"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+          >
+
+          <button type="submit">Publicar anúncio</button>
+        </form>
+      </section>
+
+      <button type="button" id="botao-sair">
+        Terminar sessão
+      </button>
+    </section>
+
+    <hr>
+
+    <!-- CATÁLOGO PÚBLICO -->
+    <section id="area-produtos" class="painel">
+      <aside class="bisno-banner-anuncios" aria-label="Destaque do Bisno">
+        <div class="bisno-banner-texto">
+          <span class="bisno-banner-etiqueta">O teu mercado, num só lugar</span>
+          <h2>Encontra. Compara. Compra.</h2>
+          <p>Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto.</p>
+        </div>
+        <a href="#area-publicar" data-bisno-page="publish" class="bisno-banner-botao">＋ Publicar anúncio</a>
+      </aside>
+      <div class="cabecalho-produtos">
+        <h2>Anúncios recentes</h2>
+        <p>Produtos publicados recentemente por vários vendedores.</p>
+      </div>
+
+      <!-- PESQUISA E FILTROS -->
+      <div class="filtros-produtos filtros-inicio" id="painel-pesquisa">
+        <label for="filtro-pesquisa">Pesquisar produtos</label>
+        <input
+          id="filtro-pesquisa"
+          type="search"
+          placeholder="O que estás à procura?"
+        >
+
+        <label for="filtro-categoria">Categoria</label>
+        <select id="filtro-categoria">
+          <option value="">Todas as categorias</option>
+          <option value="Telemóveis">Telemóveis</option>
+          <option value="Informática">Informática</option>
+          <option value="Electrodomésticos">Electrodomésticos</option>
+          <option value="Moda">Moda</option>
+          <option value="Veículos">Veículos</option>
+          <option value="Casa e Jardim">Casa e Jardim</option>
+          <option value="Desporto">Desporto</option>
+          <option value="Outros">Outros</option>
+        </select>
+
+        <label for="filtro-cidade">Província ou cidade</label>
+        <input
+          id="filtro-cidade"
+          type="text"
+          placeholder="Ex.: Luanda"
+        >
+
+        <label for="ordenar-produtos">Ordenar por preço</label>
+        <select id="ordenar-produtos">
+          <option value="">Ordem padrão</option>
+          <option value="menor">Menor preço primeiro</option>
+          <option value="maior">Maior preço primeiro</option>
+        </select>
+
+        <label for="filtro-preco">Preço máximo em Kz</label>
+        <input
+          id="filtro-preco"
+          type="number"
+          min="0"
+          placeholder="Sem limite"
+        >
+      </div>
+
+      <!-- LISTA DE PRODUTOS -->
+      <div
+        id="lista-produtos"
+        class="lista-produtos"
+        aria-live="polite"
+      >
+        <p>A carregar produtos...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer>
+    <p>Bisno — o teu marketplace em Angola.</p>
+    <p>Compra e vende. Combina diretamente com o vendedor.</p>
+    <p class="credito-criador">Criado por <strong>Adam Wolf</strong> (Alpha Wolf)</p>
+  </footer>
+</body>
+</html>
