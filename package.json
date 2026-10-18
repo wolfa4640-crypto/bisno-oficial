@@ -1,8 +1,8 @@
 {
-  "name": "meu-primeiro-site",
-  "version": "1.0.0",
-  "description": "Marketplace Bisno — anúncios, interesses, notificações e mensagens.",
-  "main": "index.js",
+  "name": "bisno-marketplace",
+  "version": "2.0.0",
+  "description": "Bisno — marketplace de anúncios para Angola",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
@@ -19,6 +19,9 @@
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
     "express-session": "^1.19.0",
-    "multer": "^2.4.0"
+    "multer": "^2.4.0",
+    "connect-sqlite3": "^0.9.16",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^7.5.0"
   }
 }
