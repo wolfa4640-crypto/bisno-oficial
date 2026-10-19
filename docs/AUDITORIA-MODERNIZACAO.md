@@ -74,3 +74,9 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - Os casos verificam que um utilizador externo não consegue ler mensagens, enviar mensagens para conversa alheia ou marcar notificações de outra pessoa como lidas; também verificam que a listagem de notificações é filtrada por utilizador e que um participante legítimo mantém acesso.
 - O login de teste é exclusivo ao servidor montado dentro do ficheiro de testes e usa `express-session`; não foi acrescentada nenhuma rota de teste ao servidor de produção.
 - Estes testes foram adicionados ao ramo, mas não são declarados aprovados até o GitHub Actions concluir a execução do commit mais recente.
+
+
+## Propriedade de anúncios — etapa seguinte
+
+- Expandido `test/social-access-control.test.js` para tentar eliminar por HTTP um anúncio pertencente a outro utilizador autenticado como terceiro. O teste verifica a resposta 404 e confirma que o anúncio continua na base SQLite temporária.
+- A execução da CI para o commit que contém este novo caso ainda precisa de confirmação; o teste não deve ser considerado aprovado apenas por ter sido adicionado.
