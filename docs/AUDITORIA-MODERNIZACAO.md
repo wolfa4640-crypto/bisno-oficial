@@ -4,7 +4,7 @@
 
 O Bisno é um marketplace para Angola, com preços em Kz, anúncios, perfis, mensagens, notificações e lojas. O comprador e o vendedor combinam diretamente pagamento e entrega; a aplicação não deve introduzir pagamentos internos.
 
-Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1. A branch principal e o serviço publicado não foram alterados por merge ou deploy. As mudanças descritas abaixo foram registadas no ramo de desenvolvimento, mas ainda precisam de validação funcional no ambiente de execução.
+Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1. A branch principal e o serviço publicado não foram alterados por merge ou deploy. As mudanças descritas abaixo foram registadas no ramo de desenvolvimento. A execução observada do CI passou em Node.js 20 e 22; a validação funcional no ambiente de execução continua pendente.
 
 ## Alterações já registadas nesta branch
 
@@ -20,19 +20,19 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 
 ## Riscos e tarefas ainda por validar
 
-1. **CI e testes:** confirmar que o workflow executa com sucesso; a criação do workflow não significa que os testes já passaram.
+1. **CI e testes:** o workflow observado concluiu com sucesso em Node.js 20 e 22; continuam necessários testes de integração e ponta a ponta, pois a suite atual cobre apenas parte do comportamento.
 2. **Render e persistência:** verificar no painel do serviço se há disco persistente e configurar `DATA_DIR` e `UPLOADS_DIR` para caminhos no disco montado. A existência dessas variáveis no código não confirma a configuração do serviço.
 3. **Backup e restauração:** documentar e testar cópia e recuperação da base SQLite e dos uploads antes de qualquer migração ou publicação.
 4. **Autorização:** executar testes de integração para garantir que nenhum utilizador consegue ler ou modificar recursos privados de outro utilizador.
 5. **Uploads:** testar ficheiros inválidos, MIME falsificado, limites e limpeza; a assinatura inicial do ficheiro é uma verificação básica, não uma análise completa de imagem.
 6. **Segurança HTTP:** a Content Security Policy (CSP) permanece desativada no Helmet; inventariar scripts, estilos e recursos antes de a ativar sem quebrar a interface.
-7. **Dependências:** verificar coerência entre `package.json` e `package-lock.json` e usar instalação reprodutível quando o lock estiver atualizado.
+7. **Dependências:** `package-lock.json` ainda tem metadados de `meu-primeiro-site` versão `1.0.0` e não declara todas as dependências do `package.json` (incluindo `helmet`, `express-rate-limit` e `connect-sqlite3`). O CI usa `npm install`, não `npm ci`; regenerar e validar o lock em ambiente Node/npm compatível antes de mudar para instalação reprodutível.
 8. **Interface:** validar navegação, formulários, chat, notificações, lojas e layout em telemóvel e computador.
 9. **Produção:** executar teste de ponta a ponta no staging, confirmar variáveis de ambiente e plano de rollback antes de merge/deploy.
 
 ## Critérios mínimos antes de produção
 
-- [ ] CI concluída com sucesso em todas as versões Node configuradas.
+- [x] CI concluída com sucesso em Node.js 20 e 22 para a execução observada.
 - [ ] Registo, login, sessão, logout e validação de entradas testados.
 - [ ] Autorização e propriedade de anúncios, conversas, mensagens e lojas testadas.
 - [ ] Uploads válidos e inválidos testados.
