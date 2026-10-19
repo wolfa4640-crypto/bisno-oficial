@@ -8,7 +8,7 @@ const db = require("../data/database");
 
 const router = express.Router();
 
-const pastaUploads = path.join(__dirname, "..", "uploads");
+const pastaUploads = process.env.UPLOADS_DIR || path.join(__dirname, "..", "uploads");
 
 fs.mkdirSync(pastaUploads, { recursive: true });
 
@@ -89,24 +89,32 @@ router.post("/register", (req, res) => {
       hash
     );
 
-    req.session.userId = Number(resultado.lastInsertRowid);
-
-    req.session.save((erro) => {
-      if (erro) {
+    // Regenerar a sessão após registo para mitigar session fixation.
+    req.session.regenerate((erroSessao) => {
+      if (erroSessao) {
         return res.status(500).json({
           erro: "A conta foi criada, mas não foi possível iniciar a sessão."
         });
       }
 
-      res.status(201).json({
-        mensagem: "Conta criada com sucesso!",
-        utilizador: {
-          id: Number(resultado.lastInsertRowid),
-          name: nomeNormalizado,
-          email: emailNormalizado,
-          phone: telefoneNormalizado,
-          avatar: null
+      req.session.userId = Number(resultado.lastInsertRowid);
+      req.session.save((erroGuardar) => {
+        if (erroGuardar) {
+          return res.status(500).json({
+            erro: "A conta foi criada, mas não foi possível iniciar a sessão."
+          });
         }
+
+        res.status(201).json({
+          mensagem: "Conta criada com sucesso!",
+          utilizador: {
+            id: Number(resultado.lastInsertRowid),
+            name: nomeNormalizado,
+            email: emailNormalizado,
+            phone: telefoneNormalizado,
+            avatar: null
+          }
+        });
       });
     });
   } catch (erro) {
@@ -290,7 +298,7 @@ router.post("/logout", (req, res) => {
       });
     }
 
-    res.clearCookie("connect.sid");
+    res.clearCookie("bisno.sid", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
     res.json({ mensagem: "Sessão terminada." });
   });
 });
