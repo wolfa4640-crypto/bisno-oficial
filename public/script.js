@@ -1303,7 +1303,7 @@ async function carregarProdutos() {
 
 
     aplicarFiltros();
-
+    lista.setAttribute("aria-busy", "false");
 
 
     todosProdutos.forEach(produto => {
@@ -2921,18 +2921,20 @@ function configurarEventosProdutos() {
 
 function configurarFiltros() {
 
-  const botaoLimpar = $("#limpar-filtros");
-  if (botaoLimpar) {
-    botaoLimpar.addEventListener("click", () => {
-      ["#filtro-pesquisa", "#filtro-categoria", "#filtro-cidade", "#ordenar-produtos", "#filtro-preco"]
-        .forEach(seletor => {
-          const campo = $(seletor);
-          if (campo) campo.value = "";
-        });
-      aplicarFiltros();
-      $("#filtro-pesquisa")?.focus();
-    });
-  }
+  const limparFiltros = () => {
+    ["#filtro-pesquisa", "#filtro-categoria", "#filtro-cidade", "#ordenar-produtos", "#filtro-preco"]
+      .forEach(seletor => {
+        const campo = $(seletor);
+        if (campo) campo.value = "";
+      });
+    aplicarFiltros();
+    $("#filtro-pesquisa")?.focus();
+  };
+
+  $("#limpar-filtros")?.addEventListener("click", limparFiltros);
+  $("#lista-produtos")?.addEventListener("click", evento => {
+    if (evento.target.closest("[data-limpar-filtros]")) limparFiltros();
+  });
 
   [
 
