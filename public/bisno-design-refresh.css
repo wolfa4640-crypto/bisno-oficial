@@ -1462,3 +1462,125 @@ button.botao-whatsapp:focus-visible {
   .botao-abrir-pesquisa { width:40px; height:40px; flex-basis:40px; }
   .painel-pesquisa-overlay { top:72px; right:12px; }
 }
+
+
+/* ===== Perfil e funcionalidades: acabamento visual refinado ===== */
+:root{
+  --perfil-fundo:#ffffff;
+  --perfil-borda:#e1ebe5;
+  --perfil-sombra:0 14px 36px rgba(15,67,42,.075);
+}
+#area-conta{
+  overflow:hidden;
+  border:1px solid var(--perfil-borda);
+  border-radius:22px;
+  background:linear-gradient(180deg,#fff 0%,#fbfdfb 100%);
+  box-shadow:var(--perfil-sombra);
+}
+#area-conta > h2,
+#area-conta > h3{
+  letter-spacing:-.035em;
+}
+#area-conta .dados-conta{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));
+  gap:10px 18px;
+  padding:20px;
+  border:1px solid #dcefe3;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f1faf4,#e8f6ee);
+}
+#area-conta .dados-conta p{margin:0;overflow-wrap:anywhere}
+#area-conta .perfil-resumo{
+  align-items:center;
+  gap:20px;
+  padding:22px;
+  border:1px solid var(--perfil-borda);
+  border-radius:18px;
+  background:#fff;
+}
+#foto-perfil{
+  width:112px;height:112px;
+  border:4px solid #e6f5ec;
+  box-shadow:0 5px 18px rgba(15,67,42,.12);
+}
+#perfil-sem-foto{
+  display:grid;place-items:center;
+  width:112px;height:112px;
+  border:1px dashed #b7d8c4;
+  border-radius:50%;
+  background:#f0f8f3;
+}
+#area-conta label{margin-top:17px;font-weight:650;color:#31483a}
+#area-conta input:not([type=file]),
+#area-conta select,
+#area-conta textarea{
+  border:1px solid #d6e3da;
+  border-radius:11px;
+  background:#fff;
+  transition:border-color .18s,box-shadow .18s;
+}
+#area-conta input:focus,
+#area-conta select:focus,
+#area-conta textarea:focus{
+  border-color:#299565;
+  box-shadow:0 0 0 4px rgba(41,149,101,.12);
+}
+#area-conta button,
+#area-conta .botao{
+  border-radius:11px;
+  font-weight:700;
+}
+#area-conta hr{margin:28px 0;border-color:#e5ede8}
+#area-conta [id^="area-"]{
+  scroll-margin-top:150px;
+}
+#area-conta #area-loja,
+#area-conta #area-mensagens,
+#area-conta #area-notificacoes,
+#area-conta #area-meus-anuncios,
+#area-publicar{
+  padding:clamp(16px,3vw,28px);
+  border:1px solid var(--perfil-borda);
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 6px 24px rgba(15,67,42,.045);
+}
+#area-conta h2,#area-conta h3,#area-publicar h2,#area-publicar h3{
+  line-height:1.3;
+}
+#area-conta .lista-produtos,
+#area-conta [id*="lista-"]{
+  gap:16px;
+}
+#area-conta .cartao-produto,
+#area-conta .produto-card,
+#area-conta .meu-produto-card{
+  border:1px solid #e0eae3;
+  border-radius:15px;
+  box-shadow:0 5px 18px rgba(18,55,35,.045);
+}
+#area-conta .cartao-produto img,
+#area-conta .meu-produto-card img{
+  border-radius:12px;
+}
+#area-conta button:hover,
+#area-publicar button:hover{
+  transform:translateY(-1px);
+}
+#area-conta button:active,
+#area-publicar button:active{transform:translateY(0)}
+#area-conta #botao-sair{
+  background:#fff5f4;color:#a72c25;border:1px solid #f0cbc7;
+}
+#area-conta #botao-sair:hover{background:#ffe9e7}
+@media(max-width:600px){
+  #area-conta{border-radius:16px}
+  #area-conta .perfil-resumo{align-items:center;text-align:center;padding:16px}
+  #area-conta .dados-conta{grid-template-columns:minmax(0,1fr);padding:15px}
+  #area-conta #area-loja,
+  #area-conta #area-mensagens,
+  #area-conta #area-notificacoes,
+  #area-conta #area-meus-anuncios,
+  #area-publicar{padding:15px;border-radius:14px}
+}
