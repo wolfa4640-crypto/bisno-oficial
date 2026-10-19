@@ -330,11 +330,13 @@ router.post(
 
       const preco = Number(price);
 
-      if (!Number.isFinite(preco) || preco < 0) {
+      // Os preços em Kz devem ser inteiros seguros para evitar valores
+      // fracionários ou números que percam precisão na base de dados/JSON.
+      if (!Number.isSafeInteger(preco) || preco < 0 || preco > 1_000_000_000_000) {
         apagarFicheiroEnviado(req.file);
 
         return res.status(400).json({
-          erro: "Introduz um preço válido em Kz."
+          erro: "Introduz um preço inteiro válido em Kz (entre 0 e 1 bilião de Kz)."
         });
       }
 
