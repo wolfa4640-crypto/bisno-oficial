@@ -114,3 +114,9 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - A nova folha é carregada depois de `bisno-pro.css`, preservando o CSS existente e as funções da aplicação; os ajustes incluem grelha de anúncios para computador/tablet e cartões compactos para telemóvel, navegação inferior móvel e respeito por preferência de movimento reduzido.
 - O HTML foi atualizado apenas para carregar a nova camada de design. Não foram alteradas rotas, dados nem regras de negócio.
 - A revisão visual no navegador e a verificação em dispositivos reais continuam pendentes; a CI não confirma a qualidade visual.
+
+## Acessibilidade visual e estados de interação — etapa seguinte
+
+- Acrescentados estados de foco visíveis e consistentes para navegação por teclado, realce de seleção de texto e apresentação de controlos desativados.
+- Melhorada a área mínima de toque dos itens da navegação móvel e acrescentado suporte de contorno para modos de cores forçadas.
+- Os estilos não alteram os fluxos de negócio nem o conteúdo da base de dados. A verificação de contraste e a inspeção em navegador/dispositivos continuam pendentes; estas alterações ainda não equivalem a uma auditoria WCAG completa.
