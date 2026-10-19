@@ -1807,7 +1807,7 @@ body.bisno-requer-login:not(.bisno-autenticado) #botao-abrir-pesquisa,
 body.bisno-requer-login:not(.bisno-autenticado) #painel-pesquisa-overlay,
 body.bisno-requer-login:not(.bisno-autenticado) .hero-bisno,
 body.bisno-requer-login:not(.bisno-autenticado) #area-produtos,
-body.bisno-requer-login:not(.bisno-autenticado) body > footer {
+body.bisno-requer-login:not(.bisno-autenticado) > footer {
   display: none !important;
 }
 body.bisno-requer-login:not(.bisno-autenticado) #area-autenticacao {
