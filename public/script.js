@@ -460,7 +460,8 @@ function abrirPagina(id) {
       (page === "messages" && id === "area-mensagens") ||
       (page === "notifications" && id === "area-notificacoes") ||
       (page === "publish" && id === "area-publicar") ||
-      (page === "profile" && id === "area-conta");
+      (page === "profile" && id === "area-conta") ||
+      (page === "listings" && id === "area-meus-anuncios");
     link.classList.toggle("is-active", active);
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
