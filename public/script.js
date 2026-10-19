@@ -433,7 +433,7 @@ function abrirPagina(id) {
   if (auth) auth.hidden = id !== "area-autenticacao";
   if (products) products.hidden = id !== "area-produtos";
   // A conta funciona como contentor; apenas o painel escolhido fica visível.
-  if (account) account.hidden = !["area-conta", "area-publicar", "area-mensagens", "area-notificacoes"].includes(id);
+  if (account) account.hidden = !["area-conta", "area-publicar", "area-mensagens", "area-notificacoes", "area-loja"].includes(id);
   if (messages) messages.hidden = id !== "area-mensagens";
   if (publish) publish.hidden = id !== "area-publicar";
   if (profile) profile.hidden = id !== "area-conta";
