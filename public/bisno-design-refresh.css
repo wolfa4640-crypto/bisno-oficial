@@ -1358,3 +1358,48 @@ button.botao-whatsapp:focus-visible {
   outline: 2px solid #25d366;
   outline-offset: 2px;
 }
+
+
+/* Perfil pessoal: identidade e edição em áreas distintas, inspirado em redes sociais */
+#perfil-vendedor { overflow:hidden; padding:0 !important; border:1px solid var(--borda); border-radius:20px; background:#fff; }
+.bisno-perfil-capa { min-height:145px; display:flex; align-items:flex-end; padding:18px 24px; color:#fff; background:radial-gradient(circle at 82% 10%,rgba(255,255,255,.22),transparent 24%),linear-gradient(120deg,#0b4d32,#15945a); }
+.bisno-perfil-capa span { font-size:13px; font-weight:700; opacity:.9; }
+.bisno-perfil-identidade { display:flex; align-items:center; gap:20px; padding:0 24px 22px; border-bottom:1px solid #edf0ed; }
+.bisno-perfil-avatar-wrap { position:relative; flex:0 0 116px; width:116px; height:116px; margin-top:-42px; border:5px solid #fff; border-radius:50%; background:#e7f5ec; }
+.bisno-perfil-avatar-wrap #foto-perfil,.bisno-avatar-fallback { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.bisno-avatar-fallback { display:flex; align-items:center; justify-content:center; color:#0b4d32; font-size:38px; font-weight:800; }
+.bisno-avatar-fallback[hidden] { display:none !important; }
+.bisno-editar-foto { position:absolute; right:0; bottom:0; display:flex; align-items:center; justify-content:center; width:34px; height:34px; border:2px solid white; border-radius:50%; background:#edf2ef; cursor:pointer; }
+.bisno-editar-foto:hover { background:#d9e9df; }
+#perfil-foto-input { max-width:100%; }
+.bisno-perfil-titulos { min-width:0; padding-top:12px; }
+.bisno-perfil-titulos h2 { margin:0 0 4px; font-size:clamp(22px,3vw,30px); overflow-wrap:anywhere; }
+.bisno-perfil-subtitulo { margin:0 0 10px; color:#6b786f; font-size:13px; overflow-wrap:anywhere; }
+.bisno-perfil-resumo-stats,.bisno-social-stats { display:flex; flex-wrap:wrap; gap:18px; color:#64736a; font-size:13px; }
+.bisno-perfil-resumo-stats strong,.bisno-social-stats strong { color:#172c20; }
+.bisno-perfil-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:22px 24px 24px; }
+.bisno-perfil-form h3 { grid-column:1/-1; margin:0; font-size:18px; }
+.bisno-perfil-campo { display:flex; flex-direction:column; gap:7px; min-width:0; }
+.bisno-perfil-campo label { font-size:13px; font-weight:750; color:#344b3d; }
+.bisno-perfil-campo input { width:100%; min-width:0; padding:12px; border:1px solid #dce5de; border-radius:10px; background:#fbfdfb; }
+.bisno-foto-campo { grid-column:1/-1; }
+.bisno-foto-campo small { color:#718076; }
+.bisno-guardar-perfil { grid-column:1/-1; justify-self:start; min-height:44px; padding:11px 20px; border:0; border-radius:11px; background:#137448; color:#fff; font-weight:800; cursor:pointer; }
+.bisno-guardar-perfil:hover { background:#0b4d32; }
+.cabecalho-perfil-publico { padding:22px; border:1px solid var(--borda); border-radius:18px; background:#fff; }
+.bisno-social-stats { margin:10px 0 14px; }
+.bisno-perfil-acoes { display:flex; flex-wrap:wrap; gap:9px; }
+.bisno-seguir-btn,.bisno-mensagem-perfil { min-height:40px; padding:9px 15px; border:0; border-radius:10px; background:#137448; color:#fff; font-weight:750; cursor:pointer; }
+.bisno-seguir-btn.is-following { border:1px solid #d6e2d9; background:#edf5ef; color:#24553a; }
+.bisno-mensagem-perfil { background:#eaf5ee; color:#145d38; }
+@media(max-width:600px) {
+ .bisno-perfil-capa { min-height:105px; padding:14px; }
+ .bisno-perfil-identidade { align-items:flex-start; gap:12px; padding:0 14px 18px; }
+ .bisno-perfil-avatar-wrap { flex-basis:88px; width:88px; height:88px; margin-top:-30px; }
+ .bisno-avatar-fallback { font-size:30px; }
+ .bisno-perfil-titulos { padding-top:8px; }
+ .bisno-perfil-resumo-stats { gap:10px; font-size:12px; }
+ .bisno-perfil-form { grid-template-columns:minmax(0,1fr); padding:18px 14px; gap:12px; }
+ .bisno-perfil-form h3,.bisno-foto-campo,.bisno-guardar-perfil { grid-column:1; }
+ .bisno-guardar-perfil { width:100%; }
+}
