@@ -1,0 +1,92 @@
+/* BISNO DESIGN REFRESH — camada final de design, sem alterar a lógica da aplicação */
+:root{
+  --verde:#137448;--verde-escuro:#0b4d32;--verde-claro:#e7f5ec;
+  --fundo:#f4f7f5;--texto:#182820;--texto-suave:#68776e;--borda:#dfe8e2;
+  --sombra:0 10px 32px rgba(18,55,35,.065);--raio:18px;
+}
+html{scroll-padding-top:120px}
+body{background:var(--fundo);color:var(--texto);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.topo{background:rgba(255,255,255,.96);border-bottom:1px solid var(--borda);box-shadow:0 2px 14px rgba(18,55,35,.035)}
+.topo-conteudo{width:min(1380px,calc(100% - 48px));min-height:76px}
+.logo{gap:12px}
+.logo-simbolo{border-radius:14px;background:linear-gradient(145deg,#229461,#0b5135);box-shadow:0 7px 16px rgba(19,116,72,.22)}
+.logo-texto strong{font-size:25px;letter-spacing:-1.1px}
+.logo-texto small{font-size:11px;letter-spacing:.15px}
+.topo-slogan{font-weight:600}
+.bisno-nav{background:rgba(255,255,255,.97);border-bottom:1px solid var(--borda)}
+.bisno-nav-inner{width:min(1200px,calc(100% - 40px));gap:clamp(6px,2.4vw,30px);padding:8px 0}
+.bisno-nav a{min-width:76px;padding:9px 13px;border-radius:12px;color:#526359;font-weight:700}
+.bisno-nav a.is-active{background:var(--verde-claro);color:var(--verde-escuro)}
+.bisno-nav a.nav-publish{background:var(--verde);color:#fff;border-radius:13px;box-shadow:0 6px 16px rgba(19,116,72,.2)}
+.bisno-nav a.nav-publish:hover{background:var(--verde-escuro)}
+.container{width:min(1380px,calc(100% - 48px));margin:26px auto 56px}
+#area-produtos.painel{padding:clamp(16px,2.4vw,30px);border-radius:22px}
+.bisno-banner-anuncios{min-height:200px;padding:clamp(24px,4vw,42px);border-radius:22px;background:radial-gradient(circle at 85% 15%,rgba(113,220,160,.26),transparent 30%),linear-gradient(120deg,#0b4d32 0%,#137448 58%,#21945e 100%);box-shadow:0 16px 36px rgba(11,77,50,.18)}
+.bisno-banner-anuncios:after{right:10%;top:-58px;font-size:220px;color:rgba(255,255,255,.07)}
+.bisno-banner-etiqueta{padding:5px 10px;font-size:10px;letter-spacing:.08em;border-color:rgba(255,255,255,.34)}
+.bisno-banner-anuncios h2{max-width:650px;margin:8px 0 10px;font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-1.25px}
+.bisno-banner-anuncios p{max-width:570px;font-size:14px;line-height:1.55}
+.bisno-banner-botao{padding:12px 16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.cabecalho-produtos{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:26px 0 18px}
+.cabecalho-produtos h2{font-size:clamp(23px,3vw,30px);letter-spacing:-.8px}
+.cabecalho-produtos p{margin:5px 0 0}
+.filtros-produtos{padding:18px;gap:0 14px;background:#f8fbf9;border:1px solid var(--borda);border-radius:16px}
+.filtros-produtos label{font-size:12px;letter-spacing:.01em}
+.filtros-produtos input,.filtros-produtos select{min-height:44px}
+#lista-produtos.lista-produtos{gap:18px}
+#lista-produtos .cartao-produto{border-color:#e1e9e4;border-radius:16px;box-shadow:0 4px 14px rgba(17,60,37,.055)}
+#lista-produtos .cartao-produto:hover{border-color:#c8dfd0;box-shadow:0 12px 26px rgba(17,60,37,.11);transform:translateY(-3px)}
+#lista-produtos .cartao-produto .imagem-produto{background:linear-gradient(145deg,#f6f8f6,#edf3ef)}
+#lista-produtos .cartao-produto-conteudo{padding:13px 14px 15px;gap:7px}
+#lista-produtos .cartao-produto h3{font-size:15px;font-weight:750;letter-spacing:-.15px}
+#lista-produtos .cartao-produto p.preco{color:#11683d;font-size:20px;letter-spacing:-.55px}
+#lista-produtos .cartao-produto .vendedor-resumo-mini{padding-top:9px}
+#lista-produtos .cartao-produto .botao-interesse,#lista-produtos .cartao-produto .botao-mensagem,#lista-produtos .cartao-produto .botao-whatsapp,#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){min-height:35px;border-radius:9px}
+.painel{border-color:var(--borda);box-shadow:var(--sombra);border-radius:20px}
+.painel-secundario{background:#fff;border-color:var(--borda);border-radius:16px}
+.painel h2,.painel-secundario h2,.painel-secundario h3{letter-spacing:-.5px}
+input,select,textarea{border-color:#d7e2da;border-radius:11px}
+input:focus,select:focus,textarea:focus{border-color:#48a878;box-shadow:0 0 0 4px rgba(19,116,72,.1)}
+form button[type=submit]{border-radius:11px;box-shadow:0 5px 12px rgba(19,116,72,.14)}
+.store-stat{border-radius:14px;box-shadow:0 3px 10px rgba(18,55,35,.025)}
+.store-stat strong{color:var(--verde)}
+#lista-notificacoes article,#lista-meus-anuncios article{border-radius:13px}
+footer{background:#0b3524!important;color:#dbece1!important;border-top:0!important}
+footer .credito-criador strong{color:#a9edc5}
+#mensagem:not(:empty){border-radius:12px}
+@media(min-width:1100px){#lista-produtos.lista-produtos{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}#lista-produtos .cartao-produto .imagem-produto{height:clamp(210px,18vw,275px)}}
+@media(max-width:1000px) and (min-width:721px){.container{width:calc(100% - 32px)}#lista-produtos.lista-produtos{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}#lista-produtos .cartao-produto .imagem-produto{height:clamp(180px,22vw,235px)}}
+@media(max-width:720px){
+ html{scroll-padding-top:85px}
+ .topo-conteudo{width:calc(100% - 28px);min-height:66px}
+ .container{width:calc(100% - 22px);margin:14px auto 30px;padding-bottom:84px}
+ .bisno-nav{top:auto;bottom:0;border-top:1px solid var(--borda);box-shadow:0 -8px 24px rgba(18,55,35,.10)}
+ .bisno-nav-inner{width:100%;gap:2px;padding:6px 4px calc(5px + env(safe-area-inset-bottom))}
+ .bisno-nav a{min-width:0;flex:1;padding:7px 2px;font-size:10px;border-radius:10px}
+ .bisno-nav a .nav-icon{font-size:20px}
+ .bisno-nav a.nav-publish{min-width:0;flex:1.1;padding:6px 2px;border-radius:12px}
+ .bisno-nav a.nav-publish .nav-icon{width:29px;height:28px;border-radius:9px;font-size:23px}
+ #area-produtos.painel{padding:12px;border-radius:17px}
+ .bisno-banner-anuncios{min-height:175px;align-items:flex-start;padding:21px 17px;gap:10px;border-radius:16px}
+ .bisno-banner-anuncios:after{right:-7%;top:-10px;font-size:145px}
+ .bisno-banner-anuncios h2{font-size:clamp(22px,6vw,30px);letter-spacing:-.65px}
+ .bisno-banner-anuncios p{font-size:12px}
+ .bisno-banner-botao{max-width:126px;padding:9px 10px;font-size:11px;line-height:1.3}
+ .cabecalho-produtos{display:block;margin:22px 0 15px}
+ .cabecalho-produtos h2{font-size:24px}
+ .cabecalho-produtos p{font-size:12px}
+ .filtros-produtos{padding:12px;gap:0 9px;border-radius:13px}
+ #lista-produtos.lista-produtos{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #lista-produtos .cartao-produto{border-radius:12px}
+ #lista-produtos .cartao-produto .imagem-produto{height:auto;aspect-ratio:1/0.9;min-height:128px;max-height:190px}
+ #lista-produtos .cartao-produto-conteudo{padding:9px;gap:5px}
+ #lista-produtos .cartao-produto h3{font-size:12.5px}
+ #lista-produtos .cartao-produto p{font-size:10.5px}
+ #lista-produtos .cartao-produto p.preco{font-size:16px}
+ #lista-produtos .cartao-produto .botao-interesse,#lista-produtos .cartao-produto .botao-mensagem,#lista-produtos .cartao-produto .botao-whatsapp,#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){font-size:10px;padding:6px 7px}
+ .painel{padding:17px;border-radius:16px}
+ .painel-secundario{padding:14px}
+ body>footer{margin-bottom:0;padding-bottom:25px}
+}
+@media(max-width:380px){.bisno-banner-anuncios{padding:17px 12px}.bisno-banner-botao{max-width:100px;font-size:10px}.bisno-banner-anuncios h2{font-size:21px}#lista-produtos.lista-produtos{gap:8px}#lista-produtos .cartao-produto-conteudo{padding:8px}#lista-produtos .cartao-produto p.preco{font-size:15px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
