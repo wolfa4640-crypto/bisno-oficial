@@ -92,3 +92,10 @@ Não declarar a modernização concluída até os testes e a verificação no se
 
 - Acrescentados dois testes HTTP: a rota de contacto rejeita um anúncio inexistente/que não pode ser associado à loja e não regista contacto; o proprietário não pode seguir a própria loja e nenhum seguimento é criado.
 - Os casos foram adicionados à suite de integração na branch. A CI do commit mais recente ainda precisa de confirmação, por isso estes testes não são declarados aprovados.
+
+
+## Fluxos válidos de loja — etapa seguinte
+
+- Acrescentados dois testes HTTP de caminho positivo: um cliente pode registar contacto por WhatsApp com um anúncio pertencente à loja, e um utilizador pode seguir a loja de outra pessoa.
+- Os testes verificam a resposta da rota e os registos efetivamente gravados na base SQLite temporária, incluindo o contador de seguidores. Isso complementa os casos negativos que verificam tentativas indevidas.
+- Os testes foram registados na branch de desenvolvimento; não foram executados localmente nesta sessão e a CI correspondente ainda precisa de confirmação no GitHub Actions.
