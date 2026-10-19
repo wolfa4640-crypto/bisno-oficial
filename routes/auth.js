@@ -56,7 +56,9 @@ const uploadAvatar = multer({
 router.post("/register", (req, res) => {
   const { name, email, phone, password } = req.body;
 
-  if (!name || !email || !phone || !password) {
+  if (typeof name !== "string" || typeof email !== "string" ||
+      typeof phone !== "string" || typeof password !== "string" ||
+      !name.trim() || !email.trim() || !phone.trim() || !password) {
     return res.status(400).json({
       erro: "Preenche todos os campos."
     });
@@ -163,7 +165,8 @@ router.post("/register", (req, res) => {
 router.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (typeof email !== "string" || typeof password !== "string" ||
+      !email.trim() || !password) {
     return res.status(400).json({
       erro: "Introduz o e-mail e a palavra-passe."
     });
