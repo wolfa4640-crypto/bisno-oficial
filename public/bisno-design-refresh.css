@@ -90,3 +90,39 @@ footer .credito-criador strong{color:#a9edc5}
 }
 @media(max-width:380px){.bisno-banner-anuncios{padding:17px 12px}.bisno-banner-botao{max-width:100px;font-size:10px}.bisno-banner-anuncios h2{font-size:21px}#lista-produtos.lista-produtos{gap:8px}#lista-produtos .cartao-produto-conteudo{padding:8px}#lista-produtos .cartao-produto p.preco{font-size:15px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* Acessibilidade e estados de interação — revisão visual 2 */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid #2b9b68;
+  outline-offset:3px;
+  box-shadow:0 0 0 5px rgba(43,155,104,.16);
+}
+.bisno-nav a:focus-visible,.bisno-nav a.nav-publish:focus-visible{
+  outline-color:#168052;
+  outline-offset:2px;
+  box-shadow:0 0 0 4px rgba(19,116,72,.14);
+}
+button:disabled,[role="button"][aria-disabled="true"]{
+  cursor:not-allowed;
+  opacity:.58;
+  transform:none!important;
+  box-shadow:none!important;
+}
+#lista-produtos:empty{min-height:80px}
+#lista-produtos[aria-busy="true"]{opacity:.72}
+::selection{background:#bcebd0;color:#123b28}
+@media(hover:hover){
+  .painel,.painel-secundario{transition:border-color .18s ease,box-shadow .18s ease}
+  .painel-secundario:hover{border-color:#d1e3d7}
+}
+@media(max-width:720px){
+  .bisno-nav a{min-height:48px}
+  .bisno-nav a:focus-visible{outline-offset:-2px}
+  input,select,textarea{scroll-margin-bottom:100px}
+}
+@media(forced-colors:active){
+  .bisno-nav a.is-active,.bisno-nav a.nav-publish{
+    border:1px solid ButtonText;
+  }
+  :where(a,button,input,select,textarea):focus-visible{outline:2px solid Highlight}
+}
