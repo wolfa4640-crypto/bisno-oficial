@@ -1289,7 +1289,8 @@ async function carregarProdutos() {
 
 
 
-  lista.innerHTML = "<p>A carregar produtos...</p>";
+  lista.setAttribute("aria-busy", "true");
+  lista.innerHTML = "<p>A carregar produtos...</p>";
 
 
 
