@@ -2811,6 +2811,7 @@ function configurarFormularios() {
     catch (e) { mostrarMensagem(e.message || "Não foi possível reenviar o código.", "erro"); }
   });
   $("#botao-recuperar-password")?.addEventListener("click", () => { if ($("#recuperar-email") && $("#login-email")) $("#recuperar-email").value = $("#login-email").value; mostrarAba("recuperar"); });
+  $("#botao-confirmar-email")?.addEventListener("click", () => { if ($("#verificar-email") && $("#login-email")) $("#verificar-email").value = $("#login-email").value.trim(); mostrarAba("verificar"); });
   $("#botao-cancelar-recuperacao")?.addEventListener("click", () => mostrarAba("login"));
   $("#botao-voltar-login")?.addEventListener("click", () => mostrarAba("login"));
   $("#form-recuperar-password")?.addEventListener("submit", async evento => {
