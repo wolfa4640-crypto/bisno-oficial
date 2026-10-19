@@ -378,3 +378,147 @@ button:disabled,[role="button"][aria-disabled="true"]{
   #lista-produtos .cartao-produto-conteudo{padding:8px}
   #lista-produtos .cartao-produto .imagem-produto{padding:5px}
 }
+
+
+/* REDESIGN DE DESCOBERTA — categorias rápidas e hierarquia de navegação */
+.bisno-categorias-rapidas{
+  margin:28px 0 30px;
+  padding:clamp(18px,2.5vw,28px);
+  border:1px solid #e0e9e3;
+  border-radius:20px;
+  background:linear-gradient(180deg,#fff 0%,#f8fbf9 100%);
+}
+.bisno-categorias-cabecalho{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px;
+}
+.bisno-secao-kicker{
+  display:block;
+  margin-bottom:5px;
+  color:#168052;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.bisno-categorias-cabecalho h2{
+  margin:0;
+  color:#173b29;
+  font-size:clamp(20px,2.5vw,27px);
+  letter-spacing:-.7px;
+  line-height:1.15;
+}
+.bisno-categorias-cabecalho p{
+  max-width:330px;
+  margin:0;
+  color:#69796f;
+  font-size:13px;
+  line-height:1.5;
+}
+.bisno-categorias-lista{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+}
+.bisno-categorias-lista button{
+  display:flex;
+  min-width:0;
+  min-height:82px;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  padding:13px;
+  border:1px solid #e1ebe4;
+  border-radius:14px;
+  background:#fff;
+  color:#294b38;
+  font:inherit;
+  font-size:12px;
+  font-weight:750;
+  text-align:left;
+  cursor:pointer;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;
+}
+.bisno-categorias-lista button span{
+  display:grid;
+  width:31px;
+  height:31px;
+  place-items:center;
+  border-radius:10px;
+  background:#eaf6ee;
+  color:#167547;
+  font-size:19px;
+}
+.bisno-categorias-lista button:hover,
+.bisno-categorias-lista button[aria-pressed="true"]{
+  transform:translateY(-2px);
+  border-color:#82c29b;
+  background:#f1faf4;
+  box-shadow:0 7px 18px rgba(17,88,49,.08);
+}
+.bisno-categorias-lista button:focus-visible{
+  outline:3px solid #48a878;
+  outline-offset:3px;
+}
+#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){
+  display:flex;
+  width:100%;
+  min-height:38px;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  padding:8px 10px;
+  border:1px solid #dce8df;
+  border-radius:10px;
+  background:#fff;
+  color:#315b42;
+  font-size:12px;
+  font-weight:750;
+  cursor:pointer;
+}
+#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link):hover{
+  border-color:#a8cfb6;
+  background:#f4faf6;
+}
+#lista-produtos .cartao-produto button:focus-visible,
+#lista-produtos .cartao-produto a:focus-visible{
+  outline:3px solid #48a878;
+  outline-offset:2px;
+}
+#lista-produtos .cartao-produto .vendedor-resumo-mini img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+#lista-produtos .cartao-produto .vendedor-resumo-mini span{
+  display:grid;
+  width:100%;
+  height:100%;
+  place-items:center;
+  background:#e7f5ec;
+  color:#155c39;
+  font-weight:800;
+}
+@media(max-width:900px){
+  .bisno-categorias-lista{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .bisno-categorias-rapidas{margin:18px 0 22px;padding:15px;border-radius:16px}
+  .bisno-categorias-cabecalho{display:block;margin-bottom:13px}
+  .bisno-categorias-cabecalho p{margin-top:7px;font-size:12px}
+  .bisno-categorias-lista{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .bisno-categorias-lista button{min-height:74px;padding:10px 8px;font-size:11px}
+  .bisno-categorias-lista button span{width:28px;height:28px}
+  .cabecalho-produtos{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:360px){
+  .bisno-categorias-lista{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+  .bisno-categorias-lista button{transition:none}
+}
