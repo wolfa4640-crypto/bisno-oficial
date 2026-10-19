@@ -279,17 +279,17 @@ router.put(
     const nome = String(req.body.name || "").trim();
     const telefone = String(req.body.phone || "").trim();
 
-    if (!nome || !telefone) {
+    if (nome.length < 2 || nome.length > 100) {
       if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       return res.status(400).json({
-        erro: "Preenche o nome e o telefone."
+        erro: "O nome deve ter entre 2 e 100 caracteres."
       });
     }
 
-    if (nome.length > 100 || telefone.length > 30) {
+    if (telefone.length < 7 || telefone.length > 30) {
       if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       return res.status(400).json({
-        erro: "O nome ou telefone é demasiado longo."
+        erro: "O telefone deve ter entre 7 e 30 caracteres."
       });
     }
 
@@ -309,6 +309,20 @@ router.put(
         FROM users
         WHERE id = ?
       `).get(req.session.userId);
+
+      // Após guardar a nova referência, limpar o avatar antigo da pasta própria.
+      // Nunca remover caminhos externos nem ficheiros que não estejam em /uploads/.
+      if (req.file && utilizadorAtual.avatar && utilizadorAtual.avatar.startsWith("/uploads/")) {
+        const avatarAntigo = path.basename(utilizadorAtual.avatar);
+        const caminhoAvatarAntigo = path.join(pastaUploads, avatarAntigo);
+        if (caminhoAvatarAntigo !== req.file.path) {
+          try {
+            if (fs.existsSync(caminhoAvatarAntigo)) fs.unlinkSync(caminhoAvatarAntigo);
+          } catch (erroAvatar) {
+            console.error("Perfil atualizado, mas não foi possível limpar o avatar antigo:", erroAvatar);
+          }
+        }
+      }
 
       res.json({
         mensagem: "Perfil atualizado com sucesso!",
