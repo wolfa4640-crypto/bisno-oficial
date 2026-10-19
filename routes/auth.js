@@ -208,12 +208,13 @@ router.post("/login", (req, res) => {
   }
 
   const utilizador = db.prepare(`
-    SELECT id, name, email, phone, password, avatar
+    SELECT id, name, email, phone, password, avatar, is_blocked
     FROM users
     WHERE email = ?
   `).get(String(email).trim().toLowerCase());
 
   if (utilizador && !utilizador.email_verified) return res.status(403).json({ erro: "Confirma o teu e-mail antes de iniciar sessão." });
+  if (utilizador && utilizador.is_blocked) return res.status(403).json({ erro: "Esta conta foi bloqueada. Contacta o suporte do Bisno." });
 
   if (!utilizador || !bcrypt.compareSync(password, utilizador.password)) {
     return res.status(401).json({
@@ -244,7 +245,8 @@ router.post("/login", (req, res) => {
           name: utilizador.name,
           email: utilizador.email,
           phone: utilizador.phone,
-          avatar: utilizador.avatar
+          avatar: utilizador.avatar,
+          isAdmin: Boolean(process.env.ADMIN_EMAIL && utilizador.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase())
         }
       });
     });
@@ -260,17 +262,17 @@ router.get("/me", (req, res) => {
   }
 
   const utilizador = db.prepare(`
-    SELECT id, name, email, phone, avatar
+    SELECT id, name, email, phone, avatar, is_blocked
     FROM users
     WHERE id = ?
   `).get(req.session.userId);
 
-  if (!utilizador) {
-    return res.status(401).json({
-      erro: "Utilizador não encontrado."
-    });
+  if (!utilizador || utilizador.is_blocked) {
+    req.session.destroy(() => {});
+    return res.status(401).json({ erro: "A conta não existe ou foi bloqueada." });
   }
-
+  delete utilizador.is_blocked;
+  utilizador.isAdmin = Boolean(process.env.ADMIN_EMAIL && utilizador.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase());
   res.json({ utilizador });
 });
 
