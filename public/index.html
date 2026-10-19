@@ -21,7 +21,7 @@
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css">
-  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-social-profile-v10">
+  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-social-profile-v11">
   <script src="/script.js" defer></script>
 </head>
 
@@ -42,8 +42,60 @@
       </div>
 
       <span class="topo-slogan topo-slogan-secundario">O teu mercado, num só lugar</span>
+      <button type="button" id="botao-abrir-pesquisa" class="botao-abrir-pesquisa" aria-label="Abrir pesquisa e filtros" aria-expanded="false" aria-controls="painel-pesquisa" title="Pesquisar"><span aria-hidden="true">⌕</span></button>
     </div>
   </header>
+
+  <div id="painel-pesquisa-overlay" class="painel-pesquisa-overlay" hidden>
+    <div class="painel-pesquisa-cabecalho"><strong>Pesquisar anúncios</strong><button type="button" id="botao-fechar-pesquisa" aria-label="Fechar pesquisa">×</button></div>
+      <div class="filtros-produtos filtros-inicio" id="painel-pesquisa">
+        <label for="filtro-pesquisa">Pesquisar produtos</label>
+        <input
+          id="filtro-pesquisa"
+          type="search"
+          placeholder="O que estás à procura?"
+        >
+
+        <label for="filtro-categoria">Categoria</label>
+        <select id="filtro-categoria">
+          <option value="">Todas as categorias</option>
+          <option value="Telemóveis">Telemóveis</option>
+          <option value="Informática">Informática</option>
+          <option value="Electrodomésticos">Electrodomésticos</option>
+          <option value="Moda">Moda</option>
+          <option value="Veículos">Veículos</option>
+          <option value="Casa e Jardim">Casa e Jardim</option>
+          <option value="Desporto">Desporto</option>
+          <option value="Outros">Outros</option>
+        </select>
+
+        <label for="filtro-cidade">Província ou cidade</label>
+        <input
+          id="filtro-cidade"
+          type="text"
+          placeholder="Ex.: Luanda"
+        >
+
+        <label for="ordenar-produtos">Ordenar por preço</label>
+        <select id="ordenar-produtos">
+          <option value="">Ordem padrão</option>
+          <option value="menor">Menor preço primeiro</option>
+          <option value="maior">Maior preço primeiro</option>
+        </select>
+
+        <label for="filtro-preco">Preço máximo em Kz</label>
+        <input
+          id="filtro-preco"
+          type="number"
+          min="0"
+          placeholder="Sem limite"
+        >
+
+        <button type="button" id="limpar-filtros" class="botao-limpar-filtros">
+          Limpar filtros
+        </button>
+      </div
+  </div>
 
   <nav class="bisno-nav" aria-label="Navegação principal">
     <div class="bisno-nav-inner">
@@ -474,53 +526,7 @@
       </div>
 
       <!-- PESQUISA E FILTROS -->
-      <div class="filtros-produtos filtros-inicio" id="painel-pesquisa">
-        <label for="filtro-pesquisa">Pesquisar produtos</label>
-        <input
-          id="filtro-pesquisa"
-          type="search"
-          placeholder="O que estás à procura?"
-        >
-
-        <label for="filtro-categoria">Categoria</label>
-        <select id="filtro-categoria">
-          <option value="">Todas as categorias</option>
-          <option value="Telemóveis">Telemóveis</option>
-          <option value="Informática">Informática</option>
-          <option value="Electrodomésticos">Electrodomésticos</option>
-          <option value="Moda">Moda</option>
-          <option value="Veículos">Veículos</option>
-          <option value="Casa e Jardim">Casa e Jardim</option>
-          <option value="Desporto">Desporto</option>
-          <option value="Outros">Outros</option>
-        </select>
-
-        <label for="filtro-cidade">Província ou cidade</label>
-        <input
-          id="filtro-cidade"
-          type="text"
-          placeholder="Ex.: Luanda"
-        >
-
-        <label for="ordenar-produtos">Ordenar por preço</label>
-        <select id="ordenar-produtos">
-          <option value="">Ordem padrão</option>
-          <option value="menor">Menor preço primeiro</option>
-          <option value="maior">Maior preço primeiro</option>
-        </select>
-
-        <label for="filtro-preco">Preço máximo em Kz</label>
-        <input
-          id="filtro-preco"
-          type="number"
-          min="0"
-          placeholder="Sem limite"
-        >
-
-        <button type="button" id="limpar-filtros" class="botao-limpar-filtros">
-          Limpar filtros
-        </button>
-      </div>
+      <!-- A pesquisa foi movida para o botão de lupa no cabeçalho. -->>
 
       <!-- RESULTADO DA PESQUISA -->
       <p id="resultado-contagem" class="resultado-contagem" aria-live="polite"></p>
