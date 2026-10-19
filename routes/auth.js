@@ -93,7 +93,7 @@ router.post("/register", async (req, res) => {
   }
   const nome = name.trim(), emailNormalizado = email.trim().toLowerCase(), telefone = phone.trim(), palavraPasse = password;
   if (nome.length < 2 || nome.length > 100) return res.status(400).json({ erro: "O nome deve ter entre 2 e 100 caracteres." });
-  if (emailNormalizado.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(emailNormalizado)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
+  if (emailNormalizado.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
   if (telefone.length < 7 || telefone.length > 30) return res.status(400).json({ erro: "Introduz um telefone válido." });
   if (palavraPasse.length < 8 || Buffer.byteLength(palavraPasse, "utf8") > 72) return res.status(400).json({ erro: "A palavra-passe deve ter entre 8 caracteres e 72 bytes." });
   try {
@@ -126,7 +126,7 @@ router.post("/register", async (req, res) => {
 router.post("/verify-email", (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
   const codigo = String(req.body.code || "").trim();
-  if (!email || !/^\\d{6}$/.test(codigo)) return res.status(400).json({ erro: "Introduz o e-mail e o código de 6 dígitos." });
+  if (!email || !/^\d{6}$/.test(codigo)) return res.status(400).json({ erro: "Introduz o e-mail e o código de 6 dígitos." });
   const user = db.prepare("SELECT id, name, email, phone, avatar, email_verified FROM users WHERE email = ?").get(email);
   if (!user) return res.status(400).json({ erro: "Código inválido ou expirado. Pede um novo código." });
   if (user.email_verified) return res.json({ mensagem: "E-mail já confirmado. Podes iniciar sessão." });
@@ -140,7 +140,7 @@ router.post("/verify-email", (req, res) => {
 // Reenviar código de confirmação
 router.post("/resend-verification", async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
   const user = db.prepare("SELECT id, email_verified FROM users WHERE email = ?").get(email);
   if (!user) return res.json({ mensagem: "Se a conta existir, enviaremos um novo código." });
   if (user.email_verified) return res.json({ mensagem: "Este e-mail já está confirmado. Podes iniciar sessão." });
@@ -160,14 +160,14 @@ router.post("/resend-verification", async (req, res) => {
 // Pedir recuperação de palavra-passe
 router.post("/forgot-password", async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
   const user = db.prepare("SELECT id, email_verified FROM users WHERE email = ?").get(email);
   const mensagem = "Se existir uma conta confirmada com esse e-mail, enviaremos instruções de recuperação.";
   if (!user || !user.email_verified) return res.json({ mensagem });
   try {
     const token = crypto.randomBytes(32).toString("hex");
     guardarToken(user.id, "reset_password", token, 30);
-    const baseUrl = (process.env.APP_URL || "https://bisno-oficial.onrender.com").replace(/\\/$/, "");
+    const baseUrl = (process.env.APP_URL || "https://bisno-oficial.onrender.com").replace(/\/$/, "");
     const link = baseUrl + "/?reset=" + encodeURIComponent(token) + "&email=" + encodeURIComponent(email);
     await enviarEmail(email, "Recuperar palavra-passe — Bisno",
       "Para definir uma nova palavra-passe, abre este link (válido por 30 minutos): " + link,
@@ -213,7 +213,9 @@ router.post("/login", (req, res) => {
     WHERE email = ?
   `).get(String(email).trim().toLowerCase());
 
-  if (utilizador && !utilizador.email_verified) return res.status(403).json({ erro: "Confirma o teu e-mail antes de iniciar sessão." });\n\n  if (!utilizador || !bcrypt.compareSync(password, utilizador.password)) {
+  if (utilizador && !utilizador.email_verified) return res.status(403).json({ erro: "Confirma o teu e-mail antes de iniciar sessão." });
+
+  if (!utilizador || !bcrypt.compareSync(password, utilizador.password)) {
     return res.status(401).json({
       erro: "E-mail ou palavra-passe incorretos."
     });
