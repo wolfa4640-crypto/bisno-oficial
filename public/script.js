@@ -532,6 +532,9 @@ function configurarNavegacao() {
       } else if (page === "publish") {
         if (utilizadorAtual) abrirPagina("area-publicar");
         else { mostrarAba("registo"); abrirPagina("area-autenticacao"); }
+      } else if (page === "listings") {
+        if (utilizadorAtual) { abrirPagina("area-meus-anuncios"); carregarMeusAnuncios(); }
+        else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
       } else if (page === "profile") {
         if (utilizadorAtual) abrirPagina("area-conta");
         else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
