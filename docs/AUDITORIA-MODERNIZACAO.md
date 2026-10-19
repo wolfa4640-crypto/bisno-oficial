@@ -4,7 +4,7 @@
 
 O Bisno é um marketplace para Angola, com preços em Kz, anúncios, perfis, mensagens, notificações e lojas. O comprador e o vendedor combinam diretamente pagamento e entrega; a aplicação não deve introduzir pagamentos internos.
 
-Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1. A branch principal e o serviço publicado não foram alterados por merge ou deploy. As mudanças descritas abaixo foram registadas no ramo de desenvolvimento. A execução observada do CI passou em Node.js 20 e 22; a validação funcional no ambiente de execução continua pendente.
+Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1. A branch principal e o serviço publicado não foram alterados por merge ou deploy. As mudanças descritas abaixo foram registadas no ramo de desenvolvimento. A execução anterior passou em Node.js 20 e 22. Após ajustar o workflow para Node.js 22, a nova execução também concluiu com sucesso; a validação funcional no ambiente de execução continua pendente.
 
 ## Alterações já registadas nesta branch
 
@@ -20,7 +20,7 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 
 ## Riscos e tarefas ainda por validar
 
-1. **CI e testes:** o workflow anterior concluiu com sucesso em Node.js 20 e 22, mas foi ajustado para Node.js 22 por compatibilidade declarada de `better-sqlite3`; continuam necessários testes de integração e ponta a ponta, pois a suite atual cobre apenas parte do comportamento.
+1. **CI e testes:** o workflow atualizado para Node.js 22 concluiu com sucesso. Continuam necessários testes de integração e ponta a ponta, pois a suite atual cobre apenas parte do comportamento.
 2. **Render e persistência:** verificar no painel do serviço se há disco persistente e configurar `DATA_DIR` e `UPLOADS_DIR` para caminhos no disco montado. A existência dessas variáveis no código não confirma a configuração do serviço.
 3. **Backup e restauração:** documentar e testar cópia e recuperação da base SQLite e dos uploads antes de qualquer migração ou publicação.
 4. **Autorização:** executar testes de integração para garantir que nenhum utilizador consegue ler ou modificar recursos privados de outro utilizador.
@@ -32,7 +32,7 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 
 ## Critérios mínimos antes de produção
 
-- [x] CI anterior concluída em Node.js 20 e 22; workflow atual usa Node.js 22 e aguarda nova execução.
+- [x] CI atual concluída com sucesso em Node.js 22 (execução nº 10).
 - [ ] Registo, login, sessão, logout e validação de entradas testados.
 - [ ] Autorização e propriedade de anúncios, conversas, mensagens e lojas testadas.
 - [ ] Uploads válidos e inválidos testados.
