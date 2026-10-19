@@ -1837,10 +1837,12 @@ body.bisno-requer-login:not(.bisno-autenticado) .container {
 .bisno-card-interest { left: 12px !important; right: 12px !important; bottom: 12px !important; width: calc(100% - 24px) !important; max-width: none !important; }
 .bisno-interest-icon { display:inline-flex !important; align-items:center; justify-content:center; width:27px; height:27px; flex:0 0 27px; border-radius:9px; background:rgba(255,255,255,.16); }
 .bisno-interest-icon svg { display:block; width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-.bisno-interest-label { flex:0 1 auto; color:#fff !important; font-weight:800 !important; }
-.bisno-interest-count { min-width:28px !important; min-height:28px !important; padding:0 8px !important; background:#fff !important; color:#176b45 !important; border-radius:999px !important; font-variant-numeric:tabular-nums; }
-.bisno-card-interest:hover,.bisno-interest-detail:hover { background:linear-gradient(135deg,#105538,#176b45) !important; transform:translateY(-2px) !important; box-shadow:0 8px 18px rgba(23,107,69,.28) !important; }
-.bisno-card-interest.interesse-ativo,.bisno-interest-detail.interesse-ativo { background:linear-gradient(135deg,#124b83,#1764a7) !important; border-color:#124b83 !important; }
+.bisno-interest-label { display:none !important; }
+.bisno-interest-count { display:inline-flex !important; align-items:center !important; justify-content:center !important; min-width:28px !important; min-height:28px !important; padding:0 8px !important; background:rgba(255,255,255,.96) !important; color:#145b3b !important; border-radius:999px !important; font-variant-numeric:tabular-nums; font-weight:800 !important; }
+.bisno-card-interest:hover,.bisno-interest-detail:hover { background:linear-gradient(135deg,#124d33,#176b45) !important; transform:translateY(-2px) !important; box-shadow:0 8px 18px rgba(20,91,59,.28) !important; }
+.bisno-card-interest.interesse-ativo,.bisno-interest-detail.interesse-ativo { background:linear-gradient(135deg,#72d69a,#a4edbd) !important; border-color:#55bd81 !important; color:#104c30 !important; box-shadow:0 5px 16px rgba(85,189,129,.30) !important; }
+.bisno-card-interest.interesse-ativo .bisno-interest-count,.bisno-interest-detail.interesse-ativo .bisno-interest-count { background:#145b3b !important; color:#fff !important; }
+.bisno-card-interest.interesse-ativo .bisno-interest-icon,.bisno-interest-detail.interesse-ativo .bisno-interest-icon { background:rgba(20,91,59,.13) !important; }
 .bisno-card-interest.interesse-ativo .bisno-interest-icon,.bisno-interest-detail.interesse-ativo .bisno-interest-icon { background:rgba(255,255,255,.22); }
 .bisno-card-interest:active,.bisno-interest-detail:active { transform:scale(.98) !important; }
 @media(max-width:600px) {
