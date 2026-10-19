@@ -1772,7 +1772,7 @@ body.bisno-requer-login #botao-abrir-pesquisa,
 body.bisno-requer-login #painel-pesquisa-overlay,
 body.bisno-requer-login .topo-slogan,
 body.bisno-requer-login main > hr,
-body.bisno-requer-login body > footer {
+body.bisno-requer-login > footer {
   display: none !important;
 }
 body.bisno-requer-login #area-autenticacao {
