@@ -4,6 +4,9 @@ const db = require("../data/database");
 const exigirLogin = require("../middleware/auth");
 const router = express.Router();
 
+// Lojas e respetivos dados só são acessíveis a utilizadores autenticados.
+router.use(exigirLogin);
+
 // Durable store and analytics tables live in the same SQLite database as users/products.
 db.exec(`
  CREATE TABLE IF NOT EXISTS stores (
