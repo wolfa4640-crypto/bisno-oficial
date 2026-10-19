@@ -878,3 +878,111 @@ button:disabled,[role="button"][aria-disabled="true"]{
     min-height:30px;padding:5px 3px;font-size:9px
   }
 }
+
+
+/* HOTFIX DEFINITIVO — força a grelha do catálogo acima de estilos antigos */
+#area-produtos #lista-produtos.lista-produtos{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  align-items:stretch !important;
+  gap:14px !important;
+  width:100% !important;
+}
+#area-produtos #lista-produtos.lista-produtos > .cartao-produto{
+  display:flex !important;
+  flex-direction:column !important;
+  align-self:stretch !important;
+  min-width:0 !important;
+  height:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border:1px solid #e3e9e3 !important;
+  border-radius:12px !important;
+  background:#fff !important;
+  box-shadow:0 3px 12px rgba(20,50,30,.07) !important;
+}
+#area-produtos #lista-produtos.lista-produtos > .cartao-produto > .imagem-produto{
+  display:block !important;
+  flex:none !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  aspect-ratio:1 / 1 !important;
+  object-fit:cover !important;
+  padding:0 !important;
+  border:0 !important;
+}
+#area-produtos #lista-produtos .cartao-produto > .cartao-produto-conteudo{
+  display:flex !important;
+  flex:1 1 auto !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap:6px !important;
+  min-width:0 !important;
+  padding:10px !important;
+}
+#area-produtos #lista-produtos .cartao-produto .cartao-produto-conteudo h3{
+  display:-webkit-box !important;
+  -webkit-box-orient:vertical !important;
+  -webkit-line-clamp:2 !important;
+  overflow:hidden !important;
+  min-height:0 !important;
+  margin:0 !important;
+  font-size:14px !important;
+  line-height:1.3 !important;
+}
+#area-produtos #lista-produtos .cartao-produto .cartao-produto-conteudo p{
+  min-width:0 !important;
+  margin:0 !important;
+  font-size:11px !important;
+  line-height:1.35 !important;
+  overflow-wrap:anywhere !important;
+}
+#area-produtos #lista-produtos .cartao-produto .cartao-produto-conteudo p.preco{
+  order:-1 !important;
+  color:#12623b !important;
+  font-size:19px !important;
+  font-weight:850 !important;
+  line-height:1.15 !important;
+}
+#area-produtos #lista-produtos .cartao-produto .vendedor-resumo-mini{
+  margin:3px 0 0 !important;
+  padding-top:6px !important;
+  gap:6px !important;
+  border-top:1px solid #edf0eb !important;
+}
+#area-produtos #lista-produtos .cartao-produto .botao-interesse,
+#area-produtos #lista-produtos .cartao-produto .botao-mensagem,
+#area-produtos #lista-produtos .cartao-produto .botao-whatsapp,
+#area-produtos #lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){
+  width:100% !important;
+  min-height:31px !important;
+  margin:0 !important;
+  padding:6px 7px !important;
+  font-size:10px !important;
+  line-height:1.2 !important;
+  border-radius:6px !important;
+  box-sizing:border-box !important;
+}
+@media(min-width:1450px){
+  #area-produtos #lista-produtos.lista-produtos{grid-template-columns:repeat(5,minmax(0,1fr)) !important;gap:16px !important}
+}
+@media(min-width:721px) and (max-width:1099px){
+  #area-produtos #lista-produtos.lista-produtos{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:12px !important}
+}
+@media(max-width:720px){
+  #area-produtos #lista-produtos.lista-produtos{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important}
+  #area-produtos #lista-produtos.lista-produtos > .cartao-produto{border-radius:9px !important}
+  #area-produtos #lista-produtos .cartao-produto > .imagem-produto{aspect-ratio:1 / 1 !important;height:auto !important;min-height:0 !important;max-height:none !important}
+  #area-produtos #lista-produtos .cartao-produto > .cartao-produto-conteudo{gap:5px !important;padding:8px !important}
+  #area-produtos #lista-produtos .cartao-produto .cartao-produto-conteudo h3{font-size:12px !important;line-height:1.3 !important}
+  #area-produtos #lista-produtos .cartao-produto .cartao-produto-conteudo p{font-size:9px !important}
+  #area-produtos #lista-produtos .cartao-produto .cartao-produto-conteudo p.preco{font-size:15px !important}
+  #area-produtos #lista-produtos .cartao-produto .botao-interesse,
+  #area-produtos #lista-produtos .cartao-produto .botao-mensagem,
+  #area-produtos #lista-produtos .cartao-produto .botao-whatsapp,
+  #area-produtos #lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){min-height:29px !important;padding:5px 3px !important;font-size:9px !important}
+}
