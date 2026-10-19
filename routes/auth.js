@@ -62,15 +62,41 @@ router.post("/register", (req, res) => {
     });
   }
 
-  if (String(password).length < 8) {
+  const nomeNormalizado = String(name).trim();
+  const emailNormalizado = String(email).trim().toLowerCase();
+  const telefoneNormalizado = String(phone).trim();
+  const palavraPasse = String(password);
+
+  if (nomeNormalizado.length < 2 || nomeNormalizado.length > 100) {
+    return res.status(400).json({
+      erro: "O nome deve ter entre 2 e 100 caracteres."
+    });
+  }
+
+  if (emailNormalizado.length > 254) {
+    return res.status(400).json({
+      erro: "O e-mail é demasiado longo."
+    });
+  }
+
+  if (telefoneNormalizado.length < 7 || telefoneNormalizado.length > 30) {
+    return res.status(400).json({
+      erro: "Introduz um telefone válido com até 30 caracteres."
+    });
+  }
+
+  if (palavraPasse.length < 8) {
     return res.status(400).json({
       erro: "A palavra-passe deve ter pelo menos 8 caracteres."
     });
   }
 
-  const nomeNormalizado = String(name).trim();
-  const emailNormalizado = String(email).trim().toLowerCase();
-  const telefoneNormalizado = String(phone).trim();
+  // bcrypt usa no máximo 72 bytes; rejeitar valores maiores evita ambiguidades.
+  if (Buffer.byteLength(palavraPasse, "utf8") > 72) {
+    return res.status(400).json({
+      erro: "A palavra-passe não pode ultrapassar 72 bytes."
+    });
+  }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
     return res.status(400).json({
@@ -79,7 +105,7 @@ router.post("/register", (req, res) => {
   }
 
   try {
-    const hash = bcrypt.hashSync(password, 12);
+    const hash = bcrypt.hashSync(palavraPasse, 12);
 
     const resultado = db.prepare(`
       INSERT INTO users (name, email, phone, password)
