@@ -135,3 +135,8 @@ Não declarar a modernização concluída até os testes e a verificação no se
 
 - A lista de anúncios expõe `aria-busy="true"` durante o pedido à API e regressa a `false` após sucesso ou erro.
 - Isto ajuda tecnologias de apoio a perceber quando a região do catálogo está a ser atualizada; não substitui testes com leitores de ecrã e continua pendente a validação de ponta a ponta.
+
+## Pesquisa por localização do anúncio — etapa seguinte
+
+- O filtro de província/cidade também procura no bairro, para que a pessoa consiga encontrar anúncios ao pesquisar uma localização mais específica.
+- A alteração reutiliza os campos já existentes nos anúncios e não altera dados, permissões ou a API. Ainda é necessário validar o comportamento com dados reais e executar a CI.
