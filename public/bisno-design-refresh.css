@@ -1818,3 +1818,32 @@ body.bisno-requer-login:not(.bisno-autenticado) #area-autenticacao {
 body.bisno-requer-login:not(.bisno-autenticado) .container {
   min-height: 55vh;
 }
+
+
+/* Interesse: ícone vetorial moderno, alinhamento central e feedback tátil/visual */
+.bisno-card-interest,
+.bisno-interest-detail {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #176b45, #218b5b) !important;
+  border: 1px solid #176b45 !important;
+  box-shadow: 0 5px 14px rgba(23,107,69,.20) !important;
+}
+.bisno-card-interest { left: 12px !important; right: 12px !important; bottom: 12px !important; width: calc(100% - 24px) !important; max-width: none !important; }
+.bisno-interest-icon { display:inline-flex !important; align-items:center; justify-content:center; width:27px; height:27px; flex:0 0 27px; border-radius:9px; background:rgba(255,255,255,.16); }
+.bisno-interest-icon svg { display:block; width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.bisno-interest-label { flex:0 1 auto; color:#fff !important; font-weight:800 !important; }
+.bisno-interest-count { min-width:28px !important; min-height:28px !important; padding:0 8px !important; background:#fff !important; color:#176b45 !important; border-radius:999px !important; font-variant-numeric:tabular-nums; }
+.bisno-card-interest:hover,.bisno-interest-detail:hover { background:linear-gradient(135deg,#105538,#176b45) !important; transform:translateY(-2px) !important; box-shadow:0 8px 18px rgba(23,107,69,.28) !important; }
+.bisno-card-interest.interesse-ativo,.bisno-interest-detail.interesse-ativo { background:linear-gradient(135deg,#124b83,#1764a7) !important; border-color:#124b83 !important; }
+.bisno-card-interest.interesse-ativo .bisno-interest-icon,.bisno-interest-detail.interesse-ativo .bisno-interest-icon { background:rgba(255,255,255,.22); }
+.bisno-card-interest:active,.bisno-interest-detail:active { transform:scale(.98) !important; }
+@media(max-width:600px) {
+ .bisno-card-interest { left:9px !important; right:9px !important; bottom:9px !important; width:calc(100% - 18px) !important; min-height:44px !important; padding:8px 10px !important; gap:8px !important; }
+ .bisno-interest-detail { width:100% !important; min-height:50px !important; }
+}
