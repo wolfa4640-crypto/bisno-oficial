@@ -106,3 +106,11 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - As rotas de registo e login agora rejeitam campos que não sejam texto, além de verificar campos vazios. Isso evita passar objetos/arrays para normalização de credenciais e para a comparação de hash da palavra-passe.
 - Acrescentados testes HTTP para verificar que uma palavra-passe enviada como objeto no login recebe erro 400 e que um nome enviado como array no registo não cria uma conta.
 - Os testes usam o servidor e a base de dados temporária da suite de integração. Ainda é necessário confirmar o resultado da execução na CI para o commit mais recente; não declarar aprovação antes disso.
+
+
+## Redesign visual responsivo — etapa seguinte
+
+- Criada a camada `public/bisno-design-refresh.css` para uniformizar a identidade visual, melhorar hierarquia tipográfica, espaçamento, filtros, cartões de anúncios, botões, painéis e painel de loja.
+- A nova folha é carregada depois de `bisno-pro.css`, preservando o CSS existente e as funções da aplicação; os ajustes incluem grelha de anúncios para computador/tablet e cartões compactos para telemóvel, navegação inferior móvel e respeito por preferência de movimento reduzido.
+- O HTML foi atualizado apenas para carregar a nova camada de design. Não foram alteradas rotas, dados nem regras de negócio.
+- A revisão visual no navegador e a verificação em dispositivos reais continuam pendentes; a CI não confirma a qualidade visual.
