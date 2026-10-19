@@ -2949,6 +2949,53 @@ function configurarLoja() {
 }
 
 
+
+async function carregarPainelAdmin() {
+  const statsEl = $("#admin-estatisticas"), usersEl = $("#admin-utilizadores"), productsEl = $("#admin-anuncios");
+  if (!statsEl || !usersEl || !productsEl) return;
+  statsEl.textContent = "A carregar estatísticas…";
+  try {
+    const data = await pedidoAPI("/api/admin/overview");
+    const st = data.stats || {};
+    statsEl.innerHTML = [
+      ["Utilizadores", st.users], ["Contas bloqueadas", st.blockedUsers],
+      ["Anúncios", st.products], ["Anúncios ativos", st.activeProducts], ["Anúncios bloqueados", st.blockedProducts]
+    ].map(([label, value]) => '<article><span>' + escaparHTML(label) + '</span><strong>' + numero(value) + '</strong></article>').join("");
+    usersEl.innerHTML = (data.users || []).map(u => '<article class="admin-item"><div><strong>' + escaparHTML(u.name) + '</strong><p>' + escaparHTML(u.email) + ' · ID ' + u.id + ' · ' + (u.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-user-block="' + u.id + '" data-blocked="' + (u.is_blocked ? 'false' : 'true') + '">' + (u.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-user-delete="' + u.id + '">Eliminar</button></div></article>').join("") || "<p>Sem utilizadores.</p>";
+    productsEl.innerHTML = (data.products || []).map(p => '<article class="admin-item"><div><strong>' + escaparHTML(p.name) + '</strong><p>ID ' + p.id + ' · ' + escaparHTML(p.seller_name || p.seller_email || 'Vendedor') + ' · ' + escaparHTML(p.city || '') + ' · ' + (p.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-product-block="' + p.id + '" data-blocked="' + (p.is_blocked ? 'false' : 'true') + '">' + (p.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-product-delete="' + p.id + '">Eliminar</button></div></article>').join("") || "<p>Sem anúncios.</p>";
+  } catch (erro) {
+    statsEl.textContent = erro.message || "Não foi possível carregar o painel.";
+    usersEl.innerHTML = ""; productsEl.innerHTML = "";
+  }
+}
+function configurarPainelAdmin() {
+  const abrir = $("#admin-abrir"), painel = $("#area-admin");
+  if (!abrir || !painel) return;
+  abrir.hidden = !Boolean(utilizadorAtual?.isAdmin);
+  abrir.addEventListener("click", () => { painel.hidden = !painel.hidden; if (!painel.hidden) carregarPainelAdmin(); });
+  $("#admin-atualizar")?.addEventListener("click", carregarPainelAdmin);
+  painel.addEventListener("click", async evento => {
+    const b = evento.target.closest("button");
+    if (!b) return;
+    try {
+      if (b.dataset.adminUserBlock) {
+        await pedidoAPI("/api/admin/users/" + b.dataset.adminUserBlock + "/block", { method: "PATCH", body: { blocked: b.dataset.blocked === "true" } });
+      } else if (b.dataset.adminUserDelete) {
+        if (!confirm("Eliminar definitivamente este utilizador?")) return;
+        await pedidoAPI("/api/admin/users/" + b.dataset.adminUserDelete, { method: "DELETE" });
+      } else if (b.dataset.adminProductBlock) {
+        await pedidoAPI("/api/admin/products/" + b.dataset.adminProductBlock + "/block", { method: "PATCH", body: { blocked: b.dataset.blocked === "true" } });
+      } else if (b.dataset.adminProductDelete) {
+        if (!confirm("Eliminar definitivamente este anúncio?")) return;
+        await pedidoAPI("/api/admin/products/" + b.dataset.adminProductDelete, { method: "DELETE" });
+      } else return;
+      mostrarMensagem("Ação administrativa concluída.", "sucesso");
+      await carregarPainelAdmin();
+      await carregarProdutos();
+    } catch (erro) { mostrarMensagem(erro.message || "Não foi possível concluir a ação.", "erro"); }
+  });
+}
+
 function configurarBannerDestaque() {
   const banner = document.getElementById("bisno-banner-destaque");
   const titulo = document.getElementById("bisno-banner-titulo");
