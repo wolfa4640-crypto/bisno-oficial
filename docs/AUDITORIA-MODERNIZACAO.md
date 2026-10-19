@@ -130,3 +130,8 @@ Não declarar a modernização concluída até os testes e a verificação no se
 
 - Refinados alinhamento, espaçamento e badges de contagem da navegação para acomodar os seis destinos em ecrãs estreitos sem perder o tamanho mínimo de toque definido anteriormente.
 - O ajuste aplica-se sobretudo a larguras até 420 px; a validação final requer inspeção visual em ecrãs reais, incluindo dispositivos com largura próxima de 320 px.
+
+## Estado de carregamento acessível do catálogo — etapa seguinte
+
+- A lista de anúncios expõe `aria-busy="true"` durante o pedido à API e regressa a `false` após sucesso ou erro.
+- Isto ajuda tecnologias de apoio a perceber quando a região do catálogo está a ser atualizada; não substitui testes com leitores de ecrã e continua pendente a validação de ponta a ponta.
