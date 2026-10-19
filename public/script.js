@@ -1685,7 +1685,7 @@ async function abrirPerfilPublico(id) {
         <h2 class="nome-perfil-publico">${escaparHTML(nome)}</h2>
         <p class="meta-perfil-publico">${produtos.length} ${produtos.length === 1 ? "anúncio publicado" : "anúncios publicados"} no Bisno</p>
         <div class="bisno-social-stats"><span><strong>${produtos.length.toLocaleString("pt-AO")}</strong> anúncios</span><span><strong id="seguidores-vendedor-publico">…</strong> seguidores</span></div>
-        <div class="bisno-perfil-acoes"><button type="button" class="bisno-seguir-btn" data-seguir-vendedor="${escaparHTML(id)}" hidden>＋ Seguir</button><button type="button" class="bisno-mensagem-perfil" data-iniciar-conversa-perfil="${escaparHTML(id)}">Enviar mensagem</button></div>
+        <div class="bisno-perfil-acoes"><button type="button" class="bisno-seguir-btn" data-seguir-vendedor="${escaparHTML(id)}" hidden>＋ Seguir</button></div>
       </div>
       <h3>Anúncios deste vendedor</h3>
 
@@ -2905,7 +2905,19 @@ function configurarFormularios() {
 
   $("#form-registo")?.addEventListener("submit", registarUtilizador);
 
-  $("#form-perfil")?.addEventListener("submit", guardarPerfil);
+  $("#perfil-foto-input")?.addEventListener("change", evento => {
+    const ficheiro = evento.currentTarget.files?.[0];
+    if (!ficheiro) return;
+    if (ficheiro.size > LIMITE_IMAGEM) {
+      mostrarMensagem("A fotografia do perfil não pode ultrapassar 5 MB.", "erro");
+      evento.currentTarget.value = "";
+      return;
+    }
+    const foto = $("#foto-perfil"), fallback = $("#perfil-sem-foto");
+    if (foto) { foto.src = URL.createObjectURL(ficheiro); foto.hidden = false; }
+    if (fallback) fallback.hidden = true;
+  });
+  $("#form-perfil")?.addEventListener("submit", guardarPerfil);
 
   $("#form-anuncio")?.addEventListener("submit", publicarAnuncio);
 
