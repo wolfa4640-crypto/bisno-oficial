@@ -701,111 +701,53 @@ function mostrarConta() {
 
 
 async function verificarSessao() {
-
-  try {
-
-    const dados = await pedidoAPI("/api/auth/me");
-
-
-
-    utilizadorAtual =
-
-      dados.utilizador ??
-
-      dados.usuario ??
-
-      dados.user ??
-
-      (dados.id ? dados : null);
-
-
-
-    mostrarConta();
-
-  } catch (erro) {
-
-    if (erro.status !== 401 && erro.status !== 404) {
-
-      console.warn("Não foi possível verificar a sessão:", erro.message);
-
-    }
-
-
-
-    utilizadorAtual = null;
-
-    mostrarConta();
-
-  }
-
+  try {
+    const dados = await pedidoAPI("/api/auth/me");
+    utilizadorAtual = dados.utilizador ?? dados.usuario ?? dados.user ?? (dados.id ? dados : null);
+    document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
+    document.body.classList.toggle("bisno-sem-sessao", !utilizadorAtual);
+    mostrarConta();
+    return utilizadorAtual;
+  } catch (erro) {
+    if (erro.status !== 401 && erro.status !== 404) console.warn("Não foi possível verificar a sessão:", erro.message);
+    utilizadorAtual = null;
+    document.body.classList.remove("bisno-autenticado");
+    document.body.classList.add("bisno-sem-sessao");
+    mostrarConta();
+    return null;
+  }
 }
-
 
 
 async function registarUtilizador(evento) {
-
-  evento.preventDefault();
-
-  esconderMensagem();
-
-
-
-  const formulario = evento.currentTarget;
-
-  const dados = Object.fromEntries(new FormData(formulario).entries());
-
-
-
-  try {
-
-    const resposta = await pedidoAPI("/api/auth/register", {
-
-      method: "POST",
-
-      body: dados
-
-    });
-
-
-
-    utilizadorAtual =
-
-      resposta.utilizador ??
-
-      resposta.usuario ??
-
-      resposta.user ??
-
-      null;
-
-
-
-    if (!utilizadorAtual) {
-
-      await verificarSessao();
-
-    } else {
-
-      mostrarConta();
-
-    }
-  
-
-    formulario.reset();
-
-    mostrarMensagem("Conta criada com sucesso!", "sucesso");
-    // Após criar a conta, mostrar a página inicial do Bisno.
+  evento.preventDefault();
+  const formulario = evento.currentTarget;
+  if (!formulario || formulario.dataset.enviando === "true") return;
+  esconderMensagem();
+  const botao = formulario.querySelector('button[type="submit"]');
+  formulario.dataset.enviando = "true";
+  if (botao) { botao.disabled = true; botao.dataset.textoOriginal = botao.textContent; botao.textContent = "A criar conta…"; }
+  try {
+    const dados = Object.fromEntries(new FormData(formulario).entries());
+    const resposta = await pedidoAPI("/api/auth/register", { method: "POST", body: dados });
+    utilizadorAtual = resposta?.utilizador ?? resposta?.usuario ?? resposta?.user ?? null;
+    const sessao = await pedidoAPI("/api/auth/me");
+    utilizadorAtual = sessao?.utilizador ?? sessao?.usuario ?? sessao?.user ?? (sessao?.id ? sessao : null);
+    if (!utilizadorAtual) throw new Error("A conta foi criada, mas a sessão não foi confirmada. Entra com os teus dados.");
+    document.body.classList.add("bisno-autenticado");
+    document.body.classList.remove("bisno-sem-sessao");
+    mostrarConta();
     abrirPagina("area-produtos");
+    mostrarMensagem("Conta criada com sucesso!", "sucesso");
+    formulario.reset();
     carregarProdutos().catch(console.error);
-
-  } catch (erro) {
-
-    mostrarMensagem(erro.message || "Não foi possível criar a conta.", "erro");
-
-  }
-
+  } catch (erro) {
+    mostrarMensagem(erro.message || "Não foi possível criar a conta. Os teus dados continuam no formulário.", "erro");
+  } finally {
+    delete formulario.dataset.enviando;
+    if (botao) { botao.disabled = false; botao.textContent = botao.dataset.textoOriginal || "Criar conta"; delete botao.dataset.textoOriginal; }
+  }
 }
-
 
 
 async function entrarUtilizador(evento) {
@@ -956,14 +898,12 @@ async function guardarPerfil(evento) {
 
 
 async function terminarSessao() {
-  try {
-    await pedidoAPI("/api/auth/logout", { method: "POST" });
-  } catch (erro) {
-    console.warn("Erro ao terminar sessão no servidor:", erro.message);
-  }
-
+  try { await pedidoAPI("/api/auth/logout", { method: "POST" }); }
+  catch (erro) { console.warn("Erro ao terminar sessão no servidor:", erro.message); }
   fecharChat();
   utilizadorAtual = null;
+  document.body.classList.remove("bisno-autenticado");
+  document.body.classList.add("bisno-sem-sessao");
   mostrarConta();
   mostrarAba("login");
   abrirPagina("area-autenticacao");
