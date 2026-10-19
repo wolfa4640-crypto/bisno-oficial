@@ -16,6 +16,7 @@ const db = require("../data/database");
 require("../routes/stores");
 const social = require("../routes/social");
 const products = require("../routes/products");
+const stores = require("../routes/stores");
 const app = express();
 app.use(express.json());
 app.use(session({ secret: "test-secret-only-not-production", resave: false, saveUninitialized: false }));
@@ -25,6 +26,7 @@ app.post("/test-session/:id", (req, res) => {
 });
 app.use("/", social);
 app.use("/products", products);
+app.use("/stores", stores);
 
 let server;
 let base;
@@ -32,6 +34,7 @@ let buyer;
 let seller;
 let outsider;
 let productId;
+let storeId;
 let conversation;
 let notification;
 
@@ -46,6 +49,7 @@ test.before(async () => {
     INSERT INTO products(user_id,name,description,price,condition,category,city,neighborhood)
     VALUES(?,?,?,?,?,?,?,?)
   `).run(seller,"Test item","Test description",1000,"Novo","Tecnologia","Luanda","Maianga").lastInsertRowid);
+  storeId = Number(db.prepare("INSERT INTO stores(user_id,name,description,city) VALUES(?,?,?,?)").run(seller,"Seller Store","Private test store","Luanda").lastInsertRowid);
   conversation = Number(db.prepare(
     "INSERT INTO conversations(product_id,buyer_id,seller_id) VALUES(?,?,?)"
   ).run(productId,buyer,seller).lastInsertRowid);
@@ -121,6 +125,20 @@ test("outsider cannot delete another seller's listing", async () => {
   });
   assert.equal(res.status, 404);
   assert.ok(db.prepare("SELECT id FROM products WHERE id=? AND user_id=?").get(productId, seller));
+});
+
+
+test("outsider cannot edit another seller's store through their own store endpoint", async () => {
+  const cookie = await sessionFor(outsider);
+  const res = await fetch(base + "/stores/mine", {
+    method: "PATCH",
+    headers: { cookie, "content-type": "application/json" },
+    body: JSON.stringify({ name: "Hijacked store", description: "Changed by outsider" })
+  });
+  assert.equal(res.status, 404);
+  const store = db.prepare("SELECT name,description FROM stores WHERE id=? AND user_id=?").get(storeId, seller);
+  assert.equal(store.name, "Seller Store");
+  assert.equal(store.description, "Private test store");
 });
 
 test.after(async () => {
