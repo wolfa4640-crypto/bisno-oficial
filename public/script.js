@@ -3055,60 +3055,89 @@ document.addEventListener("DOMContentLoaded", async () => {
 let eventoInstalacaoBisno = null;
 function configurarInstalacaoBisno() {
   const botao = document.getElementById("botao-baixar-aplicativo");
+  const estado = document.getElementById("estado-download-aplicativo");
   if (!botao || botao.dataset.configurado === "true") return;
   botao.dataset.configurado = "true";
 
-  const mostrarEstado = (texto) => {
-    const estado = document.getElementById("estado-download-aplicativo");
+  const mostrarEstado = texto => {
     if (estado) estado.textContent = texto;
   };
+
+  const jaInstalado = () =>
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
 
   window.addEventListener("beforeinstallprompt", evento => {
     evento.preventDefault();
     eventoInstalacaoBisno = evento;
-    botao.hidden = false;
-    botao.textContent = "⬇ Baixar aplicativo";
-    botao.setAttribute("aria-label", "Instalar o aplicativo Bisno");
+    botao.disabled = false;
+    botao.textContent = "⬇ Instalar aplicativo Bisno";
+    mostrarEstado("O Bisno está pronto para ser instalado neste dispositivo.");
   });
 
   window.addEventListener("appinstalled", () => {
     eventoInstalacaoBisno = null;
-    botao.textContent = "✓ Aplicativo instalado";
+    botao.textContent = "✓ Bisno instalado";
     botao.disabled = true;
-    mostrarEstado("O Bisno foi instalado no teu dispositivo.");
+    mostrarEstado("O Bisno foi instalado com sucesso.");
   });
 
   botao.addEventListener("click", async () => {
-    if (eventoInstalacaoBisno) {
-      eventoInstalacaoBisno.prompt();
-      const escolha = await eventoInstalacaoBisno.userChoice;
-      eventoInstalacaoBisno = null;
-      if (escolha?.outcome === "accepted") {
-        mostrarEstado("Instalação iniciada. Segue as instruções do teu dispositivo.");
-      } else {
-        mostrarEstado("A instalação foi cancelada. Podes tentar novamente.");
+    if (jaInstalado()) {
+      mostrarEstado("O Bisno já está instalado neste dispositivo.");
+      return;
+    }
+
+    // Primeiro tenta o diálogo nativo de instalação do navegador.
+    let promptDisponivel = eventoInstalacaoBisno;
+    if (!promptDisponivel && typeof window.bisnoInstalarAplicacao === "function") {
+      try {
+        const instalado = await window.bisnoInstalarAplicacao();
+        if (instalado) {
+          mostrarEstado("Instalação aceite. Segue as instruções do teu dispositivo.");
+          return;
+        }
+      } catch (erro) {
+        console.warn("Não foi possível abrir a instalação nativa:", erro);
+      }
+      promptDisponivel = eventoInstalacaoBisno;
+    }
+
+    if (promptDisponivel) {
+      try {
+        promptDisponivel.prompt();
+        const escolha = await promptDisponivel.userChoice;
+        eventoInstalacaoBisno = null;
+        if (escolha?.outcome === "accepted") {
+          mostrarEstado("Pedido de instalação aceite. Aguarda a conclusão no navegador.");
+        } else {
+          mostrarEstado("A instalação foi cancelada. Toca novamente para tentar.");
+        }
+      } catch (erro) {
+        console.warn("Falha ao iniciar a instalação:", erro);
+        mostrarEstado("Não foi possível abrir a instalação agora. Usa o menu do navegador.");
       }
       return;
     }
 
-    const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-    if (standalone) {
-      mostrarEstado("O Bisno já está instalado neste dispositivo.");
-    } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
-      mostrarEstado("No Safari, toca em Partilhar e depois em “Adicionar ao ecrã principal”.");
+    // Quando o navegador não oferece o diálogo automático, explica o caminho real.
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+      mostrarEstado("No Safari: toca em Partilhar e escolhe “Adicionar ao ecrã principal”.");
+    } else if (/android/i.test(navigator.userAgent)) {
+      mostrarEstado("No Chrome: abre o menu ⋮ e toca em “Instalar aplicação” ou “Adicionar ao ecrã principal”.");
     } else {
-      mostrarEstado("Para instalar, abre o menu ⋮ do navegador e escolhe “Instalar aplicação” ou “Adicionar ao ecrã principal”.");
+      mostrarEstado("No Chrome ou Edge: abre o menu do navegador e escolhe “Instalar Bisno” ou “Instalar aplicação”.");
     }
   });
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(erro => {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(erro => {
         console.warn("Não foi possível preparar a instalação offline:", erro.message);
+        mostrarEstado("A instalação depende de uma ligação segura e de um navegador compatível.");
       });
     }, { once: true });
   }
 }
-
 
 document.addEventListener("DOMContentLoaded", configurarInstalacaoBisno);
