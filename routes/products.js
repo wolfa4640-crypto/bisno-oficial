@@ -13,6 +13,9 @@ const exigirLogin = require("../middleware/auth");
 
 const router = express.Router();
 
+// O catálogo e os anúncios não podem ser consultados sem autenticação.
+router.use(exigirLogin);
+
 const pastaUploads = process.env.UPLOADS_DIR || path.join(__dirname, "..", "uploads");
 
 fs.mkdirSync(pastaUploads, { recursive: true });
