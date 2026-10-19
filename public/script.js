@@ -3072,6 +3072,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   configurarFormularios();
 
+  configurarLoja();
+
   configurarFiltros();
 
   configurarEventosProdutos();
