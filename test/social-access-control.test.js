@@ -15,6 +15,7 @@ const session = require("express-session");
 const db = require("../data/database");
 require("../routes/stores");
 const social = require("../routes/social");
+const products = require("../routes/products");
 const app = express();
 app.use(express.json());
 app.use(session({ secret: "test-secret-only-not-production", resave: false, saveUninitialized: false }));
@@ -23,12 +24,14 @@ app.post("/test-session/:id", (req, res) => {
   res.json({ ok: true });
 });
 app.use("/", social);
+app.use("/products", products);
 
 let server;
 let base;
 let buyer;
 let seller;
 let outsider;
+let productId;
 let conversation;
 let notification;
 
@@ -39,13 +42,13 @@ test.before(async () => {
   buyer = addUser("Buyer", "buyer@test.local", "900000001");
   seller = addUser("Seller", "seller@test.local", "900000002");
   outsider = addUser("Outsider", "outsider@test.local", "900000003");
-  const product = Number(db.prepare(`
+  productId = Number(db.prepare(`
     INSERT INTO products(user_id,name,description,price,condition,category,city,neighborhood)
     VALUES(?,?,?,?,?,?,?,?)
   `).run(seller,"Test item","Test description",1000,"Novo","Tecnologia","Luanda","Maianga").lastInsertRowid);
   conversation = Number(db.prepare(
     "INSERT INTO conversations(product_id,buyer_id,seller_id) VALUES(?,?,?)"
-  ).run(product,buyer,seller).lastInsertRowid);
+  ).run(productId,buyer,seller).lastInsertRowid);
   db.prepare("INSERT INTO messages(conversation_id,sender_id,body) VALUES(?,?,?)")
     .run(conversation,seller,"Private message");
   notification = Number(db.prepare(
@@ -107,6 +110,17 @@ test("a legitimate conversation participant can still read messages", async () =
   const data = await res.json();
   assert.equal(data.mensagens.length, 1);
   assert.equal(data.mensagens[0].body, "Private message");
+});
+
+
+test("outsider cannot delete another seller's listing", async () => {
+  const cookie = await sessionFor(outsider);
+  const res = await fetch(base + "/products/" + productId, {
+    method: "DELETE",
+    headers: { cookie }
+  });
+  assert.equal(res.status, 404);
+  assert.ok(db.prepare("SELECT id FROM products WHERE id=? AND user_id=?").get(productId, seller));
 });
 
 test.after(async () => {
