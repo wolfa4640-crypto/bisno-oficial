@@ -4,7 +4,7 @@
 
 O Bisno é um marketplace para Angola, com preços em Kz, anúncios, perfis, mensagens, notificações e lojas. O comprador e o vendedor combinam diretamente pagamento e entrega; a aplicação não deve introduzir pagamentos internos.
 
-Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1. A branch principal e o serviço publicado não foram alterados por merge ou deploy. As mudanças descritas abaixo foram registadas no ramo de desenvolvimento. A execução anterior passou em Node.js 20 e 22. Após ajustar o workflow para Node.js 22, a nova execução também concluiu com sucesso; a validação funcional no ambiente de execução continua pendente.
+Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1. A branch principal e o serviço publicado não foram alterados por merge ou deploy. As mudanças descritas abaixo foram registadas no ramo de desenvolvimento. A execução anterior passou em Node.js 20 e 22. O workflow foi ajustado para Node.js 22. A execução correspondente aos commits mais recentes precisa ser confirmada no GitHub Actions; a validação funcional no ambiente de execução continua pendente.
 
 ## Alterações já registadas nesta branch
 
@@ -15,12 +15,12 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 - Anúncios: validação de campos, estado, WhatsApp e preço como inteiro seguro em Kz; o campo de preço da interface foi alinhado para aceitar inteiros.
 - Lojas: validação do utilizador e do nome ao ativar, nome mínimo ao editar e confirmação de que o anúncio associado a um contacto pertence à loja indicada.
 - Interesses: inserção idempotente em transação para reduzir erros e notificações duplicadas em pedidos concorrentes.
-- Testes: testes unitários do verificador de assinatura de imagens; script `npm test` executa verificações de sintaxe e a suite Node.js.
+- Testes: testes unitários do verificador de assinatura de imagens e do middleware de autenticação; testes HTTP de integração para isolamento de conversas, mensagens e notificações entre utilizadores. O script `npm test` executa verificações de sintaxe e a suite Node.js.
 - CI: workflow GitHub Actions configurado para executar `npm test` em Node.js 22, compatível com a versão de `better-sqlite3`, em pushes e pull requests.
 
 ## Riscos e tarefas ainda por validar
 
-1. **CI e testes:** o workflow atualizado para Node.js 22 concluiu com sucesso. Continuam necessários testes de integração e ponta a ponta, pois a suite atual cobre apenas parte do comportamento.
+1. **CI e testes:** confirmar o resultado do workflow para o commit mais recente. Foram adicionados testes HTTP de integração de controlo de acesso social, mas a execução automática ainda precisa de ser observada.
 2. **Render e persistência:** verificar no painel do serviço se há disco persistente e configurar `DATA_DIR` e `UPLOADS_DIR` para caminhos no disco montado. A existência dessas variáveis no código não confirma a configuração do serviço.
 3. **Backup e restauração:** documentar e testar cópia e recuperação da base SQLite e dos uploads antes de qualquer migração ou publicação.
 4. **Autorização:** executar testes de integração para garantir que nenhum utilizador consegue ler ou modificar recursos privados de outro utilizador.
@@ -51,7 +51,7 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - Revistos os fluxos de autenticação, anúncios, conversas/mensagens, notificações e lojas nesta branch.
 - As rotas de mensagens verificam que o utilizador pertence à conversa antes de ler ou enviar mensagens; a marcação de notificações como lidas filtra pelo destinatário; a eliminação de anúncios filtra pelo proprietário.
 - A rota de contactos de loja verifica a propriedade do anúncio associado. O seguimento da própria loja é recusado e a unicidade da base de dados impede seguimentos duplicados.
-- Estes pontos são observações estáticas do código, não substituem testes HTTP de integração. Ainda é necessário executar testes com duas contas e tentar acessos cruzados para confirmar o comportamento real.
+- Foram acrescentados testes HTTP de integração com uma base SQLite temporária e sessões separadas para dois utilizadores e um terceiro utilizador não participante. Os testes cobrem leitura/envio de mensagens, marcação de notificações e listagem de notificações. A execução CI mais recente ainda precisa de ser confirmada.
 - Não foi alterado o lockfile: não há um ambiente npm local disponível nesta sessão para regenerar e validar o ficheiro completo com integridades reais. Não é seguro reconstruí-lo manualmente.
 
 ## Testes acrescentados nesta etapa
@@ -66,3 +66,4 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - A edição do perfil agora exige nome com 2–100 caracteres e telefone com 7–30 caracteres, alinhando estes limites aos usados no registo.
 - Ao substituir um avatar, o sistema tenta apagar o ficheiro anterior apenas depois de guardar a atualização e apenas quando a referência antiga aponta para `/uploads/`. Falha na limpeza é registada sem reverter o perfil atualizado.
 - O teste unitário do middleware e a verificação de sintaxe foram adicionados em commits anteriores. A execução de CI após as últimas alterações ainda precisa de confirmação no GitHub Actions.
+\n\n## Testes HTTP de controlo de acesso — etapa seguinte\n\n- Criado `test/social-access-control.test.js`, que monta as rotas sociais num servidor HTTP de teste e utiliza uma base SQLite temporária isolada. Não utiliza a base de dados do serviço publicado.\n- Os casos verificam que um utilizador externo não consegue ler mensagens, enviar mensagens para conversa alheia ou marcar notificações de outra pessoa como lidas; também verificam que a listagem de notificações é filtrada por utilizador e que um participante legítimo mantém acesso.\n- O login de teste é exclusivo ao servidor montado dentro do ficheiro de testes e usa `express-session`; não foi acrescentada nenhuma rota de teste ao servidor de produção.\n- Estes testes foram adicionados ao ramo, mas não são declarados aprovados até o GitHub Actions concluir a execução do commit mais recente.\n
