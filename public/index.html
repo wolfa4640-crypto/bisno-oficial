@@ -27,7 +27,7 @@
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css">
-  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-login-required-v27">
+  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-auth-ui-v30">
   <style>
 
     .bisno-download-app { display:flex; flex-direction:column; align-items:center; gap:8px; margin:18px auto; }
@@ -72,7 +72,7 @@
       cursor: wait;
     }
   </style>
-  <script src="/script.js?v=20261019-email-security-v29" defer></script>
+  <script src="/script.js?v=20261019-auth-ui-v30" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -204,6 +204,7 @@
 
         <button type="submit">Entrar</button>
         <button type="button" id="botao-recuperar-password" class="botao-secundario">Esqueci-me da palavra-passe</button>
+        <button type="button" id="botao-confirmar-email" class="botao-secundario">Confirmar / reenviar código de e-mail</button>
       </form>
 
       <form id="form-registo" hidden>
