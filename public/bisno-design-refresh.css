@@ -522,3 +522,31 @@ button:disabled,[role="button"][aria-disabled="true"]{
 @media(prefers-reduced-motion:reduce){
   .bisno-categorias-lista button{transition:none}
 }
+
+/* Loja interativa: painel, métricas e feedback de estado */
+.bisno-nav-inner a{transition:background .18s ease,color .18s ease,transform .18s ease}
+.bisno-nav-inner a:hover{transform:translateY(-2px)}
+.bisno-nav-inner a[data-bisno-page="store"] .nav-icon{color:#137448}
+.bisno-store-panel{animation:bisno-enter .28s ease both}
+.bisno-store-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+.bisno-store-heading h2{margin:.2rem 0 .4rem}
+.bisno-store-status{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:#fff4df;color:#80510b;font-size:.82rem;font-weight:750;white-space:nowrap}
+.bisno-store-status.ativa{background:#e4f7eb;color:#176b45}
+.bisno-store-status.ativa:before{content:"";width:7px;height:7px;border-radius:50%;background:#1d9b57}
+.bisno-store-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.bisno-store-stats article{padding:18px;border:1px solid var(--borda,#dfe8e2);border-radius:16px;background:linear-gradient(145deg,#fff,#f6fbf7);display:flex;flex-direction:column;gap:4px;min-width:0}
+.bisno-store-stats article span{color:#64746a;font-size:.88rem;font-weight:650}
+.bisno-store-stats article strong{font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.2;color:#137448}
+.bisno-store-stats article small{font-size:.75rem;color:#68776e}
+.bisno-store-preview{display:flex;align-items:center;gap:15px;padding:18px;margin:20px 0;border:1px solid #d8e9de;border-radius:18px;background:radial-gradient(circle at top right,#e4f6eb,transparent 45%),#fff}
+.bisno-store-avatar{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border-radius:18px;background:linear-gradient(135deg,#137448,#0b4d32);color:white;font-size:1.7rem;font-weight:850;box-shadow:0 8px 18px #13744830}
+.bisno-store-preview h3,.bisno-store-preview p{margin:0 0 4px}
+.bisno-store-preview small{color:#68776e}
+.bisno-store-form{max-width:720px;padding:22px;border:1px solid var(--borda,#dfe8e2);border-radius:18px;background:#fff}
+.bisno-store-form h3{margin-top:0}
+.bisno-store-form p{color:#68776e;margin-bottom:18px}
+.bisno-store-form input,.bisno-store-form textarea{width:100%;margin:6px 0 14px}
+.bisno-store-form button{min-height:46px}
+#botao-atualizar-loja{margin-top:16px}
+@keyframes bisno-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){.bisno-store-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.bisno-store-stats article{padding:14px}.bisno-store-heading{flex-direction:column}.bisno-store-form{padding:16px}.bisno-store-preview{align-items:flex-start}}
