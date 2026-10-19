@@ -417,6 +417,8 @@ function nomeUtilizadorAtual() {
 
 
 function abrirPagina(id) {
+  // O conteúdo do Bisno só fica disponível depois de iniciar sessão ou criar uma conta.
+  if (!utilizadorAtual && id !== "area-autenticacao") id = "area-autenticacao";
   const hero = document.querySelector(".hero-bisno");
   const auth = document.getElementById("area-autenticacao");
   const account = document.getElementById("area-conta");
@@ -3133,6 +3135,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await verificarSessao();
   if (utilizadorAtual) abrirPagina("area-produtos");
+  else abrirPagina("area-autenticacao");
   atualizarAreasSociais();
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 
