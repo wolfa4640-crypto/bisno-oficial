@@ -137,6 +137,7 @@ router.get("/", (req, res) => {
         users.avatar AS seller_avatar
       FROM products
       LEFT JOIN users ON users.id = products.user_id
+      WHERE products.is_blocked = 0
       ORDER BY products.id DESC
       LIMIT 100
     `).all();
@@ -231,7 +232,7 @@ router.get("/seller/:id", (req, res) => {
         image,
         created_at
       FROM products
-      WHERE user_id = ?
+      WHERE user_id = ? AND is_blocked = 0
       ORDER BY id DESC
       LIMIT 100
     `).all(vendedorId);
