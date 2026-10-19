@@ -1366,7 +1366,9 @@ function aplicarFiltros() {
 
     if (categoria && produto.category !== categoria) return false;
 
-    if (cidade && !(produto.city ?? "").toLowerCase().includes(cidade)) return false;
+    const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" ").toLowerCase();
+
+    if (cidade && !localizacao.includes(cidade)) return false;
 
 
 
