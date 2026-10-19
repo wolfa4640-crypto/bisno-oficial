@@ -29,6 +29,13 @@
   <link rel="stylesheet" href="/bisno-pro.css">
   <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-login-gate-v25">
   <style>
+
+    .bisno-download-app { display:flex; flex-direction:column; align-items:center; gap:8px; margin:18px auto; }
+    .bisno-botao-download-app { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:46px; padding:12px 22px; border:0; border-radius:999px; background:#176b45; color:#fff; font-weight:800; cursor:pointer; box-shadow:0 6px 18px rgba(23,107,69,.22); }
+    .bisno-botao-download-app:hover { background:#105737; }
+    .bisno-botao-download-app:focus-visible { outline:3px solid #e7b84b; outline-offset:3px; }
+    .bisno-download-app-estado { max-width:520px; margin:0; font-size:.9rem; text-align:center; }
+
     /* Bloqueio inicial: não mostrar o catálogo nem a navegação antes de confirmar a sessão. */
     body.bisno-requer-login .bisno-nav,
     body.bisno-requer-login #botao-abrir-pesquisa,
@@ -590,6 +597,10 @@
   <footer>
     <p>Bisno — o teu marketplace em Angola.</p>
     <p>Compra e vende. Combina diretamente com o vendedor.</p>
+    <div class="bisno-download-app">
+      <button type="button" id="botao-baixar-aplicativo" class="bisno-botao-download-app">⬇ Baixar aplicativo</button>
+      <p id="estado-download-aplicativo" class="bisno-download-app-estado" role="status" aria-live="polite">Instala o Bisno no teu dispositivo para aceder mais facilmente.</p>
+    </div>
     <p class="credito-criador">Criado por <strong>Adam Wolf</strong> (Alpha Wolf)</p>
   </footer>
 </body>
