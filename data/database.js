@@ -79,3 +79,11 @@ db.exec(`
 console.log("Base de dados preparada!");
 
 module.exports = db;
+
+// Moderação e administração do marketplace.
+const colUsersAdmin = db.pragma("table_info(users)");
+if (!colUsersAdmin.some(c => c.name === "is_blocked")) db.exec("ALTER TABLE users ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0");
+if (!colUsersAdmin.some(c => c.name === "blocked_reason")) db.exec("ALTER TABLE users ADD COLUMN blocked_reason TEXT");
+const colProductsAdmin = db.pragma("table_info(products)");
+if (!colProductsAdmin.some(c => c.name === "is_blocked")) db.exec("ALTER TABLE products ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0");
+if (!colProductsAdmin.some(c => c.name === "blocked_reason")) db.exec("ALTER TABLE products ADD COLUMN blocked_reason TEXT");
