@@ -2823,6 +2823,36 @@ function configurarEventosProdutos() {
 
 
 
+function configurarPainelPesquisa() {
+  const overlay = $("#painel-pesquisa-overlay");
+  const abrir = $("#botao-abrir-pesquisa");
+  const fechar = $("#botao-fechar-pesquisa");
+  const campo = $("#filtro-pesquisa");
+  if (!overlay || !abrir || abrir.dataset.configurado === "true") return;
+  abrir.dataset.configurado = "true";
+  function mostrar() {
+    overlay.hidden = false;
+    abrir.setAttribute("aria-expanded", "true");
+    window.setTimeout(() => campo?.focus(), 40);
+  }
+  function ocultar() {
+    overlay.hidden = true;
+    abrir.setAttribute("aria-expanded", "false");
+    abrir.focus();
+  }
+  abrir.addEventListener("click", () => overlay.hidden ? mostrar() : ocultar());
+  fechar?.addEventListener("click", ocultar);
+  document.addEventListener("keydown", evento => {
+    if (evento.key === "Escape" && !overlay.hidden) ocultar();
+  });
+  document.addEventListener("click", evento => {
+    if (!overlay.hidden && !overlay.contains(evento.target) && !abrir.contains(evento.target)) {
+      overlay.hidden = true;
+      abrir.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
 function configurarFiltros() {
 
   const limparFiltros = () => {
@@ -3078,6 +3108,7 @@ function configurarBannerDestaque() {
 document.addEventListener("DOMContentLoaded", async () => {
 
   configurarBannerDestaque();
+  configurarPainelPesquisa();
 
   configurarNavegacao();
 
