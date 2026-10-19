@@ -434,4 +434,59 @@ router.post("/conversations/:id/messages", exigirLogin, (req, res) => {
   res.status(201).json({ mensagem: transacao() });
 });
 
+
+
+// Seguimento de vendedores: dados persistentes, sem alterar contas ou anúncios existentes.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS user_follows (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    follower_id INTEGER NOT NULL,
+    followed_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(follower_id, followed_id),
+    CHECK(follower_id <> followed_id),
+    FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (followed_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_user_follows_followed ON user_follows(followed_id);
+  CREATE INDEX IF NOT EXISTS idx_user_follows_follower ON user_follows(follower_id);
+`);
+
+// Contagem pública de seguidores e estado do seguimento para o utilizador autenticado.
+router.get("/users/:id/follow", (req, res) => {
+  const targetId = Number(req.params.id);
+  if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
+  const target = db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
+  if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
+  const followers = db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  const following = req.session?.userId
+    ? Boolean(db.prepare("SELECT 1 FROM user_follows WHERE follower_id = ? AND followed_id = ?").get(req.session.userId, targetId))
+    : false;
+  res.json({ followers, following, isSelf: Number(req.session?.userId) === targetId });
+});
+
+// Seguir vendedor.
+router.post("/users/:id/follow", exigirLogin, (req, res) => {
+  const targetId = Number(req.params.id);
+  const followerId = Number(req.session.userId);
+  if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
+  if (targetId === followerId) return res.status(400).json({ erro: "Não podes seguir o teu próprio perfil." });
+  const target = db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
+  if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
+  db.prepare("INSERT OR IGNORE INTO user_follows (follower_id, followed_id) VALUES (?, ?)").run(followerId, targetId);
+  const followers = db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  res.json({ following: true, followers });
+});
+
+// Deixar de seguir vendedor.
+router.delete("/users/:id/follow", exigirLogin, (req, res) => {
+  const targetId = Number(req.params.id);
+  const followerId = Number(req.session.userId);
+  if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
+  db.prepare("DELETE FROM user_follows WHERE follower_id = ? AND followed_id = ?").run(followerId, targetId);
+  const followers = db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  res.json({ following: false, followers });
+});
+
+
 module.exports = router;
