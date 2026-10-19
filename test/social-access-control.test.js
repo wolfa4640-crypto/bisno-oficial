@@ -141,6 +141,35 @@ test("outsider cannot edit another seller's store through their own store endpoi
   assert.equal(store.description, "Private test store");
 });
 
+
+test("store contact rejects a product owned by a different seller", async () => {
+  const cookie = await sessionFor(buyer);
+  const res = await fetch(base + "/stores/" + storeId + "/contact", {
+    method: "POST",
+    headers: { cookie, "content-type": "application/json" },
+    body: JSON.stringify({ channel: "whatsapp", productId: 99999999 })
+  });
+  assert.equal(res.status, 400);
+  assert.equal(
+    db.prepare("SELECT COUNT(*) AS n FROM store_contacts WHERE store_id=?").get(storeId).n,
+    0
+  );
+});
+
+test("store owner cannot follow their own store", async () => {
+  const cookie = await sessionFor(seller);
+  const res = await fetch(base + "/stores/" + storeId + "/follow", {
+    method: "POST",
+    headers: { cookie, "content-type": "application/json" },
+    body: "{}"
+  });
+  assert.equal(res.status, 400);
+  assert.equal(
+    db.prepare("SELECT COUNT(*) AS n FROM store_follows WHERE store_id=?").get(storeId).n,
+    0
+  );
+});
+
 test.after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
   db.close();
