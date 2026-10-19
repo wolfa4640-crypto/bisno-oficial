@@ -8,7 +8,7 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 
 ## Alterações já registadas nesta branch
 
-- Sessão: regeneração do identificador depois do registo e do login; destruição da sessão e limpeza do cookie `bisno.sid) ao sair.
+- Sessão: regeneração do identificador depois do registo e do login; destruição da sessão e limpeza do cookie `bisno.sid` ao sair.
 - Configuração: segredo de sessão obrigatório com pelo menos 32 caracteres; diretórios de dados e uploads podem ser definidos por `DATA_DIR` e `UPLOADS_DIR`; versão do endpoint de saúde vem de `package.json`.
 - Uploads: nomes aleatórios, limite de tamanho, tipos permitidos JPEG/PNG/WEBP e verificação das assinaturas do ficheiro para avatar e fotografia de anúncio; limpeza de ficheiros quando certas operações falham.
 - Registo: limites e validação básica de nome, e-mail, telefone e palavra-passe; hash bcrypt com custo 12 e limite de 72 bytes.
@@ -16,11 +16,11 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 - Lojas: validação do utilizador e do nome ao ativar, nome mínimo ao editar e confirmação de que o anúncio associado a um contacto pertence à loja indicada.
 - Interesses: inserção idempotente em transação para reduzir erros e notificações duplicadas em pedidos concorrentes.
 - Testes: testes unitários do verificador de assinatura de imagens; script `npm test` executa verificações de sintaxe e a suite Node.js.
-- CI: workflow GitHub Actions adicionado para executar `npm test` em Node.js 20 e 22 em pushes e pull requests.
+- CI: workflow GitHub Actions configurado para executar `npm test` em Node.js 22, compatível com a versão de `better-sqlite3`, em pushes e pull requests.
 
 ## Riscos e tarefas ainda por validar
 
-1. **CI e testes:** o workflow observado concluiu com sucesso em Node.js 20 e 22; continuam necessários testes de integração e ponta a ponta, pois a suite atual cobre apenas parte do comportamento.
+1. **CI e testes:** o workflow anterior concluiu com sucesso em Node.js 20 e 22, mas foi ajustado para Node.js 22 por compatibilidade declarada de `better-sqlite3`; continuam necessários testes de integração e ponta a ponta, pois a suite atual cobre apenas parte do comportamento.
 2. **Render e persistência:** verificar no painel do serviço se há disco persistente e configurar `DATA_DIR` e `UPLOADS_DIR` para caminhos no disco montado. A existência dessas variáveis no código não confirma a configuração do serviço.
 3. **Backup e restauração:** documentar e testar cópia e recuperação da base SQLite e dos uploads antes de qualquer migração ou publicação.
 4. **Autorização:** executar testes de integração para garantir que nenhum utilizador consegue ler ou modificar recursos privados de outro utilizador.
@@ -32,7 +32,7 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 
 ## Critérios mínimos antes de produção
 
-- [x] CI concluída com sucesso em Node.js 20 e 22 para a execução observada.
+- [x] CI anterior concluída em Node.js 20 e 22; workflow atual usa Node.js 22 e aguarda nova execução.
 - [ ] Registo, login, sessão, logout e validação de entradas testados.
 - [ ] Autorização e propriedade de anúncios, conversas, mensagens e lojas testadas.
 - [ ] Uploads válidos e inválidos testados.
