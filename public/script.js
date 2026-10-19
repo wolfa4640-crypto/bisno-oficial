@@ -2882,6 +2882,19 @@ function configurarFiltros() {
     $("#filtro-pesquisa")?.focus();
   };
 
+  document.querySelectorAll("[data-categoria-rapida]").forEach(botao => {
+    botao.addEventListener("click", () => {
+      const campoCategoria = $("#filtro-categoria");
+      if (!campoCategoria) return;
+      campoCategoria.value = botao.dataset.categoriaRapida || "";
+      aplicarFiltros();
+      $("#painel-pesquisa")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.querySelectorAll("[data-categoria-rapida]").forEach(item => {
+        item.setAttribute("aria-pressed", String(item === botao));
+      });
+    });
+  });
+
   $("#limpar-filtros")?.addEventListener("click", limparFiltros);
   $("#lista-produtos")?.addEventListener("click", evento => {
     if (evento.target.closest("[data-limpar-filtros]")) limparFiltros();
