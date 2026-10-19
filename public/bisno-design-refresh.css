@@ -1161,3 +1161,68 @@ button:disabled,[role="button"][aria-disabled="true"]{
   #lista-produtos .bisno-card-interest { top: 6px !important; left: 6px !important; width: 30px !important; height: 30px !important; }
   #lista-produtos .bisno-views-badge { padding: 5px 6px !important; font-size: 10px !important; }
 }
+
+
+/* BISNO — botão WhatsApp: CTA claro, acessível e com identidade visual */
+#lista-produtos .bisno-card-actions .botao-whatsapp,
+#area-produtos #lista-produtos .bisno-card-actions .botao-whatsapp,
+.bisno-product-card .botao-whatsapp,
+a.botao-whatsapp,
+button.botao-whatsapp {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  width: 100% !important;
+  min-height: 40px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #159447 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #25d366 0%, #18a94b 100%) !important;
+  color: #fff !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: .1px !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  box-shadow: 0 3px 8px rgb(24 169 75 / 22%), inset 0 1px 0 rgb(255 255 255 / 22%) !important;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease !important;
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+#lista-produtos .bisno-card-actions .botao-whatsapp:hover,
+.bisno-product-card .botao-whatsapp:hover,
+a.botao-whatsapp:hover,
+button.botao-whatsapp:hover {
+  background: linear-gradient(135deg, #20c45c 0%, #128c3d 100%) !important;
+  box-shadow: 0 5px 13px rgb(18 140 61 / 30%) !important;
+  transform: translateY(-1px) !important;
+  filter: saturate(1.05) !important;
+}
+#lista-produtos .bisno-card-actions .botao-whatsapp:active,
+.bisno-product-card .botao-whatsapp:active,
+a.botao-whatsapp:active,
+button.botao-whatsapp:active {
+  transform: translateY(0) scale(.985) !important;
+  box-shadow: 0 2px 5px rgb(18 140 61 / 20%) !important;
+}
+#lista-produtos .bisno-card-actions .botao-whatsapp:focus-visible,
+.bisno-product-card .botao-whatsapp:focus-visible,
+a.botao-whatsapp:focus-visible,
+button.botao-whatsapp:focus-visible {
+  outline: 3px solid rgb(37 211 102 / 35%) !important;
+  outline-offset: 3px !important;
+}
+@media (max-width: 480px) {
+  #lista-produtos .bisno-card-actions .botao-whatsapp,
+  .bisno-product-card .botao-whatsapp,
+  a.botao-whatsapp,
+  button.botao-whatsapp {
+    min-height: 34px !important;
+    padding: 8px 5px !important;
+    gap: 4px !important;
+    border-radius: 8px !important;
+    font-size: 10px !important;
+  }
+}
