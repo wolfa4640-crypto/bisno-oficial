@@ -665,31 +665,26 @@ function atualizarPerfil() {
 
 
 function mostrarConta() {
+  const conta = $("#area-conta");
+  const autenticacao = $("#area-autenticacao");
+  const autenticado = Boolean(utilizadorAtual);
 
-  const conta = $("#area-conta");
+  document.body.classList.toggle("bisno-autenticado", autenticado);
+  document.body.classList.toggle("bisno-requer-login", !autenticado);
+  if (conta) conta.hidden = !autenticado;
+  if (autenticacao) autenticacao.hidden = autenticado;
 
-  const autenticacao = $("#area-autenticacao");
-
-
-
-  if (conta) conta.hidden = !utilizadorAtual;
-
-  if (autenticacao) autenticacao.hidden = Boolean(utilizadorAtual);
-
-
-
-  if (utilizadorAtual) {
-
-    atualizarPerfil();
-
-    atualizarAreasSociais();
-
-    carregarMeusAnuncios().catch(console.error);
-
-  }
-
+  if (autenticado) {
+    atualizarPerfil();
+    atualizarAreasSociais();
+    carregarMeusAnuncios().catch(console.error);
+  } else {
+    const overlay = $("#painel-pesquisa-overlay");
+    if (overlay) overlay.hidden = true;
+    $("#botao-abrir-pesquisa")?.setAttribute("aria-expanded", "false");
+    fecharChat();
+  }
 }
-
 
 
 async function verificarSessao() {
@@ -938,37 +933,21 @@ async function guardarPerfil(evento) {
 
 
 async function terminarSessao() {
+  try {
+    await pedidoAPI("/api/auth/logout", { method: "POST" });
+  } catch (erro) {
+    console.warn("Erro ao terminar sessão no servidor:", erro.message);
+  }
 
-  try {
-
-    await pedidoAPI("/api/auth/logout", {
-
-      method: "POST"
-
-    });
-
-  } catch (erro) {
-
-    console.warn("Erro ao terminar sessão no servidor:", erro.message);
-
-  }
-
-
-
-  fecharChat();
-
-  utilizadorAtual = null;
-
-  mostrarConta();
-
-  mostrarAba("login");
-
-  mostrarMensagem("Terminaste a sessão.", "sucesso");
-
-  carregarProdutos().catch(console.error);
-
+  fecharChat();
+  utilizadorAtual = null;
+  mostrarConta();
+  mostrarAba("login");
+  abrirPagina("area-autenticacao");
+  todosProdutos = [];
+  definirConteudo("#lista-produtos", "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>");
+  mostrarMensagem("Terminaste a sessão.", "sucesso");
 }
-
 
 
 /* =========================================================
