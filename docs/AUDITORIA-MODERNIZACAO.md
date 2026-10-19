@@ -60,3 +60,9 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - O comando `npm run check` agora também valida a sintaxe de `middleware/auth.js`.
 - A execução automática após estes commits ainda não foi confirmada nesta revisão; consultar GitHub Actions antes de considerar os testes aprovados.
 - Estes são testes unitários do middleware, não testes de integração de registo, login, autorização de recursos ou persistência.
+
+## Correções de perfil — etapa seguinte
+
+- A edição do perfil agora exige nome com 2–100 caracteres e telefone com 7–30 caracteres, alinhando estes limites aos usados no registo.
+- Ao substituir um avatar, o sistema tenta apagar o ficheiro anterior apenas depois de guardar a atualização e apenas quando a referência antiga aponta para `/uploads/`. Falha na limpeza é registada sem reverter o perfil atualizado.
+- O teste unitário do middleware e a verificação de sintaxe foram adicionados em commits anteriores. A execução de CI após as últimas alterações ainda precisa de confirmação no GitHub Actions.
