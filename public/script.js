@@ -417,7 +417,8 @@ function nomeUtilizadorAtual() {
 
 
 function abrirPagina(id) {
-  // O conteúdo do Bisno só fica disponível depois de iniciar sessão ou criar uma conta.
+  // Antes da autenticação, mostrar exclusivamente o ecrã de entrada/registo.
+  document.body.classList.toggle("bisno-sem-sessao", !utilizadorAtual);
   if (!utilizadorAtual && id !== "area-autenticacao") id = "area-autenticacao";
   const hero = document.querySelector(".hero-bisno");
   const auth = document.getElementById("area-autenticacao");
