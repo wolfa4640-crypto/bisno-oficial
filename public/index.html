@@ -21,7 +21,19 @@
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css">
-  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-login-flow-fix-v21">
+  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-auth-gate-v22">
+  <style>
+    /* Bloqueio inicial: não mostrar o catálogo nem a navegação antes de confirmar a sessão. */
+    body.bisno-requer-login .bisno-nav,
+    body.bisno-requer-login #botao-abrir-pesquisa,
+    body.bisno-requer-login #area-produtos,
+    body.bisno-requer-login > footer {
+      display: none !important;
+    }
+    body.bisno-requer-login #area-autenticacao {
+      display: block;
+    }
+  </style>
   <script src="/script.js" defer></script>
 </head>
 
