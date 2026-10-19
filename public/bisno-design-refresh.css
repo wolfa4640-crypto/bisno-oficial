@@ -550,3 +550,156 @@ button:disabled,[role="button"][aria-disabled="true"]{
 #botao-atualizar-loja{margin-top:16px}
 @keyframes bisno-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:700px){.bisno-store-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.bisno-store-stats article{padding:14px}.bisno-store-heading{flex-direction:column}.bisno-store-form{padding:16px}.bisno-store-preview{align-items:flex-start}}
+
+
+ 
+/* BISNO MARKET 2026 — nova identidade dos anúncios */
+#lista-produtos.lista-produtos{
+  gap:18px;
+  align-items:stretch;
+}
+#lista-produtos .cartao-produto{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  height:100%;
+  overflow:hidden;
+  border:1px solid #e7e4da;
+  border-radius:12px;
+  background:#fffdf8;
+  box-shadow:0 2px 0 rgba(31,47,35,.03);
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+#lista-produtos .cartao-produto:hover{
+  transform:translateY(-4px);
+  border-color:#c7d8c9;
+  box-shadow:0 14px 28px rgba(30,55,38,.11);
+}
+#lista-produtos .cartao-produto .imagem-produto{
+  display:block;
+  width:100%;
+  aspect-ratio:5/4;
+  height:auto;
+  min-height:0;
+  max-height:none;
+  padding:0;
+  object-fit:cover;
+  border:0;
+  border-bottom:1px solid #ece9df;
+  background:#f0eee6;
+  cursor:pointer;
+}
+#lista-produtos .cartao-produto-conteudo{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  align-items:stretch;
+  gap:9px;
+  padding:15px;
+  min-width:0;
+}
+#lista-produtos .cartao-produto h3{
+  min-height:0;
+  margin:0;
+  color:#202d24;
+  font-size:15px;
+  font-weight:750;
+  line-height:1.35;
+  letter-spacing:-.25px;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+#lista-produtos .cartao-produto p{margin:0;line-height:1.4;overflow-wrap:anywhere}
+#lista-produtos .cartao-produto p.preco{
+  order:-1;
+  color:#12623b;
+  font-size:clamp(19px,1.5vw,24px);
+  font-weight:850;
+  letter-spacing:-.7px;
+  line-height:1.1;
+}
+#lista-produtos .cartao-produto p:nth-of-type(2){
+  align-self:flex-start;
+  margin:0;
+  padding:4px 8px;
+  border-radius:4px;
+  background:#e9f2e8;
+  color:#315b3f;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+#lista-produtos .cartao-produto p:nth-of-type(3){
+  color:#73766c;
+  font-size:11px;
+  font-weight:650;
+}
+#lista-produtos .cartao-produto p:nth-of-type(4){
+  display:flex;
+  gap:5px;
+  min-height:0;
+  color:#60685f;
+  font-size:12px;
+}
+#lista-produtos .cartao-produto p:nth-of-type(4)::before{content:"↗";color:#34754c;font-weight:900}
+#lista-produtos .cartao-produto .vendedor-resumo-mini{
+  order:8;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  margin-top:3px;
+  padding-top:10px;
+  border-top:1px solid #eae9e1;
+}
+#lista-produtos .cartao-produto .avatar-vendedor-clicavel{
+  flex:0 0 28px;
+  width:28px;height:28px;
+  overflow:hidden;
+  border:0;
+  border-radius:50%;
+  padding:0;
+}
+#lista-produtos .cartao-produto .vendedor-resumo-mini img{width:100%;height:100%;object-fit:cover}
+#lista-produtos .cartao-produto .vendedor-resumo-mini span{
+  display:grid;width:100%;height:100%;place-items:center;
+  background:#e2eee3;color:#245b38;font-weight:850
+}
+#lista-produtos .cartao-produto .nome-vendedor-link{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  padding:0;border:0;background:transparent;color:#56675a;text-align:left;font-size:11px;font-weight:700
+}
+#lista-produtos .cartao-produto .botao-interesse,
+#lista-produtos .cartao-produto .botao-mensagem,
+#lista-produtos .cartao-produto .botao-whatsapp,
+#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){
+  display:flex;width:100%;min-height:39px;align-items:center;justify-content:center;
+  margin:0;padding:9px 10px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;text-decoration:none;
+}
+#lista-produtos .cartao-produto .botao-interesse{
+  margin-top:auto;border:1px solid #d7e3d6;background:#f8faf5;color:#315b3f
+}
+#lista-produtos .cartao-produto .botao-interesse[aria-pressed="true"]{background:#e2f1e4;border-color:#8fbd97}
+#lista-produtos .cartao-produto .botao-mensagem{background:#1c5134;color:white;border:1px solid #1c5134}
+#lista-produtos .cartao-produto .botao-whatsapp{background:#f1f7ee;color:#24613b;border:1px solid #d3e4d0}
+#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){
+  border:1px solid #e0e4da;background:transparent;color:#526354
+}
+#lista-produtos .cartao-produto button:hover,#lista-produtos .cartao-produto a.botao-whatsapp:hover{filter:brightness(.97)}
+@media(min-width:1100px){#lista-produtos.lista-produtos{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}}
+@media(min-width:1450px){#lista-produtos.lista-produtos{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}}
+@media(max-width:720px){
+  #lista-produtos.lista-produtos{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #lista-produtos .cartao-produto{border-radius:9px}
+  #lista-produtos .cartao-produto .imagem-produto{aspect-ratio:1/1}
+  #lista-produtos .cartao-produto-conteudo{padding:9px;gap:7px}
+  #lista-produtos .cartao-produto h3{font-size:12px;line-height:1.35}
+  #lista-produtos .cartao-produto p.preco{font-size:16px}
+  #lista-produtos .cartao-produto p:nth-of-type(2),#lista-produtos .cartao-produto p:nth-of-type(3),#lista-produtos .cartao-produto p:nth-of-type(4){font-size:10px}
+  #lista-produtos .cartao-produto .botao-interesse,#lista-produtos .cartao-produto .botao-mensagem,#lista-produtos .cartao-produto .botao-whatsapp,#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){min-height:35px;padding:7px 5px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){#lista-produtos .cartao-produto{transition:none}#lista-produtos .cartao-produto:hover{transform:none}}
