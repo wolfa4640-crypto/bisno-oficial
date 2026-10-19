@@ -1799,3 +1799,22 @@ body.bisno-requer-login .topo-conteudo {
 body.bisno-requer-login .logo {
   margin-inline: auto;
 }
+
+
+/* Bloqueio visual do conteúdo até à autenticação */
+body.bisno-requer-login:not(.bisno-autenticado) .bisno-nav,
+body.bisno-requer-login:not(.bisno-autenticado) #botao-abrir-pesquisa,
+body.bisno-requer-login:not(.bisno-autenticado) #painel-pesquisa-overlay,
+body.bisno-requer-login:not(.bisno-autenticado) .hero-bisno,
+body.bisno-requer-login:not(.bisno-autenticado) #area-produtos,
+body.bisno-requer-login:not(.bisno-autenticado) body > footer {
+  display: none !important;
+}
+body.bisno-requer-login:not(.bisno-autenticado) #area-autenticacao {
+  display: block !important;
+  max-width: 560px;
+  margin: clamp(24px, 7vh, 72px) auto 48px;
+}
+body.bisno-requer-login:not(.bisno-autenticado) .container {
+  min-height: 55vh;
+}
