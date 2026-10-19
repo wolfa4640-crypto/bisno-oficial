@@ -1206,7 +1206,7 @@ function cartaoProduto(produto) {
           loading="lazy"
           onerror="this.onerror=null;this.src='${IMAGEM_PADRAO}'"
         >
-        <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse">♡</button>
+        <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse"><span class="bisno-interest-hand" aria-hidden="true">☝</span><span class="bisno-interest-label">Tenho interesse</span><span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span></button>
         ${visualizacoes > 0 ? `<span class="bisno-views-badge" aria-label="${visualizacoes} visualizações">👁 ${escaparHTML(visualizacoes.toLocaleString("pt-AO"))}</span>` : ""}
         ${condicao ? `<span class="bisno-condition-badge">${escaparHTML(condicao)}</span>` : ""}
       </div>
@@ -1495,19 +1495,11 @@ async function abrirDetalhes(id) {
 
 
 
-        <button
-
-          type="button"
-
-          data-interesse="${escaparHTML(id)}"
-
-          aria-pressed="false"
-
-        >
-
-          ♡ Tenho interesse (<span data-total-interesses="${escaparHTML(id)}">0</span>)
-
-        </button>
+        <button type="button" class="bisno-interest-detail" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto">
+          <span class="bisno-interest-hand" aria-hidden="true">☝</span>
+          <span class="bisno-interest-label">Tenho interesse</span>
+          <span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span>
+        </button>
 
 
 
@@ -1773,52 +1765,15 @@ let produtosVendedorPublico = [];
 
 
 function atualizarBotoesInteresse(id, total, interessado) {
-
-  document.querySelectorAll("[data-interesse]").forEach(botao => {
-
-    if (String(botao.dataset.interesse) !== String(id)) return;
-
-
-
-    botao.setAttribute("aria-pressed", String(Boolean(interessado)));
-
-    botao.classList.toggle("interesse-ativo", Boolean(interessado));
-
-
-
-    const contador = botao.querySelector("[data-total-interesses]");
-
-    const quantidade = Math.max(0, numero(total));
-
-
-
-    if (contador) {
-
-      contador.textContent = String(quantidade);
-
-    } else {
-
-      botao.textContent = `${interessado ? "♥" : "♡"} Tenho interesse (${quantidade})`;
-
-    }
-
-  });
-
-
-
-  document.querySelectorAll("[data-total-interesses]").forEach(elemento => {
-
-    if (String(elemento.dataset.totalInteresses) === String(id)) {
-
-      elemento.textContent = String(Math.max(0, numero(total)));
-
-    }
-
-  });
-
+  const quantidade = Math.max(0, numero(total));
+  document.querySelectorAll("[data-interesse]").forEach(botao => {
+    if (String(botao.dataset.interesse) !== String(id)) return;
+    botao.setAttribute("aria-pressed", String(Boolean(interessado)));
+    botao.classList.toggle("interesse-ativo", Boolean(interessado));
+    const contador = botao.querySelector("[data-total-interesses]");
+    if (contador) contador.textContent = String(quantidade);
+  });
 }
-
-
 
 async function carregarEstadoInteresse(id) {
 
