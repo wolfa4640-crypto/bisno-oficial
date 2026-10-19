@@ -847,24 +847,25 @@ async function entrarUtilizador(evento) {
       resposta?.user ??
       (resposta?.id ? resposta : null);
 
-    // Confirmar a sessão antes de limpar ou ocultar o formulário.
-    if (!utilizadorAtual) {
-      const sessao = await pedidoAPI("/api/auth/me");
-      utilizadorAtual =
-        sessao?.utilizador ??
-        sessao?.usuario ??
-        sessao?.user ??
-        (sessao?.id ? sessao : null);
-    }
+    // Confirmar que o cookie de sessão funciona também em navegadores móveis.
+    const sessao = await pedidoAPI("/api/auth/me");
+    utilizadorAtual =
+      sessao?.utilizador ??
+      sessao?.usuario ??
+      sessao?.user ??
+      (sessao?.id ? sessao : null);
 
     if (!utilizadorAtual) {
       throw new Error("A sessão não foi confirmada. Verifica os teus dados e tenta novamente.");
     }
 
+    document.body.classList.add("bisno-autenticado");
+    document.body.classList.remove("bisno-sem-sessao");
     mostrarConta();
-    formulario.reset();
-    mostrarMensagem("Sessão iniciada com sucesso!", "sucesso");
     abrirPagina("area-produtos");
+    mostrarMensagem("Sessão iniciada com sucesso!", "sucesso");
+    // Limpar apenas depois de confirmar sessão no servidor.
+    formulario.reset();
     carregarProdutos().catch(erro => console.error("Erro ao carregar anúncios:", erro));
   } catch (erro) {
     // Preservar os valores para que a pessoa não tenha de os escrever novamente.
@@ -1207,7 +1208,7 @@ function cartaoProduto(produto) {
           loading="lazy"
           onerror="this.onerror=null;this.src='${IMAGEM_PADRAO}'"
         >
-        <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse"><span class="bisno-interest-hand" aria-hidden="true">☝</span><span class="bisno-interest-label">Tenho interesse</span><span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span></button>
+        <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse"><span class="bisno-interest-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.2 11.1V5.4a1.8 1.8 0 0 1 3.6 0v5.1-6.1a1.7 1.7 0 0 1 3.4 0v6.1-4.2a1.6 1.6 0 0 1 3.2 0v5.2-2.1a1.6 1.6 0 0 1 3.2 0v5.2c0 4.1-2.7 6.8-6.7 6.8h-1.8c-2.3 0-3.7-1-5-2.8l-3-4.1a1.8 1.8 0 0 1 2.9-2.1l2.2 2.4" transform="translate(-1.5 -1) scale(.94)" /></svg></span><span class="bisno-interest-label">Tenho interesse</span><span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span></button>
         ${visualizacoes > 0 ? `<span class="bisno-views-badge" aria-label="${visualizacoes} visualizações">👁 ${escaparHTML(visualizacoes.toLocaleString("pt-AO"))}</span>` : ""}
         ${condicao ? `<span class="bisno-condition-badge">${escaparHTML(condicao)}</span>` : ""}
       </div>
@@ -1504,7 +1505,7 @@ async function abrirDetalhes(id) {
 
 
         <button type="button" class="bisno-interest-detail" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto">
-          <span class="bisno-interest-hand" aria-hidden="true">☝</span>
+          <span class="bisno-interest-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.2 11.1V5.4a1.8 1.8 0 0 1 3.6 0v5.1-6.1a1.7 1.7 0 0 1 3.4 0v6.1-4.2a1.6 1.6 0 0 1 3.2 0v5.2-2.1a1.6 1.6 0 0 1 3.2 0v5.2c0 4.1-2.7 6.8-6.7 6.8h-1.8c-2.3 0-3.7-1-5-2.8l-3-4.1a1.8 1.8 0 0 1 2.9-2.1l2.2 2.4" transform="translate(-1.5 -1) scale(.94)" /></svg></span>
           <span class="bisno-interest-label">Tenho interesse</span>
           <span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span>
         </button>
