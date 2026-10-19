@@ -652,6 +652,7 @@ function mostrarConta() {
 
   if (autenticado) {
     atualizarPerfil();
+    if ($("#admin-abrir")) $("#admin-abrir").hidden = !Boolean(utilizadorAtual.isAdmin);
     atualizarAreasSociais();
     carregarMeusAnuncios().catch(console.error);
   } else {
@@ -3056,6 +3057,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   configurarFormularios();
 
   configurarLoja();
+  configurarPainelAdmin();
 
   configurarFiltros();
 
