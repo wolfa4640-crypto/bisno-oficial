@@ -1200,7 +1200,7 @@ function cartaoProduto(produto) {
           onerror="this.onerror=null;this.src='${IMAGEM_PADRAO}'"
         >
         <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse">♡</button>
-        ${visualizacoes > 0 ? `<span class="bisno-views-badge" aria-label="${visualizacoes} visualizações">◉ ${escaparHTML(visualizacoes.toLocaleString("pt-AO"))}</span>` : ""}
+        ${visualizacoes > 0 ? `<span class="bisno-views-badge" aria-label="${visualizacoes} visualizações">👁 ${escaparHTML(visualizacoes.toLocaleString("pt-AO"))}</span>` : ""}
         ${condicao ? `<span class="bisno-condition-badge">${escaparHTML(condicao)}</span>` : ""}
       </div>
 
