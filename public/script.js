@@ -448,6 +448,7 @@ function abrirPagina(id) {
       if (child.id === "area-notificacoes") child.hidden = id !== "area-notificacoes";
       else if (child.id === "area-mensagens") child.hidden = id !== "area-mensagens";
       else if (child.id === "perfil-vendedor" || child.id === "area-meus-anuncios" || child.id === "botao-sair") child.hidden = id !== "area-conta";
+      else if (child.id === "area-loja") child.hidden = id !== "area-loja";
       else if (child.tagName === "HR") child.hidden = id !== "area-conta";
       else if (child.classList.contains("dados-conta")) child.hidden = id !== "area-conta";
       else if (child.tagName === "H2" || child.tagName === "P") child.hidden = id !== "area-conta";
@@ -461,7 +462,8 @@ function abrirPagina(id) {
       (page === "notifications" && id === "area-notificacoes") ||
       (page === "publish" && id === "area-publicar") ||
       (page === "profile" && id === "area-conta") ||
-      (page === "listings" && id === "area-meus-anuncios");
+      (page === "listings" && id === "area-meus-anuncios") ||
+      (page === "store" && id === "area-loja");
     link.classList.toggle("is-active", active);
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
@@ -535,6 +537,9 @@ function configurarNavegacao() {
         else { mostrarAba("registo"); abrirPagina("area-autenticacao"); }
       } else if (page === "listings") {
         if (utilizadorAtual) { abrirPagina("area-meus-anuncios"); carregarMeusAnuncios(); }
+        else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
+      } else if (page === "store") {
+        if (utilizadorAtual) { abrirPagina("area-loja"); carregarMinhaLoja(); }
         else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
       } else if (page === "profile") {
         if (utilizadorAtual) abrirPagina("area-conta");
@@ -3004,6 +3009,62 @@ function configurarFormularios() {
 }
 
 
+
+
+/* Loja: painel interativo ligado à API persistente */
+async function pedidoLoja(url, options = {}) {
+  const response = await fetch(url, { credentials: "same-origin", headers: { "Content-Type": "application/json", ...(options.headers || {}) }, ...options });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.erro || "Não foi possível carregar a loja.");
+  return data;
+}
+function mostrarEstatisticasLoja(stats = {}) {
+  definirTexto("#loja-visitas", numero(stats.views).toLocaleString("pt-AO"));
+  definirTexto("#loja-seguidores", numero(stats.followers).toLocaleString("pt-AO"));
+  definirTexto("#loja-contactos", numero(stats.contacts).toLocaleString("pt-AO"));
+  definirTexto("#loja-produtos", numero(stats.products).toLocaleString("pt-AO"));
+}
+function preencherPainelLoja(data = {}) {
+  const store = data.store, form = $("#form-loja"), preview = $("#previsualizacao-loja"), status = $("#estado-loja");
+  mostrarEstatisticasLoja(data.stats || {});
+  if (!store) {
+    if (status) { status.textContent = "Ainda não ativada"; status.classList.remove("ativa"); }
+    if ($("#titulo-form-loja")) $("#titulo-form-loja").textContent = "Ativa a tua loja gratuitamente";
+    if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Ativar a minha loja";
+    if (preview) preview.hidden = true;
+    if (form) { form.elements.name.value = ""; form.elements.description.value = ""; form.elements.city.value = ""; }
+    return;
+  }
+  if (status) { status.textContent = "Loja ativa"; status.classList.add("ativa"); }
+  if ($("#titulo-form-loja")) $("#titulo-form-loja").textContent = "Personaliza a tua loja";
+  if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Guardar alterações";
+  if (form) { form.elements.name.value = store.name || ""; form.elements.description.value = store.description || ""; form.elements.city.value = store.city || ""; }
+  if (preview) preview.hidden = false;
+  definirTexto("#loja-nome-preview", store.name || "A tua loja");
+  definirTexto("#loja-descricao-preview", store.description || "Adiciona uma descrição para apresentar a tua loja.");
+  definirTexto("#loja-cidade-preview", store.city || "Angola");
+  definirTexto("#loja-avatar", (store.name || "B").trim().charAt(0).toUpperCase());
+}
+async function carregarMinhaLoja() {
+  try { preencherPainelLoja(await pedidoLoja("/api/stores/mine")); }
+  catch (erro) { mostrarMensagem(erro.message || "Erro ao carregar a loja.", "erro"); }
+}
+function configurarLoja() {
+  $("#form-loja")?.addEventListener("submit", async evento => {
+    evento.preventDefault();
+    const form = evento.currentTarget, existente = $("#estado-loja")?.classList.contains("ativa");
+    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim() };
+    const botao = $("#botao-guardar-loja");
+    if (botao) { botao.disabled = true; botao.textContent = "A guardar…"; }
+    try {
+      const data = await pedidoLoja(existente ? "/api/stores/mine" : "/api/stores/activate", { method: existente ? "PATCH" : "POST", body: JSON.stringify(payload) });
+      preencherPainelLoja(data);
+      mostrarMensagem(existente ? "A tua loja foi atualizada." : "A tua loja foi ativada com sucesso.", "sucesso");
+    } catch (erro) { mostrarMensagem(erro.message || "Não foi possível guardar a loja.", "erro"); }
+    finally { if (botao) { botao.disabled = false; botao.textContent = existente ? "Guardar alterações" : "Ativar a minha loja"; } }
+  });
+  $("#botao-atualizar-loja")?.addEventListener("click", carregarMinhaLoja);
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
 
