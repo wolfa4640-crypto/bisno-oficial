@@ -418,7 +418,7 @@ function nomeUtilizadorAtual() {
 
 function abrirPagina(id) {
   // Antes da autenticação, mostrar exclusivamente o ecrã de entrada/registo.
-  document.body.classList.toggle("bisno-sem-sessao", !utilizadorAtual);
+  document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
   if (!utilizadorAtual && id !== "area-autenticacao") id = "area-autenticacao";
   const hero = document.querySelector(".hero-bisno");
   const auth = document.getElementById("area-autenticacao");
