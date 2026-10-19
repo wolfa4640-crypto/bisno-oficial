@@ -417,9 +417,13 @@ function nomeUtilizadorAtual() {
 
 
 function abrirPagina(id) {
-  // Antes da autenticação, mostrar exclusivamente o ecrã de entrada/registo.
-  document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
-  if (!utilizadorAtual && id !== "area-autenticacao") id = "area-autenticacao";
+  const autenticado = Boolean(utilizadorAtual);
+  document.body.classList.toggle("bisno-autenticado", autenticado);
+  document.body.classList.toggle("bisno-requer-login", !autenticado);
+
+  // Sem sessão, qualquer destino privado ou o catálogo redireciona para autenticação.
+  if (!autenticado && id !== "area-autenticacao") id = "area-autenticacao";
+
   const hero = document.querySelector(".hero-bisno");
   const auth = document.getElementById("area-autenticacao");
   const account = document.getElementById("area-conta");
@@ -429,32 +433,39 @@ function abrirPagina(id) {
   const profile = document.getElementById("perfil-vendedor");
   const myAds = document.getElementById("area-meus-anuncios");
   const notifications = document.getElementById("area-notificacoes");
+  const store = document.getElementById("area-loja");
   const footer = document.querySelector("body > footer");
-  const pageIds = ["area-produtos", "area-autenticacao", "area-conta", "area-publicar", "area-mensagens", "area-notificacoes"];
+
+  const destinosConta = ["area-conta", "area-meus-anuncios", "area-publicar", "area-mensagens", "area-notificacoes", "area-loja"];
+  const dentroDaConta = destinosConta.includes(id);
 
   if (hero) hero.hidden = id !== "area-produtos";
   if (auth) auth.hidden = id !== "area-autenticacao";
   if (products) products.hidden = id !== "area-produtos";
-  // A conta funciona como contentor; apenas o painel escolhido fica visível.
-  if (account) account.hidden = !["area-conta", "area-publicar", "area-mensagens", "area-notificacoes", "area-loja"].includes(id);
+  if (account) account.hidden = !autenticado || !dentroDaConta;
   if (messages) messages.hidden = id !== "area-mensagens";
   if (publish) publish.hidden = id !== "area-publicar";
   if (profile) profile.hidden = id !== "area-conta";
-  if (myAds) myAds.hidden = id !== "area-conta";
+  if (myAds) myAds.hidden = !["area-conta", "area-meus-anuncios"].includes(id);
   if (notifications) notifications.hidden = id !== "area-notificacoes";
+  if (store) store.hidden = id !== "area-loja";
   if (footer) footer.hidden = id !== "area-produtos";
 
-  // Oculta separadores e conteúdo auxiliar da conta quando não fazem parte do perfil.
+  // Dentro do contentor da conta, mostrar somente a secção escolhida.
   if (account) {
-    const children = Array.from(account.children);
-    children.forEach(child => {
-      if (child.id === "area-notificacoes") child.hidden = id !== "area-notificacoes";
-      else if (child.id === "area-mensagens") child.hidden = id !== "area-mensagens";
-      else if (child.id === "perfil-vendedor" || child.id === "area-meus-anuncios" || child.id === "botao-sair") child.hidden = id !== "area-conta";
-      else if (child.id === "area-loja") child.hidden = id !== "area-loja";
-      else if (child.tagName === "HR") child.hidden = id !== "area-conta";
-      else if (child.classList.contains("dados-conta")) child.hidden = id !== "area-conta";
-      else if (child.tagName === "H2" || child.tagName === "P") child.hidden = id !== "area-conta";
+    Array.from(account.children).forEach(child => {
+      if (["area-notificacoes", "area-mensagens", "area-loja", "area-publicar", "perfil-vendedor", "area-meus-anuncios"].includes(child.id)) {
+        if (child.id === "area-meus-anuncios") child.hidden = !["area-conta", "area-meus-anuncios"].includes(id);
+        else child.hidden = child.id !== id && !(child.id === "perfil-vendedor" && id === "area-conta");
+      } else if (child.id === "bisno-account-summary") {
+        child.hidden = id !== "area-conta";
+      } else if (child.id === "botao-sair") {
+        child.hidden = id !== "area-conta";
+      } else if (child.tagName === "HR") {
+        child.hidden = id !== "area-conta";
+      } else if (child.classList.contains("dados-conta") || child.tagName === "H2" || child.tagName === "P") {
+        child.hidden = id !== "area-conta";
+      }
     });
   }
 
@@ -471,6 +482,7 @@ function abrirPagina(id) {
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
+
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
