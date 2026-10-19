@@ -706,3 +706,27 @@ button:disabled,[role="button"][aria-disabled="true"]{
   #lista-produtos .cartao-produto .botao-interesse,#lista-produtos .cartao-produto .botao-mensagem,#lista-produtos .cartao-produto .botao-whatsapp,#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){min-height:35px;padding:7px 5px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){#lista-produtos .cartao-produto{transition:none}#lista-produtos .cartao-produto:hover{transform:none}}
+
+
+/* BISNO — compactação refinada dos cartões de anúncios */
+#lista-produtos.lista-produtos{gap:14px}
+#lista-produtos .cartao-produto-conteudo{gap:6px;padding:12px}
+#lista-produtos .cartao-produto .vendedor-resumo-mini{gap:7px;margin-top:1px;padding-top:7px}
+#lista-produtos .cartao-produto .botao-interesse,
+#lista-produtos .cartao-produto .botao-mensagem,
+#lista-produtos .cartao-produto .botao-whatsapp,
+#lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){
+  min-height:35px;padding:7px 9px
+}
+@media(min-width:1100px){#lista-produtos.lista-produtos{gap:16px}}
+@media(max-width:720px){
+  #lista-produtos.lista-produtos{gap:8px}
+  #lista-produtos .cartao-produto-conteudo{gap:5px;padding:8px}
+  #lista-produtos .cartao-produto .vendedor-resumo-mini{gap:5px;padding-top:6px}
+  #lista-produtos .cartao-produto .botao-interesse,
+  #lista-produtos .cartao-produto .botao-mensagem,
+  #lista-produtos .cartao-produto .botao-whatsapp,
+  #lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){
+    min-height:32px;padding:6px 4px
+  }
+}
