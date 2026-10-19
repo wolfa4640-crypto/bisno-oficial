@@ -43,7 +43,9 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/social", require("./routes/social"));
 app.use("/api/stores", require("./routes/stores"));
-app.use("/uploads", express.static(path.join(__dirname, "uploads"), { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/uploads", express.static(uploadsDir, { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
 app.use(express.static(path.join(__dirname, "public"), { dotfiles: "deny", index: "index.html", maxAge: isProduction ? "1h" : 0 }));
 app.use((req, res) => {
   if (req.path.startsWith("/api/")) return res.status(404).json({ erro: "Endpoint não encontrado." });
