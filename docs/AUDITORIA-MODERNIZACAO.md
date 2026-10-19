@@ -80,3 +80,9 @@ Não declarar a modernização concluída até os testes e a verificação no se
 
 - Expandido `test/social-access-control.test.js` para tentar eliminar por HTTP um anúncio pertencente a outro utilizador autenticado como terceiro. O teste verifica a resposta 404 e confirma que o anúncio continua na base SQLite temporária.
 - A execução da CI para o commit que contém este novo caso ainda precisa de confirmação; o teste não deve ser considerado aprovado apenas por ter sido adicionado.
+
+
+## Propriedade de lojas — etapa seguinte
+
+- Expandido `test/social-access-control.test.js` para tentar alterar uma loja usando a sessão de um terceiro utilizador. O teste espera 404 no endpoint da loja do próprio utilizador e confirma que o nome e a descrição da loja do vendedor original permanecem inalterados.
+- O caso foi adicionado à branch de desenvolvimento; a sua execução e resultado devem ser confirmados na CI antes de declarar aprovação.
