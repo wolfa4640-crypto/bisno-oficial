@@ -33,8 +33,33 @@
     body.bisno-requer-login #area-autenticacao {
       display: block;
     }
+
+    /* Campos de autenticação sempre legíveis e estáveis durante a escrita. */
+    #area-autenticacao #form-login input,
+    #area-autenticacao #form-registo input {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      color: #17251e;
+      background-color: #fff;
+      opacity: 1;
+      visibility: visible;
+      -webkit-text-fill-color: #17251e;
+      font-size: 16px;
+    }
+    #area-autenticacao #form-login input:focus,
+    #area-autenticacao #form-registo input:focus {
+      border-color: #299565;
+      outline: 2px solid rgba(41,149,101,.16);
+      outline-offset: 1px;
+      box-shadow: 0 0 0 3px rgba(41,149,101,.12);
+    }
+    #area-autenticacao #form-login button:disabled {
+      opacity: .75;
+      cursor: wait;
+    }
   </style>
-  <script src="/script.js" defer></script>
+  <script src="/script.js?v=20261019-login-fix-v23" defer></script>
 </head>
 
 <body class="bisno-requer-login">
