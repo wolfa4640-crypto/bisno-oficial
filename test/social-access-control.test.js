@@ -172,6 +172,37 @@ test("store owner cannot follow their own store", async () => {
   );
 });
 
+test("customer can register a valid contact with the store's own listing", async () => {
+  const cookie = await sessionFor(buyer);
+  const res = await fetch(base + "/stores/" + storeId + "/contact", {
+    method: "POST",
+    headers: { cookie, "content-type": "application/json" },
+    body: JSON.stringify({ channel: "whatsapp", productId })
+  });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { recorded: true, channel: "whatsapp" });
+  const contact = db.prepare(
+    "SELECT customer_user_id,product_id,channel FROM store_contacts WHERE store_id=?"
+  ).get(storeId);
+  assert.equal(contact.customer_user_id, buyer);
+  assert.equal(contact.product_id, productId);
+  assert.equal(contact.channel, "whatsapp");
+});
+
+test("customer can follow another user's store and the count updates", async () => {
+  const cookie = await sessionFor(buyer);
+  const res = await fetch(base + "/stores/" + storeId + "/follow", {
+    method: "POST",
+    headers: { cookie, "content-type": "application/json" },
+    body: "{}"
+  });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { followed: true, followers: 1 });
+  assert.ok(db.prepare(
+    "SELECT 1 FROM store_follows WHERE store_id=? AND follower_user_id=?"
+  ).get(storeId, buyer));
+});
+
 test.after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
   db.close();
