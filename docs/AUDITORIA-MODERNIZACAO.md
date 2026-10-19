@@ -120,3 +120,8 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - Acrescentados estados de foco visíveis e consistentes para navegação por teclado, realce de seleção de texto e apresentação de controlos desativados.
 - Melhorada a área mínima de toque dos itens da navegação móvel e acrescentado suporte de contorno para modos de cores forçadas.
 - Os estilos não alteram os fluxos de negócio nem o conteúdo da base de dados. A verificação de contraste e a inspeção em navegador/dispositivos continuam pendentes; estas alterações ainda não equivalem a uma auditoria WCAG completa.
+
+## Navegação inferior fixa em telemóveis — etapa seguinte
+
+- Ajustada a navegação móvel para permanecer fixa junto à parte inferior do ecrã, com respeito pela área segura dos dispositivos e espaço adicional no conteúdo para reduzir sobreposição.
+- A alteração é apenas CSS e não muda destinos, permissões ou fluxos da aplicação. É necessário confirmar em navegador móvel real a altura final e o comportamento com teclado virtual aberto.
