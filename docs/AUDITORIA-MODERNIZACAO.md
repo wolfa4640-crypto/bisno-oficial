@@ -53,3 +53,10 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - A rota de contactos de loja verifica a propriedade do anúncio associado. O seguimento da própria loja é recusado e a unicidade da base de dados impede seguimentos duplicados.
 - Estes pontos são observações estáticas do código, não substituem testes HTTP de integração. Ainda é necessário executar testes com duas contas e tentar acessos cruzados para confirmar o comportamento real.
 - Não foi alterado o lockfile: não há um ambiente npm local disponível nesta sessão para regenerar e validar o ficheiro completo com integridades reais. Não é seguro reconstruí-lo manualmente.
+
+## Testes acrescentados nesta etapa
+
+- Criado `test/auth-middleware.test.js` para verificar três comportamentos do middleware de autenticação: pedido sem sessão recebe 401, sessão sem utilizador recebe 401 e sessão com `userId` segue para a rota.
+- O comando `npm run check` agora também valida a sintaxe de `middleware/auth.js`.
+- A execução automática após estes commits ainda não foi confirmada nesta revisão; consultar GitHub Actions antes de considerar os testes aprovados.
+- Estes são testes unitários do middleware, não testes de integração de registo, login, autorização de recursos ou persistência.
