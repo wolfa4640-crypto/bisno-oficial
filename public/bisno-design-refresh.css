@@ -143,3 +143,22 @@ button:disabled,[role="button"][aria-disabled="true"]{
   .bisno-nav a.nav-publish .nav-icon{width:25px;height:25px;font-size:21px}
   .bisno-nav a .nav-badge{position:absolute;top:1px;right:2px;min-width:14px;min-height:14px;font-size:9px}
 }
+
+/* Ação de limpar filtros: clara, discreta e acessível */
+.botao-limpar-filtros{
+  grid-column:1/-1;
+  justify-self:start;
+  min-height:42px;
+  margin-top:8px;
+  padding:10px 15px;
+  border:1px solid #b8d5c3;
+  border-radius:10px;
+  background:#fff;
+  color:#155c39;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.botao-limpar-filtros:hover{background:#e7f5ec;border-color:#7bb995}
+.botao-limpar-filtros:focus-visible{outline:3px solid #2b9b68;outline-offset:3px}
+@media(max-width:720px){.botao-limpar-filtros{width:100%;justify-self:stretch}}
