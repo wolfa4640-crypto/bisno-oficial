@@ -152,3 +152,11 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - A pesquisa por nome, descrição, categoria textual e localização passa a ignorar diferenças entre letras acentuadas e não acentuadas.
 - Exemplos: “telemoveis” encontra “Telemóveis”; “Luanda” e “Luandá” deixam de depender de diferenças de acentuação no texto introduzido.
 - Não altera os dados guardados nem as regras de categoria; testes automatizados e validação visual ainda precisam de confirmação.
+
+## Catálogo — feedback, pesquisa e partilha
+
+- A pesquisa normaliza acentos num único helper e aplica-o a texto do anúncio e localização.
+- A lista anuncia quantos anúncios correspondem aos filtros e comunica estados de carregamento/erro com texto acessível.
+- O estado sem resultados sugere alternativas e inclui uma ação para limpar filtros, além do botão principal do painel.
+- Acrescentados metadados Open Graph e Twitter para melhorar a apresentação do Bisno quando o link é partilhado.
+- A correção foi registada na branch; a validação por CI e a verificação no navegador continuam pendentes.
