@@ -2912,6 +2912,19 @@ function configurarEventosProdutos() {
 
 function configurarFiltros() {
 
+  const botaoLimpar = $("#limpar-filtros");
+  if (botaoLimpar) {
+    botaoLimpar.addEventListener("click", () => {
+      ["#filtro-pesquisa", "#filtro-categoria", "#filtro-cidade", "#ordenar-produtos", "#filtro-preco"]
+        .forEach(seletor => {
+          const campo = $(seletor);
+          if (campo) campo.value = "";
+        });
+      aplicarFiltros();
+      $("#filtro-pesquisa")?.focus();
+    });
+  }
+
   [
 
     "#filtro-pesquisa",
