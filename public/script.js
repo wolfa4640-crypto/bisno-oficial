@@ -660,6 +660,7 @@ function atualizarPerfil() {
 
   definirTexto("#perfil-nome", nomeUtilizadorAtual());
 
+  definirTexto("#perfil-nome-utilizador", nomeUtilizadorAtual());
 }
 
 
