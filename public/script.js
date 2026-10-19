@@ -3015,7 +3015,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-  mostrarAba("login");
+  const paramsRecuperacao = new URLSearchParams(window.location.search);
+  if (paramsRecuperacao.get("reset") && paramsRecuperacao.get("email")) { mostrarAba("nova"); mostrarMensagem("Define uma nova palavra-passe para a tua conta.", "info"); }
+  else mostrarAba("login");
 
 
 
