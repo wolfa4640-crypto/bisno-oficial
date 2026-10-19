@@ -55,6 +55,27 @@ if (!colunasUtilizadores.some((coluna) => coluna.name === "avatar")) {
   db.exec("ALTER TABLE users ADD COLUMN avatar TEXT");
 }
 
+
+
+// Segurança de contas: validação de e-mail e recuperação de palavra-passe.
+// Contas existentes permanecem verificadas para não bloquear utilizadores atuais.
+const colunasSeguranca = db.pragma("table_info(users)");
+if (!colunasSeguranca.some(c => c.name === "email_verified")) {
+  db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1");
+}
+db.exec(`
+  CREATE TABLE IF NOT EXISTS auth_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    purpose TEXT NOT NULL CHECK(purpose IN ('verify_email', 'reset_password')),
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_auth_tokens_user_purpose ON auth_tokens(user_id, purpose);
+`);
+
 console.log("Base de dados preparada!");
 
 module.exports = db;
