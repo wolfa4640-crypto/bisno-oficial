@@ -86,3 +86,9 @@ Não declarar a modernização concluída até os testes e a verificação no se
 
 - Expandido `test/social-access-control.test.js` para tentar alterar uma loja usando a sessão de um terceiro utilizador. O teste espera 404 no endpoint da loja do próprio utilizador e confirma que o nome e a descrição da loja do vendedor original permanecem inalterados.
 - O caso foi adicionado à branch de desenvolvimento; a sua execução e resultado devem ser confirmados na CI antes de declarar aprovação.
+
+
+## Regras de contacto e seguimento de lojas — etapa seguinte
+
+- Acrescentados dois testes HTTP: a rota de contacto rejeita um anúncio inexistente/que não pode ser associado à loja e não regista contacto; o proprietário não pode seguir a própria loja e nenhum seguimento é criado.
+- Os casos foram adicionados à suite de integração na branch. A CI do commit mais recente ainda precisa de confirmação, por isso estes testes não são declarados aprovados.
