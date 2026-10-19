@@ -21,7 +21,7 @@
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css">
-  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-social-profile-v8">
+  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-social-profile-v9">
   <script src="/script.js" defer></script>
 </head>
 
@@ -436,11 +436,17 @@
 
     <!-- CATÁLOGO PÚBLICO -->
     <section id="area-produtos" class="painel">
-      <aside class="bisno-banner-anuncios" aria-label="Destaque do Bisno">
-        <div class="bisno-banner-texto">
-          <span class="bisno-banner-etiqueta">O teu mercado, num só lugar</span>
-          <h2>Encontra. Compara. Compra.</h2>
-          <p>Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto.</p>
+      <aside class="bisno-banner-anuncios bisno-banner-slide-0" id="bisno-banner-destaque" aria-label="Destaque do Bisno">
+        <div class="bisno-banner-texto" aria-live="polite" aria-atomic="true">
+          <span class="bisno-banner-etiqueta" id="bisno-banner-etiqueta">O teu mercado, num só lugar</span>
+          <h2 id="bisno-banner-titulo">Encontra. Compara. Compra.</h2>
+          <p id="bisno-banner-descricao">Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto.</p>
+          <div class="bisno-banner-indicadores" role="group" aria-label="Escolher destaque">
+            <button type="button" class="is-active" data-banner-slide="0" aria-label="Destaque 1" aria-pressed="true"></button>
+            <button type="button" data-banner-slide="1" aria-label="Destaque 2" aria-pressed="false"></button>
+            <button type="button" data-banner-slide="2" aria-label="Destaque 3" aria-pressed="false"></button>
+            <button type="button" data-banner-slide="3" aria-label="Destaque 4" aria-pressed="false"></button>
+          </div>
         </div>
         <a href="#area-publicar" data-bisno-page="publish" class="bisno-banner-botao">＋ Publicar anúncio</a>
       </aside>
