@@ -1420,3 +1420,12 @@ button.botao-whatsapp:focus-visible {
 .bisno-banner-indicadores button:focus-visible{outline:3px solid rgba(255,255,255,.55);outline-offset:3px}
 @media(max-width:600px){.bisno-banner-anuncios{align-items:flex-start;flex-direction:column;gap:16px}.bisno-banner-indicadores{margin-top:14px}.bisno-banner-anuncios h2{font-size:clamp(27px,8vw,36px)}}
 @media(prefers-reduced-motion:reduce){.bisno-banner-anuncios,.bisno-banner-anuncios .bisno-banner-texto,.bisno-banner-indicadores button{transition:none}}
+
+/* Cabeçalho principal verde para reforçar a identidade do Bisno */
+.topo{background:linear-gradient(115deg,#0b4d32 0%,#137448 58%,#21945e 100%);border-bottom:1px solid rgba(255,255,255,.18);box-shadow:0 5px 20px rgba(11,77,50,.2)}
+.topo .logo,.topo .logo:hover{color:#fff}
+.topo .logo-simbolo{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.25);box-shadow:none}
+.topo .logo-texto strong,.topo .logo-texto small,.topo .topo-slogan{color:#fff}
+.topo .logo-texto small,.topo .topo-slogan{opacity:.88}
+.topo .topo-conteudo{min-height:80px}
+@media(max-width:600px){.topo .topo-conteudo{min-height:70px}}
