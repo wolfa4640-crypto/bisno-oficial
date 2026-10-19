@@ -460,7 +460,8 @@ function abrirPagina(id) {
       (page === "messages" && id === "area-mensagens") ||
       (page === "notifications" && id === "area-notificacoes") ||
       (page === "publish" && id === "area-publicar") ||
-      (page === "profile" && id === "area-conta");
+      (page === "profile" && id === "area-conta") ||
+      (page === "listings" && id === "area-meus-anuncios");
     link.classList.toggle("is-active", active);
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
@@ -532,6 +533,9 @@ function configurarNavegacao() {
       } else if (page === "publish") {
         if (utilizadorAtual) abrirPagina("area-publicar");
         else { mostrarAba("registo"); abrirPagina("area-autenticacao"); }
+      } else if (page === "listings") {
+        if (utilizadorAtual) { abrirPagina("area-meus-anuncios"); carregarMeusAnuncios(); }
+        else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
       } else if (page === "profile") {
         if (utilizadorAtual) abrirPagina("area-conta");
         else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
@@ -769,7 +773,7 @@ async function registarUtilizador(evento) {
       mostrarConta();
 
     }
-    await carregarPainelLoja();
+  
 
     formulario.reset();
 
@@ -1282,142 +1286,101 @@ function cartaoProduto(produto) {
 
 
 async function carregarProdutos() {
+  const lista = $("#lista-produtos");
+  if (!lista) return;
 
-  const lista = $("#lista-produtos");
+  lista.setAttribute("aria-busy", "true");
+  const contagem = $("#resultado-contagem");
+  if (contagem) contagem.textContent = "A carregar anúncios…";
+  lista.innerHTML = "<p>A carregar produtos...</p>";
 
-  if (!lista) return;
+  try {
+    const dados = await pedidoAPI("/api/products");
+    todosProdutos = dados.produtos ?? dados.products ?? [];
+    aplicarFiltros();
+    lista.setAttribute("aria-busy", "false");
 
-
-
-  lista.innerHTML = "<p>A carregar produtos...</p>";
-
-
-
-  try {
-
-    const dados = await pedidoAPI("/api/products");
-
-    todosProdutos = dados.produtos ?? dados.products ?? [];
-
-
-
-    aplicarFiltros();
-
-
-
-    todosProdutos.forEach(produto => {
-
-      const id = obterIdProduto(produto);
-
-      carregarEstadoInteresse(id).catch(() => {});
-
-    });
-
-  } catch (erro) {
-
-    lista.innerHTML = `<p>${escaparHTML(erro.message || "Não foi possível carregar os produtos.")}</p>`;
-
-  }
-
+    todosProdutos.forEach(produto => {
+      const id = obterIdProduto(produto);
+      carregarEstadoInteresse(id).catch(() => {});
+    });
+  } catch (erro) {
+    lista.innerHTML = `<p>${escaparHTML(erro.message || "Não foi possível carregar os produtos.")}</p>`;
+    lista.setAttribute("aria-busy", "false");
+    if (contagem) contagem.textContent = "Não foi possível carregar os anúncios. Tenta novamente.";
+  }
 }
 
-
+function normalizarTexto(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
 function aplicarFiltros() {
+  const lista = $("#lista-produtos");
+  if (!lista) return;
 
-  const lista = $("#lista-produtos");
+  const pesquisa = normalizarTexto($("#filtro-pesquisa")?.value);
+  const categoria = $("#filtro-categoria")?.value ?? "";
+  const cidade = normalizarTexto($("#filtro-cidade")?.value);
+  const precoMaximo = $("#filtro-preco")?.value;
+  const ordenar = $("#ordenar-produtos")?.value ?? "";
 
-  if (!lista) return;
+  let produtos = todosProdutos.filter(produto => {
+    const texto = normalizarTexto([
+      produto.name,
+      produto.description,
+      produto.category,
+      produto.city,
+      produto.neighborhood
+    ].join(" "));
 
+    if (pesquisa && !texto.includes(pesquisa)) return false;
+    if (categoria && produto.category !== categoria) return false;
 
+    const localizacao = normalizarTexto(
+      [produto.city, produto.neighborhood].filter(Boolean).join(" ")
+    );
+    if (cidade && !localizacao.includes(cidade)) return false;
 
-  const pesquisa = ($("#filtro-pesquisa")?.value ?? "").trim().toLowerCase();
+    if (
+      precoMaximo !== "" &&
+      precoMaximo != null &&
+      numero(produto.price) > numero(precoMaximo)
+    ) {
+      return false;
+    }
 
-  const categoria = $("#filtro-categoria")?.value ?? "";
+    return true;
+  });
 
-  const cidade = ($("#filtro-cidade")?.value ?? "").trim().toLowerCase();
+  if (ordenar === "menor") {
+    produtos.sort((a, b) => numero(a.price) - numero(b.price));
+  } else if (ordenar === "maior") {
+    produtos.sort((a, b) => numero(b.price) - numero(a.price));
+  }
 
-  const precoMaximo = $("#filtro-preco")?.value;
+  const resultadoContagem = $("#resultado-contagem");
+  if (resultadoContagem) {
+    resultadoContagem.textContent = produtos.length === 1
+      ? "1 anúncio encontrado"
+      : `${produtos.length} anúncios encontrados`;
+  }
 
-  const ordenar = $("#ordenar-produtos")?.value ?? "";
+  if (!produtos.length) {
+    lista.innerHTML = `<div class="estado-vazio-catalogo">
+      <p class="estado-vazio-titulo">Não encontrámos anúncios com estes filtros.</p>
+      <p>Tenta pesquisar por outras palavras, escolher outra categoria ou limpar os filtros.</p>
+      <button type="button" class="botao-limpar-filtros" data-limpar-filtros>Limpar filtros</button>
+    </div>`;
+    return;
+  }
 
-
-
-  let produtos = todosProdutos.filter(produto => {
-
-    const texto = [
-
-      produto.name,
-
-      produto.description,
-
-      produto.category,
-
-      produto.city,
-
-      produto.neighborhood
-
-    ].join(" ").toLowerCase();
-
-
-
-    if (pesquisa && !texto.includes(pesquisa)) return false;
-
-    if (categoria && produto.category !== categoria) return false;
-
-    if (cidade && !(produto.city ?? "").toLowerCase().includes(cidade)) return false;
-
-
-
-    if (
-
-      precoMaximo !== "" &&
-
-      precoMaximo != null &&
-
-      numero(produto.price) > numero(precoMaximo)
-
-    ) {
-
-      return false;
-
-    }
-
-
-
-    return true;
-
-  });
-
-
-
-  if (ordenar === "menor") {
-
-    produtos.sort((a, b) => numero(a.price) - numero(b.price));
-
-  } else if (ordenar === "maior") {
-
-    produtos.sort((a, b) => numero(b.price) - numero(a.price));
-
-  }
-
-
-
-  if (!produtos.length) {
-
-    lista.innerHTML = "<p>Não foram encontrados produtos com estes filtros.</p>";
-
-    return;
-
-  }
-
-
-
-  lista.innerHTML = produtos.map(cartaoProduto).join("");
-
+  lista.innerHTML = produtos.map(cartaoProduto).join("");
 }
-
-
 
 function prepararAreaDetalhes() {
 
@@ -2909,6 +2872,34 @@ function configurarEventosProdutos() {
 
 function configurarFiltros() {
 
+  const limparFiltros = () => {
+    ["#filtro-pesquisa", "#filtro-categoria", "#filtro-cidade", "#ordenar-produtos", "#filtro-preco"]
+      .forEach(seletor => {
+        const campo = $(seletor);
+        if (campo) campo.value = "";
+      });
+    aplicarFiltros();
+    $("#filtro-pesquisa")?.focus();
+  };
+
+  document.querySelectorAll("[data-categoria-rapida]").forEach(botao => {
+    botao.addEventListener("click", () => {
+      const campoCategoria = $("#filtro-categoria");
+      if (!campoCategoria) return;
+      campoCategoria.value = botao.dataset.categoriaRapida || "";
+      aplicarFiltros();
+      $("#painel-pesquisa")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.querySelectorAll("[data-categoria-rapida]").forEach(item => {
+        item.setAttribute("aria-pressed", String(item === botao));
+      });
+    });
+  });
+
+  $("#limpar-filtros")?.addEventListener("click", limparFiltros);
+  $("#lista-produtos")?.addEventListener("click", evento => {
+    if (evento.target.closest("[data-limpar-filtros]")) limparFiltros();
+  });
+
   [
 
     "#filtro-pesquisa",
@@ -2955,67 +2946,6 @@ function configurarFiltros() {
 
 
 
-async function carregarPainelLoja() {
-  const form = $("#form-ativar-loja");
-  if (!form || !utilizadorAtual) return;
-  try {
-    const dados = await pedidoAPI("/api/stores/mine");
-    const store = dados.store;
-    $("#store-dashboard").hidden = !store;
-    form.hidden = Boolean(store);
-    const status = $("#store-status");
-    if (status) {
-      status.textContent = store ? "Loja ativa" : "Ainda não ativada";
-      status.classList.toggle("is-active", Boolean(store));
-    }
-    if (store) {
-      $("#store-name").value = store.name || "";
-      $("#store-city").value = store.city || "";
-      $("#store-description").value = store.description || "";
-      $("#store-stat-views").textContent = dados.stats?.views ?? 0;
-      $("#store-stat-followers").textContent = dados.stats?.followers ?? 0;
-      $("#store-stat-contacts").textContent = dados.stats?.contacts ?? 0;
-      $("#store-stat-products").textContent = dados.stats?.products ?? 0;
-      form.hidden = false;
-      const button = $("#store-save-button");
-      if (button) button.textContent = "Guardar dados da loja";
-      form.dataset.active = "true";
-    } else {
-      form.dataset.active = "false";
-      const button = $("#store-save-button");
-      if (button) button.textContent = "Ativar a minha loja";
-    }
-  } catch (erro) {
-    const feedback = $("#store-form-feedback");
-    if (feedback) feedback.textContent = erro.message || "Não foi possível carregar a loja.";
-  }
-}
-
-async function guardarLoja(evento) {
-  evento.preventDefault();
-  if (!utilizadorAtual) return mostrarMensagem("Inicia sessão para ativares a tua loja.", "erro");
-  const form = evento.currentTarget;
-  const feedback = $("#store-form-feedback");
-  const payload = {
-    name: $("#store-name").value.trim(),
-    city: $("#store-city").value.trim(),
-    description: $("#store-description").value.trim()
-  };
-  const button = $("#store-save-button");
-  button.disabled = true;
-  if (feedback) feedback.textContent = "A guardar a tua loja…";
-  try {
-    const dados = await pedidoAPI(form.dataset.active === "true" ? "/api/stores/mine" : "/api/stores/activate", {
-      method: form.dataset.active === "true" ? "PATCH" : "POST", body: payload
-    });
-    if (feedback) feedback.textContent = form.dataset.active === "true" ? "Dados da loja atualizados." : "Loja ativada com sucesso!";
-    form.dataset.active = "true";
-    await carregarPainelLoja();
-  } catch (erro) {
-    if (feedback) feedback.textContent = erro.message || "Não foi possível guardar a loja.";
-  } finally { button.disabled = false; }
-}
-
 function configurarFormularios() {
 
   $("#form-login")?.addEventListener("submit", entrarUtilizador);
@@ -3030,7 +2960,17 @@ function configurarFormularios() {
 
 
 
-  $("#botao-sair")?.addEventListener("click", terminarSessao);
+  $("#atalho-meus-anuncios")?.addEventListener("click", () => {
+    if (utilizadorAtual) {
+      abrirPagina("area-meus-anuncios");
+      carregarMeusAnuncios();
+    } else {
+      mostrarAba("login");
+      abrirPagina("area-autenticacao");
+    }
+  });
+
+  $("#botao-sair")?.addEventListener("click", terminarSessao);
 
 
 

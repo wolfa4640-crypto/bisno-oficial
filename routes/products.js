@@ -5,6 +5,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const verificarImagem = require("../middleware/validar-imagem");
 const multer = require("multer");
 
 const db = require("../data/database");
@@ -302,6 +303,11 @@ router.post(
         ? "/uploads/" + req.file.filename
         : null;
 
+      if (req.file && !verificarImagem(req.file.path, req.file.mimetype)) {
+        apagarFicheiroEnviado(req.file);
+        return res.status(400).json({ erro: "O ficheiro não corresponde a uma imagem válida." });
+      }
+
       // Campos obrigatórios.
       if (
         !validarTexto(name, 120) ||
@@ -324,11 +330,13 @@ router.post(
 
       const preco = Number(price);
 
-      if (!Number.isFinite(preco) || preco < 0) {
+      // Os preços em Kz devem ser inteiros seguros para evitar valores
+      // fracionários ou números que percam precisão na base de dados/JSON.
+      if (!Number.isSafeInteger(preco) || preco < 0 || preco > 1_000_000_000_000) {
         apagarFicheiroEnviado(req.file);
 
         return res.status(400).json({
-          erro: "Introduz um preço válido em Kz."
+          erro: "Introduz um preço inteiro válido em Kz (entre 0 e 1 bilião de Kz)."
         });
       }
 

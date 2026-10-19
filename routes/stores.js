@@ -67,7 +67,9 @@ router.get('/mine', exigirLogin, (req,res) => {
 });
 router.post('/activate', exigirLogin, (req,res) => {
  const user=db.prepare('SELECT id,name,avatar FROM users WHERE id=?').get(req.session.userId);
+ if (!user) return res.status(401).json({erro:'A sessão já não corresponde a um utilizador válido. Inicia sessão novamente.'});
  const name=clean(req.body.name,80) || `${user.name} — Loja`;
+ if (name.length < 2) return res.status(400).json({erro:'O nome da loja deve ter pelo menos 2 caracteres.'});
  const description=clean(req.body.description,500);
  const city=clean(req.body.city,100);
  db.prepare(`INSERT INTO stores(user_id,name,description,city,avatar) VALUES(?,?,?,?,?)
@@ -80,8 +82,9 @@ router.patch('/mine', exigirLogin, (req,res) => {
  const store=getStore.get(req.session.userId);
  if(!store) return res.status(404).json({erro:'Ativa a tua loja primeiro.'});
  const name=clean(req.body.name,80) || store.name;
+ if (name.length < 2) return res.status(400).json({erro:'O nome da loja deve ter pelo menos 2 caracteres.'});
  const description=clean(req.body.description,500);
- const city=clean(req.body.city,100);
+ const city=typeof req.body.city === 'string' ? clean(req.body.city,100) : store.city;
  db.prepare('UPDATE stores SET name=?,description=?,city=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(name,description,city,store.id,req.session.userId);
  res.json({store:getStore.get(req.session.userId),stats:storeSummary(store.id)});
 });
@@ -131,6 +134,11 @@ router.post('/:id/contact', exigirLogin, (req,res) => {
  const productId=validId(req.body.productId);
  const store=db.prepare('SELECT id,user_id FROM stores WHERE id=? AND is_active=1').get(id); if(!store) return res.status(404).json({erro:'Loja não encontrada.'});
  if(Number(store.user_id)===Number(req.session.userId)) return res.status(400).json({erro:'Não podes contactar a tua própria loja.'});
+ if (req.body.productId != null && req.body.productId !== '') {
+  if (!productId) return res.status(400).json({erro:'Anúncio inválido.'});
+  const product=db.prepare('SELECT id FROM products WHERE id=? AND user_id=?').get(productId,store.user_id);
+  if (!product) return res.status(400).json({erro:'O anúncio não pertence a esta loja.'});
+ }
  const key=`${req.session.userId}:${channel}`;
  db.prepare(`INSERT INTO store_contacts(store_id,customer_user_id,product_id,channel,contact_key) VALUES(?,?,?,?,?) ON CONFLICT(store_id,contact_key) DO NOTHING`).run(id,req.session.userId,productId,channel,key);
  res.json({recorded:true,channel});

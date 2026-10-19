@@ -38,12 +38,14 @@ app.use(session({
   cookie: { httpOnly: true, sameSite: "lax", secure: isProduction, maxAge: 1000 * 60 * 60 * 24 * 14 }
 }));
 
-app.get("/api/health", (_req, res) => res.json({ estado: "ok", servico: "Bisno", versao: "2.0.0" }));
+app.get("/api/health", (_req, res) => res.json({ estado: "ok", servico: "Bisno", versao: require("./package.json").version }));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/social", require("./routes/social"));
 app.use("/api/stores", require("./routes/stores"));
-app.use("/uploads", express.static(path.join(__dirname, "uploads"), { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
+const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/uploads", express.static(uploadsDir, { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
 app.use(express.static(path.join(__dirname, "public"), { dotfiles: "deny", index: "index.html", maxAge: isProduction ? "1h" : 0 }));
 app.use((req, res) => {
   if (req.path.startsWith("/api/")) return res.status(404).json({ erro: "Endpoint não encontrado." });
@@ -56,7 +58,7 @@ app.use((erro, req, res, next) => {
   if ([400, 413, 415, 429].includes(status)) return res.status(status).json({ erro: status === 429 ? "Muitos pedidos. Aguarda um pouco e tenta novamente." : (erro.message || "Pedido inválido.") });
   res.status(500).json({ erro: "Ocorreu um erro interno. Tenta novamente." });
 });
-const servidor = app.listen(PORT, "0.0.0.0", () => console.log(`Bisno v2 ativo na porta ${PORT}`));
+const servidor = app.listen(PORT, "0.0.0.0", () => console.log(`Bisno v${require("./package.json").version} ativo na porta ${PORT}`));
 function encerrar(signal) {
   console.log(`\n${signal}: a encerrar o Bisno...`);
   servidor.close(() => {

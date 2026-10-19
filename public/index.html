@@ -5,10 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#176b45">
   <meta name="description" content="Bisno — compra e vende produtos em Angola. Encontra telemóveis, informática, moda e muito mais.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_AO">
+  <meta property="og:site_name" content="Bisno">
+  <meta property="og:title" content="Bisno | Compra e vende em Angola">
+  <meta property="og:description" content="Descobre produtos, publica anúncios e combina diretamente com vendedores em Angola.">
+  <meta property="og:url" content="https://bisno-oficial.onrender.com/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Bisno | Compra e vende em Angola">
+  <meta name="twitter:description" content="Descobre produtos, publica anúncios e combina diretamente com vendedores em Angola.">
   <title>Bisno | Compra e vende em Angola</title>
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css">
+  <link rel="stylesheet" href="/bisno-design-refresh.css">
   <script src="/script.js" defer></script>
 </head>
 
@@ -39,7 +50,7 @@
       <a href="#area-mensagens" data-bisno-page="messages"><span class="nav-icon" aria-hidden="true">✉</span><span>Mensagens</span><span class="nav-badge" id="badge-mensagens" hidden>0</span></a>
       <a href="#area-publicar" data-bisno-page="publish" class="nav-publish" aria-label="Publicar anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></a>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
-      <a href="#area-conta" data-bisno-page="profile" aria-label="A minha loja"><span class="nav-icon" aria-hidden="true">🏬</span><span>Loja</span></a>
+      <a href="#area-meus-anuncios" data-bisno-page="listings" aria-label="Os meus anúncios"><span class="nav-icon" aria-hidden="true">▤</span><span>Os meus</span></a>
     </div>
   </nav>
 
@@ -148,29 +159,11 @@
         <p>Telefone: <strong id="telefone-utilizador"></strong></p>
       </div>
 
-      <!-- LOJA DO UTILIZADOR: ativação e painel privado -->
-      <section id="bisno-store-panel" class="painel-secundario bisno-store-panel">
-        <div class="store-panel-heading">
-          <div><p class="store-eyebrow">BISNO LOJAS</p><h3>Minha loja</h3><p>Ativa a tua loja e acompanha o interesse real dos clientes.</p></div>
-          <span class="store-status" id="store-status">Ainda não ativada</span>
-        </div>
-        <form id="form-ativar-loja" class="store-activation-form">
-          <label for="store-name">Nome da loja</label><input id="store-name" name="name" maxlength="80" placeholder="Ex.: Loja do João" required>
-          <label for="store-city">Cidade ou província</label><input id="store-city" name="city" maxlength="100" placeholder="Ex.: N'dalatando">
-          <label for="store-description">Descrição da loja</label><textarea id="store-description" name="description" maxlength="500" rows="3" placeholder="O que vendes? O que os clientes devem saber?"></textarea>
-          <button type="submit" id="store-save-button">Ativar a minha loja</button>
-          <p id="store-form-feedback" class="store-feedback" aria-live="polite"></p>
-        </form>
-        <div id="store-dashboard" hidden>
-          <div class="store-stats-grid">
-            <article class="store-stat"><span>Visitas à loja</span><strong id="store-stat-views">0</strong><small>Visitas únicas por dia</small></article>
-            <article class="store-stat"><span>Seguidores</span><strong id="store-stat-followers">0</strong><small>Pessoas que seguem a loja</small></article>
-            <article class="store-stat"><span>Contactos</span><strong id="store-stat-contacts">0</strong><small>Clientes que contactaram</small></article>
-            <article class="store-stat"><span>Anúncios</span><strong id="store-stat-products">0</strong><small>Produtos no catálogo</small></article>
-          </div>
-          <div class="store-dashboard-actions"><button type="button" id="store-refresh-button" class="botao-secundario">Atualizar estatísticas</button><button type="button" id="store-copy-link-button" class="botao-secundario">Copiar link da loja</button></div>
-          <p class="store-analytics-note">Visualizações, seguidores e contactos são contabilizados separadamente. Os contactos são contados por cliente e canal, para evitar duplicações repetidas.</p>
-        </div>
+            <section id="bisno-account-summary" class="painel-secundario account-summary">
+        <p class="account-summary-eyebrow">A TUA CONTA</p>
+        <h3>Gere a tua atividade no Bisno</h3>
+        <p>Atualiza os teus dados e acompanha os anúncios que publicaste. O pagamento e a entrega são combinados diretamente entre comprador e vendedor.</p>
+        <button type="button" class="botao-secundario" id="atalho-meus-anuncios">Ver os meus anúncios</button>
       </section>
 
 <!-- NOTIFICAÇÕES DO BISNO -->
@@ -339,7 +332,9 @@
             name="price"
             type="number"
             min="0"
-            step="0.01"
+            step="1"
+            max="1000000000000"
+            inputmode="numeric"
             placeholder="Ex.: 85000"
             required
           >
@@ -420,6 +415,24 @@
         </div>
         <a href="#area-publicar" data-bisno-page="publish" class="bisno-banner-botao">＋ Publicar anúncio</a>
       </aside>
+      <section class="bisno-categorias-rapidas" aria-labelledby="titulo-categorias-rapidas">
+        <div class="bisno-categorias-cabecalho">
+          <div>
+            <span class="bisno-secao-kicker">Explora o mercado</span>
+            <h2 id="titulo-categorias-rapidas">O que procuras hoje?</h2>
+          </div>
+          <p>Escolhe uma categoria para encontrar anúncios relevantes.</p>
+        </div>
+        <div class="bisno-categorias-lista">
+          <button type="button" data-categoria-rapida="Telemóveis"><span aria-hidden="true">▣</span> Telemóveis</button>
+          <button type="button" data-categoria-rapida="Informática"><span aria-hidden="true">⌘</span> Informática</button>
+          <button type="button" data-categoria-rapida="Moda"><span aria-hidden="true">✦</span> Moda</button>
+          <button type="button" data-categoria-rapida="Veículos"><span aria-hidden="true">↗</span> Veículos</button>
+          <button type="button" data-categoria-rapida="Casa e Jardim"><span aria-hidden="true">⌂</span> Casa e jardim</button>
+          <button type="button" data-categoria-rapida="Outros"><span aria-hidden="true">＋</span> Outros</button>
+        </div>
+      </section>
+
       <div class="cabecalho-produtos">
         <h2>Anúncios recentes</h2>
         <p>Produtos publicados recentemente por vários vendedores.</p>
@@ -468,7 +481,14 @@
           min="0"
           placeholder="Sem limite"
         >
+
+        <button type="button" id="limpar-filtros" class="botao-limpar-filtros">
+          Limpar filtros
+        </button>
       </div>
+
+      <!-- RESULTADO DA PESQUISA -->
+      <p id="resultado-contagem" class="resultado-contagem" aria-live="polite"></p>
 
       <!-- LISTA DE PRODUTOS -->
       <div

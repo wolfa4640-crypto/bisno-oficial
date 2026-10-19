@@ -4,11 +4,13 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
+const verificarImagem = require("../middleware/validar-imagem");
 const db = require("../data/database");
 
 const router = express.Router();
 
-const pastaUploads = path.join(__dirname, "..", "uploads");
+const pastaUploads = process.env.UPLOADS_DIR || path.join(__dirname, "..", "uploads");
 
 fs.mkdirSync(pastaUploads, { recursive: true });
 
@@ -24,7 +26,7 @@ const armazenamento = multer.diskStorage({
     };
 
     const extensao = extensoesPermitidas[file.mimetype];
-    const nome = `perfil-${req.session.userId}-${Date.now()}${extensao}`;
+    const nome = `perfil-${req.session.userId}-${crypto.randomUUID()}${extensao}`;
 
     callback(null, nome);
   }
@@ -54,21 +56,49 @@ const uploadAvatar = multer({
 router.post("/register", (req, res) => {
   const { name, email, phone, password } = req.body;
 
-  if (!name || !email || !phone || !password) {
+  if (typeof name !== "string" || typeof email !== "string" ||
+      typeof phone !== "string" || typeof password !== "string" ||
+      !name.trim() || !email.trim() || !phone.trim() || !password) {
     return res.status(400).json({
       erro: "Preenche todos os campos."
-    });
-  }
-
-  if (String(password).length < 8) {
-    return res.status(400).json({
-      erro: "A palavra-passe deve ter pelo menos 8 caracteres."
     });
   }
 
   const nomeNormalizado = String(name).trim();
   const emailNormalizado = String(email).trim().toLowerCase();
   const telefoneNormalizado = String(phone).trim();
+  const palavraPasse = String(password);
+
+  if (nomeNormalizado.length < 2 || nomeNormalizado.length > 100) {
+    return res.status(400).json({
+      erro: "O nome deve ter entre 2 e 100 caracteres."
+    });
+  }
+
+  if (emailNormalizado.length > 254) {
+    return res.status(400).json({
+      erro: "O e-mail é demasiado longo."
+    });
+  }
+
+  if (telefoneNormalizado.length < 7 || telefoneNormalizado.length > 30) {
+    return res.status(400).json({
+      erro: "Introduz um telefone válido com até 30 caracteres."
+    });
+  }
+
+  if (palavraPasse.length < 8) {
+    return res.status(400).json({
+      erro: "A palavra-passe deve ter pelo menos 8 caracteres."
+    });
+  }
+
+  // bcrypt usa no máximo 72 bytes; rejeitar valores maiores evita ambiguidades.
+  if (Buffer.byteLength(palavraPasse, "utf8") > 72) {
+    return res.status(400).json({
+      erro: "A palavra-passe não pode ultrapassar 72 bytes."
+    });
+  }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
     return res.status(400).json({
@@ -77,7 +107,7 @@ router.post("/register", (req, res) => {
   }
 
   try {
-    const hash = bcrypt.hashSync(password, 12);
+    const hash = bcrypt.hashSync(palavraPasse, 12);
 
     const resultado = db.prepare(`
       INSERT INTO users (name, email, phone, password)
@@ -89,24 +119,32 @@ router.post("/register", (req, res) => {
       hash
     );
 
-    req.session.userId = Number(resultado.lastInsertRowid);
-
-    req.session.save((erro) => {
-      if (erro) {
+    // Regenerar a sessão após registo para mitigar session fixation.
+    req.session.regenerate((erroSessao) => {
+      if (erroSessao) {
         return res.status(500).json({
           erro: "A conta foi criada, mas não foi possível iniciar a sessão."
         });
       }
 
-      res.status(201).json({
-        mensagem: "Conta criada com sucesso!",
-        utilizador: {
-          id: Number(resultado.lastInsertRowid),
-          name: nomeNormalizado,
-          email: emailNormalizado,
-          phone: telefoneNormalizado,
-          avatar: null
+      req.session.userId = Number(resultado.lastInsertRowid);
+      req.session.save((erroGuardar) => {
+        if (erroGuardar) {
+          return res.status(500).json({
+            erro: "A conta foi criada, mas não foi possível iniciar a sessão."
+          });
         }
+
+        res.status(201).json({
+          mensagem: "Conta criada com sucesso!",
+          utilizador: {
+            id: Number(resultado.lastInsertRowid),
+            name: nomeNormalizado,
+            email: emailNormalizado,
+            phone: telefoneNormalizado,
+            avatar: null
+          }
+        });
       });
     });
   } catch (erro) {
@@ -127,7 +165,8 @@ router.post("/register", (req, res) => {
 router.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (typeof email !== "string" || typeof password !== "string" ||
+      !email.trim() || !password) {
     return res.status(400).json({
       erro: "Introduz o e-mail e a palavra-passe."
     });
@@ -213,6 +252,10 @@ router.put(
   (req, res, next) => {
     uploadAvatar.single("avatar")(req, res, (erro) => {
       if (!erro) {
+        if (req.file && !verificarImagem(req.file.path, req.file.mimetype)) {
+          try { fs.unlinkSync(req.file.path); } catch (_) {}
+          return res.status(400).json({ erro: "O ficheiro não corresponde a uma imagem válida." });
+        }
         return next();
       }
 
@@ -239,15 +282,17 @@ router.put(
     const nome = String(req.body.name || "").trim();
     const telefone = String(req.body.phone || "").trim();
 
-    if (!nome || !telefone) {
+    if (nome.length < 2 || nome.length > 100) {
+      if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       return res.status(400).json({
-        erro: "Preenche o nome e o telefone."
+        erro: "O nome deve ter entre 2 e 100 caracteres."
       });
     }
 
-    if (nome.length > 100 || telefone.length > 30) {
+    if (telefone.length < 7 || telefone.length > 30) {
+      if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       return res.status(400).json({
-        erro: "O nome ou telefone é demasiado longo."
+        erro: "O telefone deve ter entre 7 e 30 caracteres."
       });
     }
 
@@ -268,11 +313,26 @@ router.put(
         WHERE id = ?
       `).get(req.session.userId);
 
+      // Após guardar a nova referência, limpar o avatar antigo da pasta própria.
+      // Nunca remover caminhos externos nem ficheiros que não estejam em /uploads/.
+      if (req.file && utilizadorAtual.avatar && utilizadorAtual.avatar.startsWith("/uploads/")) {
+        const avatarAntigo = path.basename(utilizadorAtual.avatar);
+        const caminhoAvatarAntigo = path.join(pastaUploads, avatarAntigo);
+        if (caminhoAvatarAntigo !== req.file.path) {
+          try {
+            if (fs.existsSync(caminhoAvatarAntigo)) fs.unlinkSync(caminhoAvatarAntigo);
+          } catch (erroAvatar) {
+            console.error("Perfil atualizado, mas não foi possível limpar o avatar antigo:", erroAvatar);
+          }
+        }
+      }
+
       res.json({
         mensagem: "Perfil atualizado com sucesso!",
         utilizador: utilizadorAtualizado
       });
     } catch (erro) {
+      if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       console.error(erro);
       res.status(500).json({
         erro: "Não foi possível atualizar o perfil."
@@ -290,7 +350,7 @@ router.post("/logout", (req, res) => {
       });
     }
 
-    res.clearCookie("connect.sid");
+    res.clearCookie("bisno.sid", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
     res.json({ mensagem: "Sessão terminada." });
   });
 });
