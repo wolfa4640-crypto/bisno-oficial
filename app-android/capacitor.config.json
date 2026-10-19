@@ -1,0 +1,13 @@
+{
+  "appId": "ao.bisno.app",
+  "appName": "Bisno",
+  "webDir": "www",
+  "server": {
+    "url": "https://bisno-oficial.onrender.com",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
