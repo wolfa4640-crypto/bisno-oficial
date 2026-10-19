@@ -3074,6 +3074,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   atualizarAreasSociais();
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 
-  await carregarProdutos();
+  if (utilizadorAtual) await carregarProdutos();
+  else definirConteudo("#lista-produtos", "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>");
 
 });
