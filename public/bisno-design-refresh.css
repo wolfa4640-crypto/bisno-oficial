@@ -1849,3 +1849,19 @@ body.bisno-requer-login:not(.bisno-autenticado) .container {
  .bisno-card-interest { left:9px !important; right:9px !important; bottom:9px !important; width:calc(100% - 18px) !important; min-height:44px !important; padding:8px 10px !important; gap:8px !important; }
  .bisno-interest-detail { width:100% !important; min-height:50px !important; }
 }
+
+
+/* Autenticação: recuperação e confirmação de e-mail claramente visíveis */
+#area-autenticacao #form-login,
+#area-autenticacao #form-registo,
+#area-autenticacao #form-verificar-email,
+#area-autenticacao #form-recuperar-password,
+#area-autenticacao #form-nova-password{display:flex;flex-direction:column;gap:10px}
+#area-autenticacao form[hidden]{display:none!important}
+#area-autenticacao .botao-secundario,
+#area-autenticacao #botao-confirmar-email{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:5px;padding:11px 14px;border:1px solid #cfe3d6;border-radius:12px;background:#f2faf5;color:#176b45;font-weight:750;line-height:1.35;text-align:center;cursor:pointer}
+#area-autenticacao .botao-secundario:hover,
+#area-autenticacao #botao-confirmar-email:hover{background:#e5f5eb;border-color:#83c49d}
+#area-autenticacao form button[type=submit]{min-height:48px;margin-top:8px;border-radius:12px;font-weight:800}
+#area-autenticacao form p{line-height:1.55;color:#52645a}
+#area-autenticacao input{box-sizing:border-box;margin-bottom:5px}
