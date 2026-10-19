@@ -125,3 +125,8 @@ Não declarar a modernização concluída até os testes e a verificação no se
 
 - Ajustada a navegação móvel para permanecer fixa junto à parte inferior do ecrã, com respeito pela área segura dos dispositivos e espaço adicional no conteúdo para reduzir sobreposição.
 - A alteração é apenas CSS e não muda destinos, permissões ou fluxos da aplicação. É necessário confirmar em navegador móvel real a altura final e o comportamento com teclado virtual aberto.
+
+## Navegação compacta em ecrãs estreitos — etapa seguinte
+
+- Refinados alinhamento, espaçamento e badges de contagem da navegação para acomodar os seis destinos em ecrãs estreitos sem perder o tamanho mínimo de toque definido anteriormente.
+- O ajuste aplica-se sobretudo a larguras até 420 px; a validação final requer inspeção visual em ecrãs reais, incluindo dispositivos com largura próxima de 320 px.
