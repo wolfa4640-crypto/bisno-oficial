@@ -34,6 +34,7 @@ let buyer;
 let seller;
 let outsider;
 let productId;
+let unrelatedProductId;
 let storeId;
 let conversation;
 let notification;
@@ -50,6 +51,7 @@ test.before(async () => {
     VALUES(?,?,?,?,?,?,?,?)
   `).run(seller,"Test item","Test description",1000,"Novo","Tecnologia","Luanda","Maianga").lastInsertRowid);
   storeId = Number(db.prepare("INSERT INTO stores(user_id,name,description,city) VALUES(?,?,?,?)").run(seller,"Seller Store","Private test store","Luanda").lastInsertRowid);
+  unrelatedProductId = Number(db.prepare(`INSERT INTO products(user_id,name,description,price,condition,category,city,neighborhood) VALUES(?,?,?,?,?,?,?,?)`).run(buyer,"Unrelated item","Owned by buyer",500,"Usado","Casa","Luanda","Ingombota").lastInsertRowid);
   conversation = Number(db.prepare(
     "INSERT INTO conversations(product_id,buyer_id,seller_id) VALUES(?,?,?)"
   ).run(productId,buyer,seller).lastInsertRowid);
@@ -147,7 +149,7 @@ test("store contact rejects a product owned by a different seller", async () => 
   const res = await fetch(base + "/stores/" + storeId + "/contact", {
     method: "POST",
     headers: { cookie, "content-type": "application/json" },
-    body: JSON.stringify({ channel: "whatsapp", productId: 99999999 })
+    body: JSON.stringify({ channel: "whatsapp", productId: unrelatedProductId })
   });
   assert.equal(res.status, 400);
   assert.equal(
