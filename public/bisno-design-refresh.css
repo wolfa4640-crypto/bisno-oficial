@@ -986,3 +986,108 @@ button:disabled,[role="button"][aria-disabled="true"]{
   #area-produtos #lista-produtos .cartao-produto .botao-whatsapp,
   #area-produtos #lista-produtos .cartao-produto [data-ver-vendedor]:not(.avatar-vendedor-clicavel):not(.nome-vendedor-link){min-height:29px !important;padding:5px 3px !important;font-size:9px !important}
 }
+
+
+/* Bisno product-card visual refresh — markup-specific styles */
+#area-produtos #lista-produtos.lista-produtos{
+ display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+ gap:14px !important;align-items:stretch !important;
+}
+#area-produtos #lista-produtos .bisno-product-card{
+ display:flex !important;flex-direction:column !important;min-width:0 !important;
+ max-width:none !important;height:100% !important;margin:0 !important;padding:0 !important;
+ overflow:hidden !important;border:1px solid #e8eae6 !important;border-radius:14px !important;
+ background:#fff !important;box-shadow:0 3px 12px rgba(24,39,28,.07) !important;
+ transition:transform .18s ease,box-shadow .18s ease !important;
+}
+#area-produtos #lista-produtos .bisno-product-card:hover{transform:translateY(-2px) !important;box-shadow:0 9px 24px rgba(24,39,28,.12) !important}
+#area-produtos #lista-produtos .bisno-product-media{
+ position:relative !important;width:100% !important;aspect-ratio:1/1 !important;height:auto !important;
+ min-height:0 !important;overflow:hidden !important;background:#f3f4f1 !important;flex:none !important;
+}
+#area-produtos #lista-produtos .bisno-product-media > .imagem-produto{
+ display:block !important;width:100% !important;height:100% !important;min-height:0 !important;
+ max-height:none !important;aspect-ratio:auto !important;object-fit:cover !important;
+ cursor:pointer !important;border:0 !important;border-radius:0 !important;margin:0 !important;padding:0 !important;
+}
+#area-produtos #lista-produtos .bisno-card-interest{
+ position:absolute !important;top:10px !important;left:10px !important;z-index:2 !important;
+ display:grid !important;place-items:center !important;width:36px !important;height:36px !important;
+ padding:0 !important;border:1px solid rgba(255,255,255,.5) !important;border-radius:50% !important;
+ background:rgba(20,25,22,.68) !important;color:#fff !important;font-size:23px !important;line-height:1 !important;
+ backdrop-filter:blur(8px) !important;box-shadow:0 2px 8px rgba(0,0,0,.12) !important;
+}
+#area-produtos #lista-produtos .bisno-card-interest[aria-pressed="true"]{background:#16804a !important}
+#area-produtos #lista-produtos .bisno-views-badge{
+ position:absolute !important;top:10px !important;right:10px !important;z-index:2 !important;
+ padding:6px 9px !important;border-radius:999px !important;background:#16804a !important;
+ color:#fff !important;font-size:11px !important;font-weight:800 !important;line-height:1.1 !important;
+ box-shadow:0 2px 8px rgba(0,0,0,.12) !important;
+}
+#area-produtos #lista-produtos .bisno-condition-badge{
+ position:absolute !important;bottom:10px !important;left:10px !important;z-index:2 !important;
+ max-width:calc(100% - 20px) !important;padding:5px 8px !important;border-radius:6px !important;
+ background:rgba(255,255,255,.94) !important;color:#26352b !important;font-size:10px !important;
+ font-weight:800 !important;line-height:1.1 !important;text-transform:capitalize !important;
+}
+#area-produtos #lista-produtos .bisno-product-info{
+ display:flex !important;flex:1 1 auto !important;flex-direction:column !important;align-items:stretch !important;
+ min-width:0 !important;gap:7px !important;padding:12px !important;
+}
+#area-produtos #lista-produtos .bisno-product-info .bisno-product-category{
+ margin:0 !important;color:#7a8079 !important;font-size:10px !important;font-weight:750 !important;
+ text-transform:uppercase !important;letter-spacing:.045em !important;line-height:1.2 !important;
+}
+#area-produtos #lista-produtos .bisno-product-info h3{
+ display:-webkit-box !important;-webkit-box-orient:vertical !important;-webkit-line-clamp:2 !important;
+ overflow:hidden !important;min-height:0 !important;margin:0 !important;color:#252a26 !important;
+ font-size:14px !important;font-weight:550 !important;line-height:1.35 !important;letter-spacing:-.15px !important;
+}
+#area-produtos #lista-produtos .bisno-product-info p.preco{
+ order:0 !important;margin:0 !important;color:#c9363c !important;font-size:20px !important;
+ font-weight:850 !important;line-height:1.15 !important;letter-spacing:-.5px !important;
+}
+#area-produtos #lista-produtos .bisno-product-location{
+ margin:0 !important;color:#737a74 !important;font-size:11px !important;line-height:1.35 !important;
+ white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;
+}
+#area-produtos #lista-produtos .bisno-card-actions{
+ display:flex !important;flex-direction:column !important;gap:6px !important;margin-top:2px !important;
+}
+#area-produtos #lista-produtos .bisno-card-actions .botao-mensagem,
+#area-produtos #lista-produtos .bisno-card-actions .botao-whatsapp{
+ display:flex !important;align-items:center !important;justify-content:center !important;
+ width:100% !important;min-width:0 !important;min-height:34px !important;margin:0 !important;
+ padding:7px 9px !important;border-radius:8px !important;font-size:11px !important;font-weight:800 !important;
+ line-height:1.15 !important;text-align:center !important;text-decoration:none !important;box-sizing:border-box !important;
+}
+#area-produtos #lista-produtos .bisno-card-actions .botao-mensagem{background:#176b42 !important;color:#fff !important;border:1px solid #176b42 !important}
+#area-produtos #lista-produtos .bisno-card-actions .botao-whatsapp{background:#f2faf5 !important;color:#176b42 !important;border:1px solid #d5eadb !important}
+#area-produtos #lista-produtos .bisno-seller-row{
+ display:flex !important;align-items:center !important;gap:7px !important;min-width:0 !important;
+ margin:2px 0 0 !important;padding-top:8px !important;border-top:1px solid #eef0ec !important;
+}
+#area-produtos #lista-produtos .bisno-seller-row .avatar-vendedor-clicavel{flex:0 0 25px !important;width:25px !important;height:25px !important}
+#area-produtos #lista-produtos .bisno-seller-row .nome-vendedor-link{
+ min-width:0 !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;
+ font-size:10px !important;font-weight:650 !important;text-align:left !important;
+}
+@media(min-width:1450px){#area-produtos #lista-produtos.lista-produtos{grid-template-columns:repeat(5,minmax(0,1fr)) !important;gap:16px !important}}
+@media(min-width:721px) and (max-width:1099px){#area-produtos #lista-produtos.lista-produtos{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:12px !important}}
+@media(max-width:720px){
+ #area-produtos #lista-produtos.lista-produtos{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important}
+ #area-produtos #lista-produtos .bisno-product-card{border-radius:10px !important}
+ #area-produtos #lista-produtos .bisno-product-info{gap:5px !important;padding:8px !important}
+ #area-produtos #lista-produtos .bisno-product-info h3{font-size:12px !important;line-height:1.3 !important}
+ #area-produtos #lista-produtos .bisno-product-info p.preco{font-size:15px !important}
+ #area-produtos #lista-produtos .bisno-product-info .bisno-product-category,
+ #area-produtos #lista-produtos .bisno-product-location{font-size:9px !important}
+ #area-produtos #lista-produtos .bisno-card-interest{top:7px !important;left:7px !important;width:30px !important;height:30px !important;font-size:20px !important}
+ #area-produtos #lista-produtos .bisno-views-badge{top:7px !important;right:7px !important;padding:5px 7px !important;font-size:9px !important}
+ #area-produtos #lista-produtos .bisno-condition-badge{bottom:7px !important;left:7px !important;font-size:9px !important}
+ #area-produtos #lista-produtos .bisno-card-actions .botao-mensagem,
+ #area-produtos #lista-produtos .bisno-card-actions .botao-whatsapp{min-height:30px !important;padding:5px 4px !important;font-size:9px !important}
+ #area-produtos #lista-produtos .bisno-seller-row{gap:5px !important;padding-top:6px !important}
+ #area-produtos #lista-produtos .bisno-seller-row .avatar-vendedor-clicavel{flex-basis:21px !important;width:21px !important;height:21px !important}
+ #area-produtos #lista-produtos .bisno-seller-row .nome-vendedor-link{font-size:9px !important}
+}
