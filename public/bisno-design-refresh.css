@@ -1403,3 +1403,20 @@ button.botao-whatsapp:focus-visible {
  .bisno-perfil-form h3,.bisno-foto-campo,.bisno-guardar-perfil { grid-column:1; }
  .bisno-guardar-perfil { width:100%; }
 }
+
+
+/* Banner rotativo da página inicial: verde, azul-petróleo, âmbar e violeta */
+.bisno-banner-anuncios{position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;overflow:hidden;transition:background .45s ease,box-shadow .45s ease}
+.bisno-banner-anuncios .bisno-banner-texto{position:relative;z-index:1;transition:opacity .18s ease,transform .18s ease}
+.bisno-banner-anuncios.bisno-banner-a-mudar .bisno-banner-texto{opacity:.25;transform:translateY(5px)}
+.bisno-banner-slide-0{background:radial-gradient(circle at 85% 15%,rgba(113,220,160,.26),transparent 30%),linear-gradient(120deg,#0b4d32 0%,#137448 58%,#21945e 100%);box-shadow:0 16px 36px rgba(11,77,50,.18)}
+.bisno-banner-slide-1{background:radial-gradient(circle at 85% 15%,rgba(120,220,236,.26),transparent 32%),linear-gradient(120deg,#12485a 0%,#087e8b 58%,#18a6a0 100%);box-shadow:0 16px 36px rgba(8,91,104,.2)}
+.bisno-banner-slide-2{background:radial-gradient(circle at 85% 15%,rgba(255,225,151,.3),transparent 32%),linear-gradient(120deg,#77501a 0%,#a96b16 58%,#d7952b 100%);box-shadow:0 16px 36px rgba(140,91,22,.2)}
+.bisno-banner-slide-3{background:radial-gradient(circle at 85% 15%,rgba(208,190,255,.26),transparent 32%),linear-gradient(120deg,#44356f 0%,#6650a3 58%,#8771c5 100%);box-shadow:0 16px 36px rgba(68,53,111,.2)}
+.bisno-banner-indicadores{display:flex;align-items:center;gap:8px;margin-top:18px}
+.bisno-banner-indicadores button{width:9px;min-width:9px;height:9px;min-height:9px;padding:0;border:1px solid rgba(255,255,255,.8);border-radius:50%;background:rgba(255,255,255,.35);box-shadow:none;transition:width .2s ease,background .2s ease}
+.bisno-banner-indicadores button.is-active{width:26px;background:#fff;border-radius:8px}
+.bisno-banner-indicadores button:hover{background:#fff}
+.bisno-banner-indicadores button:focus-visible{outline:3px solid rgba(255,255,255,.55);outline-offset:3px}
+@media(max-width:600px){.bisno-banner-anuncios{align-items:flex-start;flex-direction:column;gap:16px}.bisno-banner-indicadores{margin-top:14px}.bisno-banner-anuncios h2{font-size:clamp(27px,8vw,36px)}}
+@media(prefers-reduced-motion:reduce){.bisno-banner-anuncios,.bisno-banner-anuncios .bisno-banner-texto,.bisno-banner-indicadores button{transition:none}}
