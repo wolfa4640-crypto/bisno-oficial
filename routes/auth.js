@@ -280,12 +280,14 @@ router.put(
     const telefone = String(req.body.phone || "").trim();
 
     if (!nome || !telefone) {
+      if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       return res.status(400).json({
         erro: "Preenche o nome e o telefone."
       });
     }
 
     if (nome.length > 100 || telefone.length > 30) {
+      if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       return res.status(400).json({
         erro: "O nome ou telefone é demasiado longo."
       });
@@ -313,6 +315,7 @@ router.put(
         utilizador: utilizadorAtualizado
       });
     } catch (erro) {
+      if (req.file) { try { fs.unlinkSync(req.file.path); } catch (_) {} }
       console.error(erro);
       res.status(500).json({
         erro: "Não foi possível atualizar o perfil."
