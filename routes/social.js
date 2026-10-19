@@ -141,38 +141,47 @@ router.post("/interests/:productId", exigirLogin, (req, res) => {
   }
 
   const transacao = db.transaction(() => {
-    db.prepare(`
-      INSERT INTO product_interests (product_id, user_id)
+    // INSERT OR IGNORE evita erro 500 se dois pedidos simultâneos tentarem
+    // registar o mesmo interesse protegido pela chave UNIQUE.
+    const insercao = db.prepare(`
+      INSERT OR IGNORE INTO product_interests (product_id, user_id)
       VALUES (?, ?)
     `).run(productId, userId);
 
-    const utilizador = db.prepare(
-      "SELECT name FROM users WHERE id = ?"
-    ).get(userId);
+    if (insercao.changes) {
+      const utilizador = db.prepare(
+        "SELECT name FROM users WHERE id = ?"
+      ).get(userId);
 
-    db.prepare(`
-      INSERT INTO notifications
-        (recipient_user_id, actor_user_id, product_id, type, message)
-      VALUES (?, ?, ?, 'interest', ?)
-    `).run(
-      produto.user_id,
-      userId,
-      productId,
-      `${utilizador?.name || "Um utilizador"} demonstrou interesse no anúncio "${produto.name}".`
-    );
+      db.prepare(`
+        INSERT INTO notifications
+          (recipient_user_id, actor_user_id, product_id, type, message)
+        VALUES (?, ?, ?, 'interest', ?)
+      `).run(
+        produto.user_id,
+        userId,
+        productId,
+        `${utilizador?.name || "Um utilizador"} demonstrou interesse no anúncio "${produto.name}".`
+      );
+    }
 
-    return db.prepare(`
-      SELECT COUNT(*) AS total
-      FROM product_interests WHERE product_id = ?
-    `).get(productId).total;
+    return {
+      total: db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM product_interests WHERE product_id = ?
+      `).get(productId).total,
+      inserido: Boolean(insercao.changes)
+    };
   });
 
-  const total = transacao();
+  const resultado = transacao();
 
-  res.status(201).json({
-    mensagem: "Interesse registado!",
+  res.status(resultado.inserido ? 201 : 200).json({
+    mensagem: resultado.inserido
+      ? "Interesse registado!"
+      : "Já demonstraste interesse neste anúncio.",
     interessado: true,
-    total
+    total: resultado.total
   });
 });
 
