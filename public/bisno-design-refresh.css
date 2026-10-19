@@ -1584,3 +1584,41 @@ button.botao-whatsapp:focus-visible {
   #area-conta #area-meus-anuncios,
   #area-publicar{padding:15px;border-radius:14px}
 }
+
+
+/* Ecrã exclusivo de autenticação para visitantes sem sessão */
+body.bisno-sem-sessao .topo-slogan,
+body.bisno-sem-sessao #botao-abrir-pesquisa,
+body.bisno-sem-sessao .bisno-nav,
+body.bisno-sem-sessao footer,
+body.bisno-sem-sessao main > hr,
+body.bisno-sem-sessao #painel-pesquisa-overlay,
+body.bisno-sem-sessao main > #area-conta,
+body.bisno-sem-sessao main > #area-produtos {
+  display: none !important;
+}
+body.bisno-sem-sessao main > #area-autenticacao {
+  display: block !important;
+  max-width: 520px;
+  margin: clamp(28px, 8vh, 76px) auto 48px;
+  border: 1px solid #dce9e0;
+  border-radius: 22px;
+  padding: clamp(22px, 5vw, 38px);
+  box-shadow: 0 18px 55px rgba(18, 70, 43, .10);
+  background: #fff;
+}
+body.bisno-sem-sessao .container {
+  min-height: calc(100vh - 90px);
+  display: block;
+}
+body.bisno-sem-sessao #mensagem:not(:empty) {
+  max-width: 520px;
+  margin: 12px auto;
+}
+@media (max-width: 600px) {
+  body.bisno-sem-sessao main > #area-autenticacao {
+    margin: 20px 12px 32px;
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+}
