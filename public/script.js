@@ -1324,6 +1324,15 @@ async function carregarProdutos() {
 
 
 
+function normalizarTexto(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+
 function aplicarFiltros() {
 
   const lista = $("#lista-produtos");
@@ -1332,11 +1341,11 @@ function aplicarFiltros() {
 
 
 
-  const pesquisa = ($("#filtro-pesquisa")?.value ?? "").trim().toLowerCase();
+  const pesquisa = normalizarTexto($("#filtro-pesquisa")?.value);
 
   const categoria = $("#filtro-categoria")?.value ?? "";
 
-  const cidade = ($("#filtro-cidade")?.value ?? "").trim().toLowerCase();
+  const cidade = normalizarTexto($("#filtro-cidade")?.value);
 
   const precoMaximo = $("#filtro-preco")?.value;
 
@@ -1358,7 +1367,7 @@ function aplicarFiltros() {
 
       produto.neighborhood
 
-    ].join(" ").toLowerCase();
+    ].join(" ").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
 
 
 
@@ -1366,7 +1375,7 @@ function aplicarFiltros() {
 
     if (categoria && produto.category !== categoria) return false;
 
-    const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" ").toLowerCase();
+    const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" ").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
 
     if (cidade && !localizacao.includes(cidade)) return false;
 
