@@ -1429,3 +1429,36 @@ button.botao-whatsapp:focus-visible {
 .topo .logo-texto small,.topo .topo-slogan{opacity:.88}
 .topo .topo-conteudo{min-height:80px}
 @media(max-width:600px){.topo .topo-conteudo{min-height:70px}}
+
+
+/* Pesquisa acessível pela lupa no topo */
+.topo-conteudo { position: relative; }
+.botao-abrir-pesquisa {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 44px; width: 44px; height: 44px; margin-left: auto;
+  border: 1px solid rgba(255,255,255,.45); border-radius: 50%;
+  background: rgba(255,255,255,.14); color: #fff; cursor: pointer;
+  font-size: 30px; line-height: 1; transition: background .2s, transform .2s;
+}
+.botao-abrir-pesquisa:hover, .botao-abrir-pesquisa:focus-visible {
+  background: rgba(255,255,255,.27); transform: scale(1.04); outline: 2px solid #fff; outline-offset: 2px;
+}
+.painel-pesquisa-overlay {
+  position: fixed; z-index: 1200; top: 86px; right: max(16px, calc((100vw - 1100px)/2));
+  width: min(440px, calc(100vw - 24px)); max-height: calc(100dvh - 110px);
+  overflow-y: auto; padding: 16px; border: 1px solid #dbe7df; border-radius: 18px;
+  background: #fff; color: #17251d; box-shadow: 0 18px 55px rgba(13,43,28,.24);
+}
+.painel-pesquisa-overlay[hidden] { display: none !important; }
+.painel-pesquisa-cabecalho { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.painel-pesquisa-cabecalho strong { font-size:1.08rem; }
+.painel-pesquisa-cabecalho button { width:36px; height:36px; border:0; border-radius:50%; background:#edf5ef; color:#176b45; font-size:25px; cursor:pointer; }
+.painel-pesquisa-overlay .filtros-produtos { display:grid; grid-template-columns:1fr; gap:7px; margin:0; padding:0; border:0; box-shadow:none; background:transparent; }
+.painel-pesquisa-overlay .filtros-produtos label { margin-top:5px; font-size:.88rem; }
+.painel-pesquisa-overlay .filtros-produtos input,
+.painel-pesquisa-overlay .filtros-produtos select { width:100%; min-width:0; }
+@media (max-width:600px) {
+  .topo-conteudo { gap:8px; }
+  .botao-abrir-pesquisa { width:40px; height:40px; flex-basis:40px; }
+  .painel-pesquisa-overlay { top:72px; right:12px; }
+}
