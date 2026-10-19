@@ -769,7 +769,7 @@ async function registarUtilizador(evento) {
       mostrarConta();
 
     }
-    await carregarPainelLoja();
+  
 
     formulario.reset();
 
@@ -2928,67 +2928,6 @@ function configurarFiltros() {
 }
 
 
-
-async function carregarPainelLoja() {
-  const form = $("#form-ativar-loja");
-  if (!form || !utilizadorAtual) return;
-  try {
-    const dados = await pedidoAPI("/api/stores/mine");
-    const store = dados.store;
-    $("#store-dashboard").hidden = !store;
-    form.hidden = Boolean(store);
-    const status = $("#store-status");
-    if (status) {
-      status.textContent = store ? "Loja ativa" : "Ainda não ativada";
-      status.classList.toggle("is-active", Boolean(store));
-    }
-    if (store) {
-      $("#store-name").value = store.name || "";
-      $("#store-city").value = store.city || "";
-      $("#store-description").value = store.description || "";
-      $("#store-stat-views").textContent = dados.stats?.views ?? 0;
-      $("#store-stat-followers").textContent = dados.stats?.followers ?? 0;
-      $("#store-stat-contacts").textContent = dados.stats?.contacts ?? 0;
-      $("#store-stat-products").textContent = dados.stats?.products ?? 0;
-      form.hidden = false;
-      const button = $("#store-save-button");
-      if (button) button.textContent = "Guardar dados da loja";
-      form.dataset.active = "true";
-    } else {
-      form.dataset.active = "false";
-      const button = $("#store-save-button");
-      if (button) button.textContent = "Ativar a minha loja";
-    }
-  } catch (erro) {
-    const feedback = $("#store-form-feedback");
-    if (feedback) feedback.textContent = erro.message || "Não foi possível carregar a loja.";
-  }
-}
-
-async function guardarLoja(evento) {
-  evento.preventDefault();
-  if (!utilizadorAtual) return mostrarMensagem("Inicia sessão para ativares a tua loja.", "erro");
-  const form = evento.currentTarget;
-  const feedback = $("#store-form-feedback");
-  const payload = {
-    name: $("#store-name").value.trim(),
-    city: $("#store-city").value.trim(),
-    description: $("#store-description").value.trim()
-  };
-  const button = $("#store-save-button");
-  button.disabled = true;
-  if (feedback) feedback.textContent = "A guardar a tua loja…";
-  try {
-    const dados = await pedidoAPI(form.dataset.active === "true" ? "/api/stores/mine" : "/api/stores/activate", {
-      method: form.dataset.active === "true" ? "PATCH" : "POST", body: payload
-    });
-    if (feedback) feedback.textContent = form.dataset.active === "true" ? "Dados da loja atualizados." : "Loja ativada com sucesso!";
-    form.dataset.active = "true";
-    await carregarPainelLoja();
-  } catch (erro) {
-    if (feedback) feedback.textContent = erro.message || "Não foi possível guardar a loja.";
-  } finally { button.disabled = false; }
-}
 
 function configurarFormularios() {
 
