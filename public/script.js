@@ -783,6 +783,9 @@ async function registarUtilizador(evento) {
     formulario.reset();
 
     mostrarMensagem("Conta criada com sucesso!", "sucesso");
+    // Após criar a conta, mostrar a página inicial do Bisno.
+    abrirPagina("area-produtos");
+    carregarProdutos().catch(console.error);
 
   } catch (erro) {
 
@@ -2846,7 +2849,9 @@ function configurarPainelPesquisa() {
     if (evento.key === "Escape" && !overlay.hidden) ocultar();
   });
   document.addEventListener("click", evento => {
-    if (!overlay.hidden && !overlay.contains(evento.target) && !abrir.contains(evento.target)) {
+    // Evita que o mesmo clique na lupa abra e feche o painel imediatamente.
+    if (abrir.contains(evento.target)) return;
+    if (!overlay.hidden && !overlay.contains(evento.target)) {
       overlay.hidden = true;
       abrir.setAttribute("aria-expanded", "false");
     }
