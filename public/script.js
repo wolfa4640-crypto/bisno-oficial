@@ -3026,6 +3026,58 @@ function configurarLoja() {
   $("#botao-atualizar-loja")?.addEventListener("click", carregarMinhaLoja);
 }
 
+
+function configurarBannerDestaque() {
+  const banner = document.querySelector("#bisno-banner-destaque");
+  const titulo = document.querySelector("#bisno-banner-titulo");
+  const descricao = document.querySelector("#bisno-banner-descricao");
+  const etiqueta = document.querySelector("#bisno-banner-etiqueta");
+  if (!banner || !titulo || !descricao || !etiqueta) return;
+
+  const destaques = [
+    { etiqueta: "O teu mercado, num só lugar", titulo: "Encontra. Compara. Compra.", descricao: "Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto.", cor: "0" },
+    { etiqueta: "Boas oportunidades esperam por ti", titulo: "Descobre. Escolhe. Poupa.", descricao: "Compara produtos novos e usados, explora opções e encontra uma oferta que combina contigo.", cor: "1" },
+    { etiqueta: "O teu próximo cliente está mais perto", titulo: "Publica. Conecta. Vende.", descricao: "Mostra o teu produto a pessoas de todo o país e combina diretamente com os interessados.", cor: "2" },
+    { etiqueta: "Mil possibilidades, num só lugar", titulo: "Procura. Encontra. Aproveita.", descricao: "Explora várias categorias e descobre produtos anunciados por vendedores de Angola.", cor: "3" }
+  ];
+  const indicadores = [...banner.querySelectorAll("[data-banner-slide]")];
+  let atual = 0;
+  let temporizador;
+
+  function mostrarDestaque(indice) {
+    atual = (indice + destaques.length) % destaques.length;
+    const item = destaques[atual];
+    banner.classList.add("bisno-banner-a-mudar");
+    window.setTimeout(() => {
+      etiqueta.textContent = item.etiqueta;
+      titulo.textContent = item.titulo;
+      descricao.textContent = item.descricao;
+      banner.classList.remove("bisno-banner-slide-0", "bisno-banner-slide-1", "bisno-banner-slide-2", "bisno-banner-slide-3");
+      banner.classList.add("bisno-banner-slide-" + item.cor);
+      indicadores.forEach((botao, i) => {
+        botao.classList.toggle("is-active", i === atual);
+        botao.setAttribute("aria-pressed", String(i === atual));
+      });
+      banner.classList.remove("bisno-banner-a-mudar");
+    }, 180);
+  }
+  function iniciarRotacao() {
+    window.clearInterval(temporizador);
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      temporizador = window.setInterval(() => mostrarDestaque(atual + 1), 5200);
+    }
+  }
+  indicadores.forEach(botao => botao.addEventListener("click", () => {
+    mostrarDestaque(Number(botao.dataset.bannerSlide) || 0);
+    iniciarRotacao();
+  }));
+  banner.addEventListener("mouseenter", () => window.clearInterval(temporizador));
+  banner.addEventListener("mouseleave", iniciarRotacao);
+  banner.addEventListener("focusin", () => window.clearInterval(temporizador));
+  banner.addEventListener("focusout", iniciarRotacao);
+  iniciarRotacao();
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
 
   configurarNavegacao();
