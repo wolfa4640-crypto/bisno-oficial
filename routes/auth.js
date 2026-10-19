@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
+const verificarImagem = require("../middleware/validar-imagem");
 const db = require("../data/database");
 
 const router = express.Router();
@@ -24,7 +26,7 @@ const armazenamento = multer.diskStorage({
     };
 
     const extensao = extensoesPermitidas[file.mimetype];
-    const nome = `perfil-${req.session.userId}-${Date.now()}${extensao}`;
+    const nome = `perfil-${req.session.userId}-${crypto.randomUUID()}${extensao}`;
 
     callback(null, nome);
   }
@@ -221,6 +223,10 @@ router.put(
   (req, res, next) => {
     uploadAvatar.single("avatar")(req, res, (erro) => {
       if (!erro) {
+        if (req.file && !verificarImagem(req.file.path, req.file.mimetype)) {
+          try { fs.unlinkSync(req.file.path); } catch (_) {}
+          return res.status(400).json({ erro: "O ficheiro não corresponde a uma imagem válida." });
+        }
         return next();
       }
 
