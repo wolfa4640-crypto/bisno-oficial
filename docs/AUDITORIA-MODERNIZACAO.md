@@ -160,3 +160,11 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - O estado sem resultados sugere alternativas e inclui uma ação para limpar filtros, além do botão principal do painel.
 - Acrescentados metadados Open Graph e Twitter para melhorar a apresentação do Bisno quando o link é partilhado.
 - A correção foi registada na branch; a validação por CI e a verificação no navegador continuam pendentes.
+
+## Redesign de cartões e simplificação da conta — revisão visual 2026
+
+- Os cartões de anúncios usam agora uma proporção consistente para as fotografias, object-fit contain, alturas previsíveis, título limitado a duas linhas e melhor hierarquia de preço, estado, categoria, localização e vendedor.
+- A grelha foi ajustada para cartões maiores em computadores e duas colunas em tablets e telemóveis, com ações de contacto em largura total e melhor legibilidade.
+- A secção de lojas foi retirada da interface porque o fluxo de ativação e painel não estava devidamente ligado aos eventos de interface. O código de API e os registos existentes não foram apagados; a alteração não destrói dados.
+- O destino “Loja” da navegação foi substituído por “Os meus”, ligado à lista de anúncios do utilizador. O atalho na conta também abre essa lista.
+- A mudança está na branch de desenvolvimento. Ainda é necessário confirmar sintaxe/CI e validar visualmente em navegador; o site publicado só refletirá estas mudanças após o fluxo normal de revisão e publicação.
