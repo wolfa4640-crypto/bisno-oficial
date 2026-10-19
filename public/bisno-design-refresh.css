@@ -131,3 +131,15 @@ button:disabled,[role="button"][aria-disabled="true"]{
   body{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
   .bisno-nav-inner{padding-bottom:calc(5px + env(safe-area-inset-bottom))}
 }
+
+/* Navegação compacta: mantém os seis destinos legíveis em ecrãs estreitos */
+.bisno-nav a{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+.bisno-nav a .nav-badge{min-width:16px;min-height:16px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:1px 4px;font-size:10px;line-height:1}
+.bisno-nav a .nav-badge[hidden]{display:none}
+@media(max-width:420px){
+  .bisno-nav-inner{gap:0;padding-left:2px;padding-right:2px}
+  .bisno-nav a{gap:3px;padding-left:1px;padding-right:1px;font-size:9px;letter-spacing:-.15px}
+  .bisno-nav a .nav-icon{font-size:18px;line-height:1}
+  .bisno-nav a.nav-publish .nav-icon{width:25px;height:25px;font-size:21px}
+  .bisno-nav a .nav-badge{position:absolute;top:1px;right:2px;min-width:14px;min-height:14px;font-size:9px}
+}
