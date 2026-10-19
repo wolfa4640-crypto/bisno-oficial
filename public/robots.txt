@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bisno-oficial.onrender.com/sitemap.xml
