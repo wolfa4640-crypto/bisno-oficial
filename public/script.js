@@ -796,70 +796,79 @@ async function registarUtilizador(evento) {
 
 
 async function entrarUtilizador(evento) {
+  // Impede o envio HTML tradicional, que recarregaria a página e apagaria os campos.
+  evento.preventDefault();
+  const formulario = evento.currentTarget;
+  if (!formulario || formulario.dataset.enviando === "true") return;
 
-  evento.preventDefault();
+  esconderMensagem();
 
-  esconderMensagem();
+  const campoEmail = $("#login-email");
+  const campoPassword = $("#login-password");
+  const botaoEnviar = formulario.querySelector('button[type="submit"]');
+  const email = String(campoEmail?.value || "").trim().toLowerCase();
+  const password = String(campoPassword?.value || "");
 
+  if (!email || !password) {
+    mostrarMensagem("Introduz o teu e-mail e a palavra-passe.", "aviso");
+    (!email ? campoEmail : campoPassword)?.focus();
+    return;
+  }
 
+  formulario.dataset.enviando = "true";
+  if (botaoEnviar) {
+    botaoEnviar.disabled = true;
+    botaoEnviar.dataset.textoOriginal = botaoEnviar.textContent;
+    botaoEnviar.textContent = "A entrar…";
+  }
 
-  const formulario = evento.currentTarget;
+  try {
+    const resposta = await pedidoAPI("/api/auth/login", {
+      method: "POST",
+      body: { email, password }
+    });
 
-  const dados = Object.fromEntries(new FormData(formulario).entries());
+    utilizadorAtual =
+      resposta?.utilizador ??
+      resposta?.usuario ??
+      resposta?.user ??
+      (resposta?.id ? resposta : null);
 
+    // Confirmar a sessão antes de limpar ou ocultar o formulário.
+    if (!utilizadorAtual) {
+      const sessao = await pedidoAPI("/api/auth/me");
+      utilizadorAtual =
+        sessao?.utilizador ??
+        sessao?.usuario ??
+        sessao?.user ??
+        (sessao?.id ? sessao : null);
+    }
 
+    if (!utilizadorAtual) {
+      throw new Error("A sessão não foi confirmada. Verifica os teus dados e tenta novamente.");
+    }
 
-  try {
-
-    const resposta = await pedidoAPI("/api/auth/login", {
-
-      method: "POST",
-
-      body: dados
-
-    });
-
-
-
-    utilizadorAtual =
-
-      resposta.utilizador ??
-
-      resposta.usuario ??
-
-      resposta.user ??
-
-      null;
-
-
-
-    if (!utilizadorAtual) {
-
-      await verificarSessao();
-
-    } else {
-
-      mostrarConta();
-
-    }
-
-
-
-    formulario.reset();
-
-    mostrarMensagem("Sessão iniciada com sucesso!", "sucesso");
+    mostrarConta();
+    formulario.reset();
+    mostrarMensagem("Sessão iniciada com sucesso!", "sucesso");
     abrirPagina("area-produtos");
-
-    carregarProdutos().catch(console.error);
-
-  } catch (erro) {
-
-    mostrarMensagem(erro.message || "Não foi possível iniciar sessão.", "erro");
-
-  }
-
+    carregarProdutos().catch(erro => console.error("Erro ao carregar anúncios:", erro));
+  } catch (erro) {
+    // Preservar os valores para que a pessoa não tenha de os escrever novamente.
+    mostrarMensagem(erro.message || "Não foi possível iniciar sessão. Tenta novamente.", "erro");
+    if (campoPassword) {
+      campoPassword.focus();
+      campoPassword.select();
+    }
+  } finally {
+    delete formulario.dataset.enviando;
+    if (botaoEnviar) {
+      botaoEnviar.disabled = false;
+      botaoEnviar.textContent = botaoEnviar.dataset.textoOriginal || "Entrar";
+      delete botaoEnviar.dataset.textoOriginal;
+    }
+  }
 }
-
 
 
 async function guardarPerfil(evento) {
