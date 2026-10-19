@@ -5,6 +5,9 @@ const exigirLogin = require("../middleware/auth");
 
 const router = express.Router();
 
+// Todo o conteúdo social exige uma sessão autenticada.
+router.use(exigirLogin);
+
 // Criar as tabelas novas sem apagar os dados existentes.
 db.exec(`
   CREATE TABLE IF NOT EXISTS product_interests (
