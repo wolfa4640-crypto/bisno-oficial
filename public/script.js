@@ -1214,6 +1214,13 @@ function cartaoProduto(produto) {
 async function carregarProdutos() {
   const lista = $("#lista-produtos");
   if (!lista) return;
+  if (!utilizadorAtual) {
+    todosProdutos = [];
+    lista.innerHTML = "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>";
+    lista.setAttribute("aria-busy", "false");
+    definirTexto("#resultado-contagem", "O catálogo fica disponível após iniciares sessão.");
+    return;
+  }
 
   lista.setAttribute("aria-busy", "true");
   const contagem = $("#resultado-contagem");
