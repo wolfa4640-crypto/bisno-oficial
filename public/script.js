@@ -3049,3 +3049,66 @@ document.addEventListener("DOMContentLoaded", async () => {
   else definirConteudo("#lista-produtos", "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>");
 
 });
+
+
+/* Instalação do Bisno como aplicação no dispositivo */
+let eventoInstalacaoBisno = null;
+function configurarInstalacaoBisno() {
+  const botao = document.getElementById("botao-baixar-aplicativo");
+  if (!botao || botao.dataset.configurado === "true") return;
+  botao.dataset.configurado = "true";
+
+  const mostrarEstado = (texto) => {
+    const estado = document.getElementById("estado-download-aplicativo");
+    if (estado) estado.textContent = texto;
+  };
+
+  window.addEventListener("beforeinstallprompt", evento => {
+    evento.preventDefault();
+    eventoInstalacaoBisno = evento;
+    botao.hidden = false;
+    botao.textContent = "⬇ Baixar aplicativo";
+    botao.setAttribute("aria-label", "Instalar o aplicativo Bisno");
+  });
+
+  window.addEventListener("appinstalled", () => {
+    eventoInstalacaoBisno = null;
+    botao.textContent = "✓ Aplicativo instalado";
+    botao.disabled = true;
+    mostrarEstado("O Bisno foi instalado no teu dispositivo.");
+  });
+
+  botao.addEventListener("click", async () => {
+    if (eventoInstalacaoBisno) {
+      eventoInstalacaoBisno.prompt();
+      const escolha = await eventoInstalacaoBisno.userChoice;
+      eventoInstalacaoBisno = null;
+      if (escolha?.outcome === "accepted") {
+        mostrarEstado("Instalação iniciada. Segue as instruções do teu dispositivo.");
+      } else {
+        mostrarEstado("A instalação foi cancelada. Podes tentar novamente.");
+      }
+      return;
+    }
+
+    const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    if (standalone) {
+      mostrarEstado("O Bisno já está instalado neste dispositivo.");
+    } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+      mostrarEstado("No Safari, toca em Partilhar e depois em “Adicionar ao ecrã principal”.");
+    } else {
+      mostrarEstado("Para instalar, abre o menu ⋮ do navegador e escolhe “Instalar aplicação” ou “Adicionar ao ecrã principal”.");
+    }
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(erro => {
+        console.warn("Não foi possível preparar a instalação offline:", erro.message);
+      });
+    }, { once: true });
+  }
+}
+
+
+document.addEventListener("DOMContentLoaded", configurarInstalacaoBisno);
