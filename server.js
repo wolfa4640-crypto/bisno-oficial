@@ -39,6 +39,65 @@ app.use(session({
 }));
 
 app.get("/api/health", (_req, res) => res.json({ estado: "ok", servico: "Bisno", versao: require("./package.json").version }));
+
+const dbAdmin = require("./data/database");
+function exigirAdmin(req, res, next) {
+  if (!req.session?.userId) return res.status(401).json({ erro: "Inicia sessão primeiro." });
+  const emailAdmin = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+  if (!emailAdmin) return res.status(503).json({ erro: "O administrador ainda não foi configurado. Define ADMIN_EMAIL nas variáveis do Render." });
+  const utilizador = dbAdmin.prepare("SELECT id, email, is_blocked FROM users WHERE id = ?").get(req.session.userId);
+  if (!utilizador || utilizador.is_blocked) return res.status(403).json({ erro: "A tua conta está bloqueada ou não existe." });
+  if (utilizador.email.toLowerCase() !== emailAdmin) return res.status(403).json({ erro: "Acesso reservado ao administrador." });
+  next();
+}
+app.get("/api/admin/overview", exigirAdmin, (_req, res) => {
+  res.json({
+    stats: {
+      users: dbAdmin.prepare("SELECT COUNT(*) AS n FROM users").get().n,
+      blockedUsers: dbAdmin.prepare("SELECT COUNT(*) AS n FROM users WHERE is_blocked = 1").get().n,
+      products: dbAdmin.prepare("SELECT COUNT(*) AS n FROM products").get().n,
+      blockedProducts: dbAdmin.prepare("SELECT COUNT(*) AS n FROM products WHERE is_blocked = 1").get().n,
+      activeProducts: dbAdmin.prepare("SELECT COUNT(*) AS n FROM products WHERE is_blocked = 0").get().n
+    },
+    users: dbAdmin.prepare("SELECT id, name, email, phone, created_at, is_blocked FROM users ORDER BY id DESC LIMIT 200").all(),
+    products: dbAdmin.prepare("SELECT p.id, p.name, p.price, p.category, p.city, p.created_at, p.is_blocked, u.name AS seller_name, u.email AS seller_email FROM products p LEFT JOIN users u ON u.id = p.user_id ORDER BY p.id DESC LIMIT 200").all()
+  });
+});
+app.patch("/api/admin/users/:id/block", exigirAdmin, (req, res) => {
+  const id = Number(req.params.id), blocked = req.body?.blocked === true;
+  if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ erro: "Utilizador inválido." });
+  const target = dbAdmin.prepare("SELECT id, email FROM users WHERE id = ?").get(id);
+  if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
+  if (target.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase()) return res.status(400).json({ erro: "Não podes bloquear a conta de administrador." });
+  dbAdmin.prepare("UPDATE users SET is_blocked = ?, blocked_reason = ? WHERE id = ?").run(blocked ? 1 : 0, blocked ? String(req.body?.reason || "Bloqueado pelo administrador").slice(0, 300) : null, id);
+  res.json({ mensagem: blocked ? "Utilizador bloqueado." : "Utilizador desbloqueado." });
+});
+app.delete("/api/admin/users/:id", exigirAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ erro: "Utilizador inválido." });
+  const target = dbAdmin.prepare("SELECT id, email FROM users WHERE id = ?").get(id);
+  if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
+  if (target.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase()) return res.status(400).json({ erro: "Não podes eliminar a conta de administrador." });
+  try {
+    dbAdmin.prepare("DELETE FROM users WHERE id = ?").run(id);
+    res.json({ mensagem: "Utilizador eliminado." });
+  } catch (e) { res.status(409).json({ erro: "Não foi possível eliminar este utilizador por existirem dados associados. Bloqueia a conta em alternativa." }); }
+});
+app.patch("/api/admin/products/:id/block", exigirAdmin, (req, res) => {
+  const id = Number(req.params.id), blocked = req.body?.blocked === true;
+  if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ erro: "Anúncio inválido." });
+  const result = dbAdmin.prepare("UPDATE products SET is_blocked = ?, blocked_reason = ? WHERE id = ?").run(blocked ? 1 : 0, blocked ? String(req.body?.reason || "Bloqueado pelo administrador").slice(0, 300) : null, id);
+  if (!result.changes) return res.status(404).json({ erro: "Anúncio não encontrado." });
+  res.json({ mensagem: blocked ? "Anúncio bloqueado." : "Anúncio desbloqueado." });
+});
+app.delete("/api/admin/products/:id", exigirAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) return res.status(400).json({ erro: "Anúncio inválido." });
+  const result = dbAdmin.prepare("DELETE FROM products WHERE id = ?").run(id);
+  if (!result.changes) return res.status(404).json({ erro: "Anúncio não encontrado." });
+  res.json({ mensagem: "Anúncio eliminado." });
+});
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/social", require("./routes/social"));
