@@ -168,3 +168,14 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - A secção de lojas foi retirada da interface porque o fluxo de ativação e painel não estava devidamente ligado aos eventos de interface. O código de API e os registos existentes não foram apagados; a alteração não destrói dados.
 - O destino “Loja” da navegação foi substituído por “Os meus”, ligado à lista de anúncios do utilizador. O atalho na conta também abre essa lista.
 - A mudança está na branch de desenvolvimento. Ainda é necessário confirmar sintaxe/CI e validar visualmente em navegador; o site publicado só refletirá estas mudanças após o fluxo normal de revisão e publicação.
+
+## Implementação adicional — descoberta por categorias
+
+Foi acrescentada à página inicial uma secção visual de categorias rápidas para reduzir o esforço de navegação. Os botões de categoria estão ligados ao filtro real do catálogo, atualizam os resultados e indicam a categoria selecionada. O CSS acrescentado inclui estados de foco, seleção, interação e adaptação a ecrãs estreitos. Também foi uniformizado o botão de acesso ao vendedor nos cartões.
+
+**Commits desta etapa**
+- `2bd5a8e` — secção de categorias rápidas na página inicial.
+- `21bed1f` — ligação dos botões aos filtros existentes.
+- `053effb` — estilos responsivos e estados de interação.
+
+**Limitação de validação:** estas alterações foram confirmadas nos ficheiros da branch através do GitHub. Não foi possível confirmar a renderização num navegador nem executar `npm test` neste ambiente; não se declara validação visual ou aprovação dos testes. O site de produção não foi atualizado por estes commits, porque estão na branch de desenvolvimento.
