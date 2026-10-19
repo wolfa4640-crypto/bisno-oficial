@@ -99,3 +99,10 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - Acrescentados dois testes HTTP de caminho positivo: um cliente pode registar contacto por WhatsApp com um anúncio pertencente à loja, e um utilizador pode seguir a loja de outra pessoa.
 - Os testes verificam a resposta da rota e os registos efetivamente gravados na base SQLite temporária, incluindo o contador de seguidores. Isso complementa os casos negativos que verificam tentativas indevidas.
 - Os testes foram registados na branch de desenvolvimento; não foram executados localmente nesta sessão e a CI correspondente ainda precisa de confirmação no GitHub Actions.
+
+
+## Validação de tipos na autenticação — etapa seguinte
+
+- As rotas de registo e login agora rejeitam campos que não sejam texto, além de verificar campos vazios. Isso evita passar objetos/arrays para normalização de credenciais e para a comparação de hash da palavra-passe.
+- Acrescentados testes HTTP para verificar que uma palavra-passe enviada como objeto no login recebe erro 400 e que um nome enviado como array no registo não cria uma conta.
+- Os testes usam o servidor e a base de dados temporária da suite de integração. Ainda é necessário confirmar o resultado da execução na CI para o commit mais recente; não declarar aprovação antes disso.
