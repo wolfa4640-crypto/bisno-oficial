@@ -162,3 +162,23 @@ button:disabled,[role="button"][aria-disabled="true"]{
 .botao-limpar-filtros:hover{background:#e7f5ec;border-color:#7bb995}
 .botao-limpar-filtros:focus-visible{outline:3px solid #2b9b68;outline-offset:3px}
 @media(max-width:720px){.botao-limpar-filtros{width:100%;justify-self:stretch}}
+
+/* Estado e contagem do catálogo */
+.resultado-contagem{
+  margin:14px 0 10px;
+  color:#52665a;
+  font-size:.92rem;
+  font-weight:600;
+}
+.estado-vazio-catalogo{
+  display:grid;
+  justify-items:center;
+  gap:8px;
+  padding:28px 18px;
+  border:1px dashed #bfd4c6;
+  border-radius:16px;
+  background:#f8fcf9;
+  text-align:center;
+}
+.estado-vazio-catalogo p{margin:0;max-width:42rem;color:#52665a}
+.estado-vazio-catalogo .estado-vazio-titulo{color:#193c2a;font-size:1.05rem;font-weight:750}
