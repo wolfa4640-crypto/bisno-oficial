@@ -146,3 +146,9 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - Adicionado o botão “Limpar filtros”, que repõe pesquisa, categoria, localização, ordenação e preço máximo aos valores iniciais.
 - Depois de limpar, a lista é atualizada e o foco regressa ao campo de pesquisa para facilitar a navegação por teclado.
 - A implementação foi registada na branch de desenvolvimento; a execução dos testes automatizados e a verificação visual continuam pendentes.
+
+## Pesquisa tolerante a acentos — melhoria de usabilidade
+
+- A pesquisa por nome, descrição, categoria textual e localização passa a ignorar diferenças entre letras acentuadas e não acentuadas.
+- Exemplos: “telemoveis” encontra “Telemóveis”; “Luanda” e “Luandá” deixam de depender de diferenças de acentuação no texto introduzido.
+- Não altera os dados guardados nem as regras de categoria; testes automatizados e validação visual ainda precisam de confirmação.
