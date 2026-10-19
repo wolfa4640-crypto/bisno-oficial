@@ -5,6 +5,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const verificarImagem = require("../middleware/validar-imagem");
 const multer = require("multer");
 
 const db = require("../data/database");
@@ -301,6 +302,11 @@ router.post(
       imagem = req.file
         ? "/uploads/" + req.file.filename
         : null;
+
+      if (req.file && !verificarImagem(req.file.path, req.file.mimetype)) {
+        apagarFicheiroEnviado(req.file);
+        return res.status(400).json({ erro: "O ficheiro não corresponde a uma imagem válida." });
+      }
 
       // Campos obrigatórios.
       if (
