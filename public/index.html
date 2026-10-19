@@ -27,7 +27,7 @@
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css">
-  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261019-login-required-v31">
+  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261020-admin-panel-v32">
   <style>
 
     .bisno-download-app { display:flex; flex-direction:column; align-items:center; gap:8px; margin:18px auto; }
@@ -72,7 +72,7 @@
       cursor: wait;
     }
   </style>
-  <script src="/script.js?v=20261019-login-required-v31" defer></script>
+  <script src="/script.js?v=20261020-admin-panel-v32" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -447,6 +447,16 @@
         </form>
         <button type="button" id="botao-atualizar-loja" class="botao-secundario">↻ Atualizar estatísticas</button>
       </section>
+
+      <section id="area-admin" class="painel-secundario" hidden>
+        <h2>🛡️ Administração do Bisno</h2>
+        <p>Estatísticas e ferramentas de moderação. Acesso exclusivo ao administrador configurado no servidor.</p>
+        <button type="button" id="admin-atualizar">Atualizar dados</button>
+        <div id="admin-estatisticas" class="bisno-store-stats"></div>
+        <h3>Utilizadores</h3><div id="admin-utilizadores" class="admin-lista"></div>
+        <h3>Anúncios</h3><div id="admin-anuncios" class="admin-lista"></div>
+      </section>
+      <hr>
 
       <hr>
 
