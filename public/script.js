@@ -1282,47 +1282,30 @@ function cartaoProduto(produto) {
 
 
 async function carregarProdutos() {
+  const lista = $("#lista-produtos");
+  if (!lista) return;
 
-  const lista = $("#lista-produtos");
-
-  if (!lista) return;
-
-
-
-  lista.setAttribute("aria-busy", "true");
+  lista.setAttribute("aria-busy", "true");
+  const contagem = $("#resultado-contagem");
+  if (contagem) contagem.textContent = "A carregar anúncios…";
   lista.innerHTML = "<p>A carregar produtos...</p>";
 
-
-
-  try {
-
-    const dados = await pedidoAPI("/api/products");
-
-    todosProdutos = dados.produtos ?? dados.products ?? [];
-
-
-
-    aplicarFiltros();
+  try {
+    const dados = await pedidoAPI("/api/products");
+    todosProdutos = dados.produtos ?? dados.products ?? [];
+    aplicarFiltros();
     lista.setAttribute("aria-busy", "false");
 
-
-    todosProdutos.forEach(produto => {
-
-      const id = obterIdProduto(produto);
-
-      carregarEstadoInteresse(id).catch(() => {});
-
-    });
-
-  } catch (erro) {
-
-    lista.innerHTML = `<p>${escaparHTML(erro.message || "Não foi possível carregar os produtos.")}</p>`;
-
-  }
-
+    todosProdutos.forEach(produto => {
+      const id = obterIdProduto(produto);
+      carregarEstadoInteresse(id).catch(() => {});
+    });
+  } catch (erro) {
+    lista.innerHTML = `<p>${escaparHTML(erro.message || "Não foi possível carregar os produtos.")}</p>`;
+    lista.setAttribute("aria-busy", "false");
+    if (contagem) contagem.textContent = "Não foi possível carregar os anúncios. Tenta novamente.";
+  }
 }
-
-
 
 function normalizarTexto(valor) {
   return String(valor ?? "")
@@ -1332,104 +1315,68 @@ function normalizarTexto(valor) {
     .trim();
 }
 
-
 function aplicarFiltros() {
+  const lista = $("#lista-produtos");
+  if (!lista) return;
 
-  const lista = $("#lista-produtos");
+  const pesquisa = normalizarTexto($("#filtro-pesquisa")?.value);
+  const categoria = $("#filtro-categoria")?.value ?? "";
+  const cidade = normalizarTexto($("#filtro-cidade")?.value);
+  const precoMaximo = $("#filtro-preco")?.value;
+  const ordenar = $("#ordenar-produtos")?.value ?? "";
 
-  if (!lista) return;
+  let produtos = todosProdutos.filter(produto => {
+    const texto = normalizarTexto([
+      produto.name,
+      produto.description,
+      produto.category,
+      produto.city,
+      produto.neighborhood
+    ].join(" "));
 
+    if (pesquisa && !texto.includes(pesquisa)) return false;
+    if (categoria && produto.category !== categoria) return false;
 
-
-  const pesquisa = normalizarTexto($("#filtro-pesquisa")?.value);
-
-  const categoria = $("#filtro-categoria")?.value ?? "";
-
-  const cidade = normalizarTexto($("#filtro-cidade")?.value);
-
-  const precoMaximo = $("#filtro-preco")?.value;
-
-  const ordenar = $("#ordenar-produtos")?.value ?? "";
-
-
-
-  let produtos = todosProdutos.filter(produto => {
-
-    const texto = [
-
-      produto.name,
-
-      produto.description,
-
-      produto.category,
-
-      produto.city,
-
-      produto.neighborhood
-
-    ].join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-
-
-    if (pesquisa && !texto.includes(pesquisa)) return false;
-
-    if (categoria && produto.category !== categoria) return false;
-
-    const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
+    const localizacao = normalizarTexto(
+      [produto.city, produto.neighborhood].filter(Boolean).join(" ")
+    );
     if (cidade && !localizacao.includes(cidade)) return false;
 
+    if (
+      precoMaximo !== "" &&
+      precoMaximo != null &&
+      numero(produto.price) > numero(precoMaximo)
+    ) {
+      return false;
+    }
 
+    return true;
+  });
 
-    if (
+  if (ordenar === "menor") {
+    produtos.sort((a, b) => numero(a.price) - numero(b.price));
+  } else if (ordenar === "maior") {
+    produtos.sort((a, b) => numero(b.price) - numero(a.price));
+  }
 
-      precoMaximo !== "" &&
+  const resultadoContagem = $("#resultado-contagem");
+  if (resultadoContagem) {
+    resultadoContagem.textContent = produtos.length === 1
+      ? "1 anúncio encontrado"
+      : `${produtos.length} anúncios encontrados`;
+  }
 
-      precoMaximo != null &&
+  if (!produtos.length) {
+    lista.innerHTML = `<div class="estado-vazio-catalogo">
+      <p class="estado-vazio-titulo">Não encontrámos anúncios com estes filtros.</p>
+      <p>Tenta pesquisar por outras palavras, escolher outra categoria ou limpar os filtros.</p>
+      <button type="button" class="botao-limpar-filtros" data-limpar-filtros>Limpar filtros</button>
+    </div>`;
+    return;
+  }
 
-      numero(produto.price) > numero(precoMaximo)
-
-    ) {
-
-      return false;
-
-    }
-
-
-
-    return true;
-
-  });
-
-
-
-  if (ordenar === "menor") {
-
-    produtos.sort((a, b) => numero(a.price) - numero(b.price));
-
-  } else if (ordenar === "maior") {
-
-    produtos.sort((a, b) => numero(b.price) - numero(a.price));
-
-  }
-
-
-
-  if (!produtos.length) {
-
-    lista.innerHTML = "<p>Não foram encontrados produtos com estes filtros.</p>";
-
-    return;
-
-  }
-
-
-
-  lista.innerHTML = produtos.map(cartaoProduto).join("");
-
+  lista.innerHTML = produtos.map(cartaoProduto).join("");
 }
-
-
 
 function prepararAreaDetalhes() {
 
