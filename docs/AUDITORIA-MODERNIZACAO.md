@@ -140,3 +140,9 @@ Não declarar a modernização concluída até os testes e a verificação no se
 
 - O filtro de província/cidade também procura no bairro, para que a pessoa consiga encontrar anúncios ao pesquisar uma localização mais específica.
 - A alteração reutiliza os campos já existentes nos anúncios e não altera dados, permissões ou a API. Ainda é necessário validar o comportamento com dados reais e executar a CI.
+
+## Limpeza rápida dos filtros do catálogo — etapa seguinte
+
+- Adicionado o botão “Limpar filtros”, que repõe pesquisa, categoria, localização, ordenação e preço máximo aos valores iniciais.
+- Depois de limpar, a lista é atualizada e o foco regressa ao campo de pesquisa para facilitar a navegação por teclado.
+- A implementação foi registada na branch de desenvolvimento; a execução dos testes automatizados e a verificação visual continuam pendentes.
