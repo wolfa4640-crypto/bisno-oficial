@@ -15,6 +15,7 @@ const session = require("express-session");
 const db = require("../data/database");
 require("../routes/stores");
 const social = require("../routes/social");
+const auth = require("../routes/auth");
 const products = require("../routes/products");
 const stores = require("../routes/stores");
 const app = express();
@@ -24,6 +25,7 @@ app.post("/test-session/:id", (req, res) => {
   req.session.userId = Number(req.params.id);
   res.json({ ok: true });
 });
+app.use("/auth", auth);
 app.use("/", social);
 app.use("/products", products);
 app.use("/stores", stores);
@@ -74,6 +76,29 @@ async function sessionFor(userId) {
   assert.ok(cookie, "test session cookie should be created");
   return cookie.split(";")[0];
 }
+
+test("login rejects object-valued credentials with a client error", async () => {
+  const res = await fetch(base + "/auth/login", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email: "buyer@test.local", password: { unexpected: true } })
+  });
+  assert.equal(res.status, 400);
+});
+
+test("registration rejects non-string fields without creating an account", async () => {
+  const before = db.prepare("SELECT COUNT(*) AS n FROM users").get().n;
+  const res = await fetch(base + "/auth/register", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      name: ["Injected Name"], email: "typed@test.local",
+      phone: "900000004", password: "ValidPass123"
+    })
+  });
+  assert.equal(res.status, 400);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM users").get().n, before);
+});
 
 test("outsider cannot read another user's messages", async () => {
   const cookie = await sessionFor(outsider);
