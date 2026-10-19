@@ -2946,7 +2946,17 @@ function configurarFormularios() {
 
 
 
-  $("#botao-sair")?.addEventListener("click", terminarSessao);
+  $("#atalho-meus-anuncios")?.addEventListener("click", () => {
+    if (utilizadorAtual) {
+      abrirPagina("area-meus-anuncios");
+      carregarMeusAnuncios();
+    } else {
+      mostrarAba("login");
+      abrirPagina("area-autenticacao");
+    }
+  });
+
+  $("#botao-sair")?.addEventListener("click", terminarSessao);
 
 
 
