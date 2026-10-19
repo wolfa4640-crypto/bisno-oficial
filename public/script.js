@@ -487,50 +487,13 @@ function abrirPagina(id) {
 }
 
 function mostrarAba(aba) {
-
-  const login = $("#form-login");
-
-  const registo = $("#form-registo");
-
-  const botaoLogin = $("#aba-login");
-
-  const botaoRegisto = $("#aba-registo");
-
-
-
-  if (login) login.hidden = aba !== "login";
-
-  if (registo) registo.hidden = aba !== "registo";
-
-
-
-  botaoLogin?.classList.toggle("ativa", aba === "login");
-
-  botaoRegisto?.classList.toggle("ativa", aba === "registo");
-
-
-
-  botaoLogin?.setAttribute(
-
-    "aria-pressed",
-
-    String(aba === "login")
-
-  );
-
-
-
-  botaoRegisto?.setAttribute(
-
-    "aria-pressed",
-
-    String(aba === "registo")
-
-  );
-
+  const formularios = { login: $("#form-login"), registo: $("#form-registo"), verificar: $("#form-verificar-email"), recuperar: $("#form-recuperar-password"), nova: $("#form-nova-password") };
+  Object.entries(formularios).forEach(([nome, formulario]) => { if (formulario) formulario.hidden = nome !== aba; });
+  $("#aba-login")?.classList.toggle("ativa", aba === "login");
+  $("#aba-registo")?.classList.toggle("ativa", aba === "registo");
+  $("#aba-login")?.setAttribute("aria-pressed", String(aba === "login"));
+  $("#aba-registo")?.setAttribute("aria-pressed", String(aba === "registo"));
 }
-
-
 
 function configurarNavegacao() {
   $("#aba-login")?.addEventListener("click", () => mostrarAba("login"));
@@ -721,32 +684,17 @@ async function verificarSessao() {
 
 async function registarUtilizador(evento) {
   evento.preventDefault();
-  const formulario = evento.currentTarget;
-  if (!formulario || formulario.dataset.enviando === "true") return;
-  esconderMensagem();
-  const botao = formulario.querySelector('button[type="submit"]');
-  formulario.dataset.enviando = "true";
-  if (botao) { botao.disabled = true; botao.dataset.textoOriginal = botao.textContent; botao.textContent = "A criar conta…"; }
+  const formulario = evento.currentTarget, botao = formulario.querySelector('button[type="submit"]');
+  if (formulario.dataset.enviando === "true") return;
+  formulario.dataset.enviando = "true"; if (botao) { botao.disabled = true; botao.textContent = "A enviar código…"; }
   try {
     const dados = Object.fromEntries(new FormData(formulario).entries());
     const resposta = await pedidoAPI("/api/auth/register", { method: "POST", body: dados });
-    utilizadorAtual = resposta?.utilizador ?? resposta?.usuario ?? resposta?.user ?? null;
-    const sessao = await pedidoAPI("/api/auth/me");
-    utilizadorAtual = sessao?.utilizador ?? sessao?.usuario ?? sessao?.user ?? (sessao?.id ? sessao : null);
-    if (!utilizadorAtual) throw new Error("A conta foi criada, mas a sessão não foi confirmada. Entra com os teus dados.");
-    document.body.classList.add("bisno-autenticado");
-    document.body.classList.remove("bisno-sem-sessao");
-    mostrarConta();
-    abrirPagina("area-produtos");
-    mostrarMensagem("Conta criada com sucesso!", "sucesso");
-    formulario.reset();
-    carregarProdutos().catch(console.error);
-  } catch (erro) {
-    mostrarMensagem(erro.message || "Não foi possível criar a conta. Os teus dados continuam no formulário.", "erro");
-  } finally {
-    delete formulario.dataset.enviando;
-    if (botao) { botao.disabled = false; botao.textContent = botao.dataset.textoOriginal || "Criar conta"; delete botao.dataset.textoOriginal; }
-  }
+    $("#verificar-email").value = resposta.email || dados.email;
+    formulario.reset(); mostrarAba("verificar");
+    mostrarMensagem(resposta.mensagem || "Confirma o teu e-mail para ativar a conta.", "sucesso");
+  } catch (erro) { mostrarMensagem(erro.message || "Não foi possível criar a conta.", "erro"); }
+  finally { delete formulario.dataset.enviando; if (botao) { botao.disabled = false; botao.textContent = "Criar conta"; } }
 }
 
 
@@ -2853,6 +2801,30 @@ function configurarFormularios() {
   $("#form-login")?.addEventListener("submit", entrarUtilizador);
 
   $("#form-registo")?.addEventListener("submit", registarUtilizador);
+  $("#form-verificar-email")?.addEventListener("submit", async evento => {
+    evento.preventDefault(); const dados = Object.fromEntries(new FormData(evento.currentTarget).entries());
+    try { const r = await pedidoAPI("/api/auth/verify-email", { method: "POST", body: dados }); mostrarAba("login"); $("#login-email").value = dados.email; mostrarMensagem(r.mensagem, "sucesso"); }
+    catch (e) { mostrarMensagem(e.message || "Não foi possível confirmar o e-mail.", "erro"); }
+  });
+  $("#botao-reenviar-codigo")?.addEventListener("click", async () => {
+    try { const r = await pedidoAPI("/api/auth/resend-verification", { method: "POST", body: { email: $("#verificar-email")?.value || "" } }); mostrarMensagem(r.mensagem, "sucesso"); }
+    catch (e) { mostrarMensagem(e.message || "Não foi possível reenviar o código.", "erro"); }
+  });
+  $("#botao-recuperar-password")?.addEventListener("click", () => { if ($("#recuperar-email") && $("#login-email")) $("#recuperar-email").value = $("#login-email").value; mostrarAba("recuperar"); });
+  $("#botao-cancelar-recuperacao")?.addEventListener("click", () => mostrarAba("login"));
+  $("#botao-voltar-login")?.addEventListener("click", () => mostrarAba("login"));
+  $("#form-recuperar-password")?.addEventListener("submit", async evento => {
+    evento.preventDefault();
+    try { const r = await pedidoAPI("/api/auth/forgot-password", { method: "POST", body: { email: $("#recuperar-email")?.value || "" } }); mostrarAba("login"); mostrarMensagem(r.mensagem, "sucesso"); }
+    catch (e) { mostrarMensagem(e.message || "Não foi possível pedir a recuperação.", "erro"); }
+  });
+  $("#form-nova-password")?.addEventListener("submit", async evento => {
+    evento.preventDefault(); const params = new URLSearchParams(window.location.search), password = $("#nova-password")?.value || "";
+    if (password !== ($("#confirmar-nova-password")?.value || "")) return mostrarMensagem("As palavras-passe não coincidem.", "erro");
+    try { const r = await pedidoAPI("/api/auth/reset-password", { method: "POST", body: { email: params.get("email"), token: params.get("reset"), password } }); window.history.replaceState({}, document.title, window.location.pathname); evento.currentTarget.reset(); mostrarAba("login"); mostrarMensagem(r.mensagem, "sucesso"); }
+    catch (e) { mostrarMensagem(e.message || "Não foi possível alterar a palavra-passe.", "erro"); }
+  });
+
 
   $("#perfil-foto-input")?.addEventListener("change", evento => {
     const ficheiro = evento.currentTarget.files?.[0];
