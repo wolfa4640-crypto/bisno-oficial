@@ -1148,7 +1148,7 @@ function cartaoProduto(produto) {
           loading="lazy"
           onerror="this.onerror=null;this.src='${IMAGEM_PADRAO}'"
         >
-        <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse"><span class="bisno-interest-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.2 11.1V5.4a1.8 1.8 0 0 1 3.6 0v5.1-6.1a1.7 1.7 0 0 1 3.4 0v6.1-4.2a1.6 1.6 0 0 1 3.2 0v5.2-2.1a1.6 1.6 0 0 1 3.2 0v5.2c0 4.1-2.7 6.8-6.7 6.8h-1.8c-2.3 0-3.7-1-5-2.8l-3-4.1a1.8 1.8 0 0 1 2.9-2.1l2.2 2.4" transform="translate(-1.5 -1) scale(.94)" /></svg></span><span class="bisno-interest-label">Tenho interesse</span><span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span></button>
+        <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse"><span class="bisno-interest-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.2 11.1V5.4a1.8 1.8 0 0 1 3.6 0v5.1-6.1a1.7 1.7 0 0 1 3.4 0v6.1-4.2a1.6 1.6 0 0 1 3.2 0v5.2-2.1a1.6 1.6 0 0 1 3.2 0v5.2c0 4.1-2.7 6.8-6.7 6.8h-1.8c-2.3 0-3.7-1-5-2.8l-3-4.1a1.8 1.8 0 0 1 2.9-2.1l2.2 2.4" transform="translate(-1.5 -1) scale(.94)" /></svg></span><span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span></button>
         ${visualizacoes > 0 ? `<span class="bisno-views-badge" aria-label="${visualizacoes} visualizações">👁 ${escaparHTML(visualizacoes.toLocaleString("pt-AO"))}</span>` : ""}
         ${condicao ? `<span class="bisno-condition-badge">${escaparHTML(condicao)}</span>` : ""}
       </div>
@@ -1446,8 +1446,7 @@ async function abrirDetalhes(id) {
 
         <button type="button" class="bisno-interest-detail" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto">
           <span class="bisno-interest-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.2 11.1V5.4a1.8 1.8 0 0 1 3.6 0v5.1-6.1a1.7 1.7 0 0 1 3.4 0v6.1-4.2a1.6 1.6 0 0 1 3.2 0v5.2-2.1a1.6 1.6 0 0 1 3.2 0v5.2c0 4.1-2.7 6.8-6.7 6.8h-1.8c-2.3 0-3.7-1-5-2.8l-3-4.1a1.8 1.8 0 0 1 2.9-2.1l2.2 2.4" transform="translate(-1.5 -1) scale(.94)" /></svg></span>
-          <span class="bisno-interest-label">Tenho interesse</span>
-          <span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span>
+                    <span class="bisno-interest-count" data-total-interesses="${escaparHTML(id)}">0</span>
         </button>
 
 
