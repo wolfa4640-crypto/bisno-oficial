@@ -23,7 +23,7 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 1. **CI e testes:** confirmar o resultado do workflow para o commit mais recente. Foram adicionados testes HTTP de integração de controlo de acesso social, mas a execução automática ainda precisa de ser observada.
 2. **Render e persistência:** verificar no painel do serviço se há disco persistente e configurar `DATA_DIR` e `UPLOADS_DIR` para caminhos no disco montado. A existência dessas variáveis no código não confirma a configuração do serviço.
 3. **Backup e restauração:** documentar e testar cópia e recuperação da base SQLite e dos uploads antes de qualquer migração ou publicação.
-4. **Autorização:** executar testes de integração para garantir que nenhum utilizador consegue ler ou modificar recursos privados de outro utilizador.
+4. **Autorização:** os testes HTTP de integração foram acrescentados; confirmar a sua execução na CI e ampliar a cobertura a anúncios e lojas.
 5. **Uploads:** testar ficheiros inválidos, MIME falsificado, limites e limpeza; a assinatura inicial do ficheiro é uma verificação básica, não uma análise completa de imagem.
 6. **Segurança HTTP:** a Content Security Policy (CSP) permanece desativada no Helmet; inventariar scripts, estilos e recursos antes de a ativar sem quebrar a interface.
 7. **Dependências:** `package-lock.json` ainda tem metadados de `meu-primeiro-site` versão `1.0.0` e não declara todas as dependências do `package.json` (incluindo `helmet`, `express-rate-limit` e `connect-sqlite3`). O CI usa `npm install`, não `npm ci`; regenerar e validar o lock em ambiente Node/npm compatível antes de mudar para instalação reprodutível.
@@ -66,4 +66,11 @@ Não declarar a modernização concluída até os testes e a verificação no se
 - A edição do perfil agora exige nome com 2–100 caracteres e telefone com 7–30 caracteres, alinhando estes limites aos usados no registo.
 - Ao substituir um avatar, o sistema tenta apagar o ficheiro anterior apenas depois de guardar a atualização e apenas quando a referência antiga aponta para `/uploads/`. Falha na limpeza é registada sem reverter o perfil atualizado.
 - O teste unitário do middleware e a verificação de sintaxe foram adicionados em commits anteriores. A execução de CI após as últimas alterações ainda precisa de confirmação no GitHub Actions.
-\n\n## Testes HTTP de controlo de acesso — etapa seguinte\n\n- Criado `test/social-access-control.test.js`, que monta as rotas sociais num servidor HTTP de teste e utiliza uma base SQLite temporária isolada. Não utiliza a base de dados do serviço publicado.\n- Os casos verificam que um utilizador externo não consegue ler mensagens, enviar mensagens para conversa alheia ou marcar notificações de outra pessoa como lidas; também verificam que a listagem de notificações é filtrada por utilizador e que um participante legítimo mantém acesso.\n- O login de teste é exclusivo ao servidor montado dentro do ficheiro de testes e usa `express-session`; não foi acrescentada nenhuma rota de teste ao servidor de produção.\n- Estes testes foram adicionados ao ramo, mas não são declarados aprovados até o GitHub Actions concluir a execução do commit mais recente.\n
+
+
+## Testes HTTP de controlo de acesso — etapa seguinte
+
+- Criado `test/social-access-control.test.js`, que monta as rotas sociais num servidor HTTP de teste e utiliza uma base SQLite temporária isolada. Não utiliza a base de dados do serviço publicado.
+- Os casos verificam que um utilizador externo não consegue ler mensagens, enviar mensagens para conversa alheia ou marcar notificações de outra pessoa como lidas; também verificam que a listagem de notificações é filtrada por utilizador e que um participante legítimo mantém acesso.
+- O login de teste é exclusivo ao servidor montado dentro do ficheiro de testes e usa `express-session`; não foi acrescentada nenhuma rota de teste ao servidor de produção.
+- Estes testes foram adicionados ao ramo, mas não são declarados aprovados até o GitHub Actions concluir a execução do commit mais recente.
