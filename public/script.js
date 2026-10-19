@@ -847,6 +847,7 @@ async function entrarUtilizador(evento) {
     formulario.reset();
 
     mostrarMensagem("Sessão iniciada com sucesso!", "sucesso");
+    abrirPagina("area-produtos");
 
     carregarProdutos().catch(console.error);
 
@@ -1582,6 +1583,16 @@ async function abrirDetalhes(id) {
 
 
 
+async function carregarEstadoSeguimento(id) {
+ const b=document.querySelector('[data-seguir-vendedor="'+CSS.escape(String(id))+'"]'); if(!b)return;
+ try { const d=await pedidoAPI('/api/social/users/'+encodeURIComponent(id)+'/follow'); definirTexto('#seguidores-vendedor-publico',Number(d.followers||0).toLocaleString('pt-AO')); b.hidden=Boolean(d.isSelf); b.dataset.seguindo=String(Boolean(d.following)); b.textContent=d.following?'✓ A seguir':'＋ Seguir'; b.setAttribute('aria-pressed',String(Boolean(d.following))); b.classList.toggle('is-following',Boolean(d.following)); } catch(_){b.hidden=true;}
+}
+async function alternarSeguimento(b) {
+ if(!exigirLogin()){mostrarMensagem('Inicia sessão para seguir vendedores.','aviso');return;}
+ const id=b.dataset.seguirVendedor,following=b.dataset.seguindo==='true'; b.disabled=true;
+ try { const d=await pedidoAPI('/api/social/users/'+encodeURIComponent(id)+'/follow',{method:following?'DELETE':'POST'}); b.dataset.seguindo=String(Boolean(d.following)); b.textContent=d.following?'✓ A seguir':'＋ Seguir'; b.setAttribute('aria-pressed',String(Boolean(d.following))); b.classList.toggle('is-following',Boolean(d.following)); definirTexto('#seguidores-vendedor-publico',Number(d.followers||0).toLocaleString('pt-AO')); } catch(e){mostrarMensagem(e.message||'Não foi possível atualizar o seguimento.','erro');} finally{b.disabled=false;}
+}
+
 async function abrirPerfilPublico(id) {
 
   if (!id) return;
@@ -1673,8 +1684,9 @@ async function abrirPerfilPublico(id) {
         >
         <h2 class="nome-perfil-publico">${escaparHTML(nome)}</h2>
         <p class="meta-perfil-publico">${produtos.length} ${produtos.length === 1 ? "anúncio publicado" : "anúncios publicados"} no Bisno</p>
+        <div class="bisno-social-stats"><span><strong>${produtos.length.toLocaleString("pt-AO")}</strong> anúncios</span><span><strong id="seguidores-vendedor-publico">…</strong> seguidores</span></div>
+        <div class="bisno-perfil-acoes"><button type="button" class="bisno-seguir-btn" data-seguir-vendedor="${escaparHTML(id)}" hidden>＋ Seguir</button><button type="button" class="bisno-mensagem-perfil" data-iniciar-conversa-perfil="${escaparHTML(id)}">Enviar mensagem</button></div>
       </div>
-
       <h3>Anúncios deste vendedor</h3>
 
 
@@ -1697,7 +1709,8 @@ async function abrirPerfilPublico(id) {
 
 
 
-    $("#voltar-perfil-publico")?.addEventListener("click", () => {
+    carregarEstadoSeguimento(id).catch(() => {});
+    $("#voltar-perfil-publico")?.addEventListener("click", () => {
 
       area.hidden = true;
 
@@ -3020,6 +3033,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
   await verificarSessao();
+  if (utilizadorAtual) abrirPagina("area-produtos");
   atualizarAreasSociais();
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 
