@@ -32,7 +32,7 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 
 ## Critérios mínimos antes de produção
 
-- [x] CI atual concluída com sucesso em Node.js 22 (execução nº 10).
+- [ ] Confirmar CI após os commits mais recentes; uma execução anterior em Node.js 22 teve sucesso.
 - [ ] Registo, login, sessão, logout e validação de entradas testados.
 - [ ] Autorização e propriedade de anúncios, conversas, mensagens e lojas testadas.
 - [ ] Uploads válidos e inválidos testados.
