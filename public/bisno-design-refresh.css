@@ -1767,36 +1767,36 @@ body.bisno-sem-sessao #mensagem:not(:empty) {
 
 
 /* Acesso reservado: mostrar apenas autenticação antes de entrar */
-body.bisno-requer-login .bisno-nav,
-body.bisno-requer-login #botao-abrir-pesquisa,
-body.bisno-requer-login #painel-pesquisa-overlay,
-body.bisno-requer-login .topo-slogan,
-body.bisno-requer-login main > hr,
-body.bisno-requer-login > footer {
+body.bisno-requer-login:not(.bisno-autenticado) .bisno-nav,
+body.bisno-requer-login:not(.bisno-autenticado) #botao-abrir-pesquisa,
+body.bisno-requer-login:not(.bisno-autenticado) #painel-pesquisa-overlay,
+body.bisno-requer-login:not(.bisno-autenticado) .topo-slogan,
+body.bisno-requer-login:not(.bisno-autenticado) main > hr,
+body.bisno-requer-login:not(.bisno-autenticado) > footer {
   display: none !important;
 }
-body.bisno-requer-login #area-autenticacao {
+body.bisno-requer-login:not(.bisno-autenticado) #area-autenticacao {
   display: block !important;
   width: min(100% - 28px, 520px);
   margin: clamp(24px, 7vh, 64px) auto 36px;
 }
-body.bisno-requer-login #area-conta,
-body.bisno-requer-login #area-produtos,
-body.bisno-requer-login #area-publicar,
-body.bisno-requer-login #area-mensagens,
-body.bisno-requer-login #area-notificacoes,
-body.bisno-requer-login #area-loja,
-body.bisno-requer-login #area-meus-anuncios,
-body.bisno-requer-login #perfil-vendedor {
+body.bisno-requer-login:not(.bisno-autenticado) #area-conta,
+body.bisno-requer-login:not(.bisno-autenticado) #area-produtos,
+body.bisno-requer-login:not(.bisno-autenticado) #area-publicar,
+body.bisno-requer-login:not(.bisno-autenticado) #area-mensagens,
+body.bisno-requer-login:not(.bisno-autenticado) #area-notificacoes,
+body.bisno-requer-login:not(.bisno-autenticado) #area-loja,
+body.bisno-requer-login:not(.bisno-autenticado) #area-meus-anuncios,
+body.bisno-requer-login:not(.bisno-autenticado) #perfil-vendedor {
   display: none !important;
 }
-body.bisno-requer-login .topo {
+body.bisno-requer-login:not(.bisno-autenticado) .topo {
   position: relative;
 }
-body.bisno-requer-login .topo-conteudo {
+body.bisno-requer-login:not(.bisno-autenticado) .topo-conteudo {
   justify-content: center;
 }
-body.bisno-requer-login .logo {
+body.bisno-requer-login:not(.bisno-autenticado) .logo {
   margin-inline: auto;
 }
 
