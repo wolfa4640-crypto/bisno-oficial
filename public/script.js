@@ -3056,8 +3056,8 @@ function configurarBannerDestaque() {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // Bloqueia o catálogo antes de qualquer carregamento, evitando mostrar conteúdo sem sessão.
-  atualizarBloqueioConteudo();
+  // Mantém o conteúdo protegido enquanto a sessão é verificada.
+  document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
   configurarBannerDestaque();
   configurarPainelPesquisa();
 
