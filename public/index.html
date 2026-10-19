@@ -50,6 +50,7 @@
       <a href="#area-mensagens" data-bisno-page="messages"><span class="nav-icon" aria-hidden="true">✉</span><span>Mensagens</span><span class="nav-badge" id="badge-mensagens" hidden>0</span></a>
       <a href="#area-publicar" data-bisno-page="publish" class="nav-publish" aria-label="Publicar anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></a>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
+      <a href="#area-loja" data-bisno-page="store" aria-label="A minha loja"><span class="nav-icon" aria-hidden="true">▣</span><span>Loja</span></a>
       <a href="#area-meus-anuncios" data-bisno-page="listings" aria-label="Os meus anúncios"><span class="nav-icon" aria-hidden="true">▤</span><span>Os meus</span></a>
     </div>
   </nav>
@@ -295,6 +296,45 @@
         >
           <p>Os teus anúncios aparecerão aqui.</p>
         </div>
+      </section>
+
+      <hr>
+
+      <!-- LOJA DO UTILIZADOR -->
+      <section id="area-loja" class="painel-secundario bisno-store-panel" hidden>
+        <div class="bisno-store-heading">
+          <div>
+            <span class="bisno-secao-kicker">O teu espaço comercial</span>
+            <h2>▣ A minha loja</h2>
+            <p>Cria a tua montra, acompanha o interesse dos clientes e gere os teus anúncios num só lugar.</p>
+          </div>
+          <span class="bisno-store-status" id="estado-loja">Ainda não ativada</span>
+        </div>
+
+        <div class="bisno-store-stats" id="estatisticas-loja">
+          <article><span>Visitas</span><strong id="loja-visitas">—</strong><small>visualizações registadas</small></article>
+          <article><span>Seguidores</span><strong id="loja-seguidores">—</strong><small>pessoas que seguem a loja</small></article>
+          <article><span>Contactos</span><strong id="loja-contactos">—</strong><small>interesse de compradores</small></article>
+          <article><span>Anúncios</span><strong id="loja-produtos">—</strong><small>produtos publicados</small></article>
+        </div>
+
+        <div class="bisno-store-preview" id="previsualizacao-loja" hidden>
+          <div class="bisno-store-avatar" id="loja-avatar">B</div>
+          <div><h3 id="loja-nome-preview">A tua loja</h3><p id="loja-descricao-preview"></p><small id="loja-cidade-preview"></small></div>
+        </div>
+
+        <form id="form-loja" class="bisno-store-form">
+          <h3 id="titulo-form-loja">Ativa a tua loja gratuitamente</h3>
+          <p>Qualquer utilizador com conta pode criar uma loja. Manténs os teus anúncios e falas diretamente com os compradores.</p>
+          <label for="loja-nome">Nome da loja</label>
+          <input id="loja-nome" name="name" type="text" maxlength="80" placeholder="Ex.: Roger Tech" required>
+          <label for="loja-descricao">Descrição</label>
+          <textarea id="loja-descricao" name="description" rows="3" maxlength="500" placeholder="O que vendes? O que torna a tua loja especial?"></textarea>
+          <label for="loja-cidade">Cidade ou província</label>
+          <input id="loja-cidade" name="city" type="text" maxlength="100" placeholder="Ex.: N'dalatando">
+          <button type="submit" id="botao-guardar-loja">Ativar a minha loja</button>
+        </form>
+        <button type="button" id="botao-atualizar-loja" class="botao-secundario">↻ Atualizar estatísticas</button>
       </section>
 
       <hr>
