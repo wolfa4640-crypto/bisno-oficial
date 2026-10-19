@@ -60,7 +60,7 @@ footer .credito-criador strong{color:#a9edc5}
  html{scroll-padding-top:85px}
  .topo-conteudo{width:calc(100% - 28px);min-height:66px}
  .container{width:calc(100% - 22px);margin:14px auto 30px;padding-bottom:84px}
- .bisno-nav{top:auto;bottom:0;border-top:1px solid var(--borda);box-shadow:0 -8px 24px rgba(18,55,35,.10)}
+ .bisno-nav{position:fixed;top:auto;right:0;bottom:0;left:0;width:100%;border-top:1px solid var(--borda);border-bottom:0;box-shadow:0 -8px 24px rgba(18,55,35,.10);padding-bottom:env(safe-area-inset-bottom);z-index:120}
  .bisno-nav-inner{width:100%;gap:2px;padding:6px 4px calc(5px + env(safe-area-inset-bottom))}
  .bisno-nav a{min-width:0;flex:1;padding:7px 2px;font-size:10px;border-radius:10px}
  .bisno-nav a .nav-icon{font-size:20px}
@@ -125,4 +125,9 @@ button:disabled,[role="button"][aria-disabled="true"]{
     border:1px solid ButtonText;
   }
   :where(a,button,input,select,textarea):focus-visible{outline:2px solid Highlight}
+}
+
+@media(max-width:720px){
+  body{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+  .bisno-nav-inner{padding-bottom:calc(5px + env(safe-area-inset-bottom))}
 }
