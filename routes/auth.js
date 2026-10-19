@@ -43,7 +43,7 @@ function guardarToken(userId, purpose, token, minutos = 15) {
 
 const router = express.Router();
 
-const pastaUploads = process.env.UPLOADS_DIR || path.join(__dirname, "..", "uploads");
+const pastaUploads = process.env.UPLOADS_DIR || (process.env.RENDER ? path.join("/var/data", "uploads") : path.join(__dirname, "..", "uploads"));
 
 fs.mkdirSync(pastaUploads, { recursive: true });
 
