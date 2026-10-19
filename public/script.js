@@ -2632,6 +2632,14 @@ function configurarEventosProdutos() {
 
 
   document.addEventListener("click", evento => {
+    const seguir = evento.target.closest("[data-seguir-vendedor]");
+    if (seguir) {
+      evento.preventDefault();
+      evento.stopPropagation();
+      alternarSeguimento(seguir);
+      return;
+    }
+
     const imagem = evento.target.closest(".imagem-produto");
     if (imagem) {
       const cartao = imagem.closest("[data-produto-id]");
