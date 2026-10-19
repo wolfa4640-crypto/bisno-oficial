@@ -1171,123 +1171,58 @@ function eProdutoDoUtilizador(produto) {
 
 
 function cartaoProduto(produto) {
+  const id = obterIdProduto(produto);
+  const vendedor = produto.seller_name ?? produto.user_name ?? "Vendedor";
+  const avatar = produto.seller_avatar ?? "";
+  const imagem = obterImagem(produto.image);
+  const visualizacoes = Number(produto.views ?? produto.view_count ?? produto.visualizacoes ?? 0);
+  const condicao = produto.condition ?? "";
+  const categoria = produto.category ?? "";
+  const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" · ");
+  const whatsapp = produto.whatsapp
+    ? (() => {
+        const n = String(produto.whatsapp).replace(/\D/g, "");
+        return n.startsWith("244") ? n : (n.length === 9 ? "244" + n : n);
+      })()
+    : "";
 
-  const id = obterIdProduto(produto);
+  return `
+    <article class="cartao-produto bisno-product-card" data-produto-id="${escaparHTML(id)}">
+      <div class="bisno-product-media">
+        <img
+          class="imagem-produto"
+          role="button"
+          tabindex="0"
+          title="Ver detalhes do produto"
+          src="${escaparHTML(imagem)}"
+          alt="${escaparHTML(produto.name)}"
+          loading="lazy"
+          onerror="this.onerror=null;this.src='${IMAGEM_PADRAO}'"
+        >
+        <button type="button" class="bisno-card-interest" data-interesse="${escaparHTML(id)}" aria-pressed="false" aria-label="Tenho interesse neste produto" title="Tenho interesse">♡</button>
+        ${visualizacoes > 0 ? `<span class="bisno-views-badge" aria-label="${visualizacoes} visualizações">◉ ${escaparHTML(visualizacoes.toLocaleString("pt-AO"))}</span>` : ""}
+        ${condicao ? `<span class="bisno-condition-badge">${escaparHTML(condicao)}</span>` : ""}
+      </div>
 
-  const vendedor = produto.seller_name ?? produto.user_name ?? "Vendedor";
-
-  const avatar = produto.seller_avatar ?? "";
-
-  const imagem = obterImagem(produto.image);
-
-
-
-  return `
-
-    <article class="cartao-produto" data-produto-id="${escaparHTML(id)}">
-
-      <img
-
-        class="imagem-produto"
-
-        role="button"
-        tabindex="0"
-        title="Ver detalhes do produto"
-        src="${escaparHTML(imagem)}"
-
-        alt="${escaparHTML(produto.name)}"
-
-        loading="lazy"
-
-        onerror="this.onerror=null;this.src='${IMAGEM_PADRAO}'"
-
-      >
-
-
-
-      <div class="cartao-produto-conteudo">
-
-        <h3>${escaparHTML(produto.name)}</h3>
-
-        <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
-
-        <p>${escaparHTML(produto.condition ?? "")}</p>
-
-        <p>${escaparHTML(produto.category ?? "")}</p>
-
-        <p>${escaparHTML(produto.city ?? "")}${produto.neighborhood ? " — " + escaparHTML(produto.neighborhood) : ""}</p>
-
-<button type="button" data-interesse="${escaparHTML(id)}" class="botao-interesse" aria-pressed="false">
-
-          ♡ Tenho interesse (<span data-total-interesses="${escaparHTML(id)}">0</span>)
-
-        </button>
-
-
-
-        <button
-
-          type="button"
-
-          data-ver-vendedor="${escaparHTML(obterIdVendedor(produto))}"
-
-        >
-
-          Ver vendedor
-
-        </button>
-
-
-
-        ${!eProdutoDoUtilizador(produto) ? `
-
-          <button type="button" class="botao-mensagem" data-iniciar-conversa="${escaparHTML(id)}">
-
-            Enviar mensagem
-
-          </button>
-
-        ` : ""}
-
-
-
-        ${produto.whatsapp ? `
-
-          <a
-
-            class="botao-whatsapp"
-
-            href="https://wa.me/${escaparHTML((() => { const n = String(produto.whatsapp).replace(/\D/g, ""); return n.startsWith("244") ? n : (n.length === 9 ? "244" + n : n); })())}"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-          >
-
-            Contactar no WhatsApp
-
-          </a>
-
-        ` : ""}
-
-
-
-        <div class="vendedor-resumo vendedor-resumo-mini">
+      <div class="cartao-produto-conteudo bisno-product-info">
+        ${categoria ? `<p class="bisno-product-category">${escaparHTML(categoria)}</p>` : ""}
+        <h3 title="${escaparHTML(produto.name)}">${escaparHTML(produto.name)}</h3>
+        <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
+        ${localizacao ? `<p class="bisno-product-location"><span aria-hidden="true">⌖</span> ${escaparHTML(localizacao)}</p>` : ""}
+        <div class="bisno-card-actions">
+          ${!eProdutoDoUtilizador(produto) ? `<button type="button" class="botao-mensagem" data-iniciar-conversa="${escaparHTML(id)}">Enviar mensagem</button>` : ""}
+          ${whatsapp ? `<a class="botao-whatsapp" href="https://wa.me/${escaparHTML(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}
+        </div>
+        <div class="vendedor-resumo vendedor-resumo-mini bisno-seller-row">
           <button type="button" class="avatar-vendedor-clicavel" data-ver-vendedor="${escaparHTML(obterIdVendedor(produto))}" aria-label="Ver perfil de ${escaparHTML(vendedor)}" title="Ver perfil de ${escaparHTML(vendedor)}">
             ${avatar ? `<img src="${escaparHTML(obterImagem(avatar))}" alt="">` : `<span>${escaparHTML((vendedor.trim().charAt(0) || "V").toUpperCase())}</span>`}
           </button>
           <button type="button" class="nome-vendedor-link" data-ver-vendedor="${escaparHTML(obterIdVendedor(produto))}">${escaparHTML(vendedor)}</button>
         </div>
-
-      </div>
-
-    </article>
-
-  `;
-
+      </div>
+    </article>
+  `;
 }
-
 
 
 async function carregarProdutos() {
