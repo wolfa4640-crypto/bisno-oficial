@@ -1367,7 +1367,7 @@ function aplicarFiltros() {
 
       produto.neighborhood
 
-    ].join(" ").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
+    ].join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 
 
@@ -1375,7 +1375,7 @@ function aplicarFiltros() {
 
     if (categoria && produto.category !== categoria) return false;
 
-    const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" ").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
+    const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
     if (cidade && !localizacao.includes(cidade)) return false;
 
