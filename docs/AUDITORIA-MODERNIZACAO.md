@@ -45,3 +45,11 @@ Este trabalho decorre na branch `modernizacao/auditoria-e-seguranca` e no PR #1.
 ## Limitações
 
 Não declarar a modernização concluída até os testes e a verificação no serviço de staging serem executados e observados. Não fazer merge, deploy nem operações destrutivas sem autorização explícita e sem validar backup/rollback.
+
+## Revisão de código — etapa seguinte
+
+- Revistos os fluxos de autenticação, anúncios, conversas/mensagens, notificações e lojas nesta branch.
+- As rotas de mensagens verificam que o utilizador pertence à conversa antes de ler ou enviar mensagens; a marcação de notificações como lidas filtra pelo destinatário; a eliminação de anúncios filtra pelo proprietário.
+- A rota de contactos de loja verifica a propriedade do anúncio associado. O seguimento da própria loja é recusado e a unicidade da base de dados impede seguimentos duplicados.
+- Estes pontos são observações estáticas do código, não substituem testes HTTP de integração. Ainda é necessário executar testes com duas contas e tentar acessos cruzados para confirmar o comportamento real.
+- Não foi alterado o lockfile: não há um ambiente npm local disponível nesta sessão para regenerar e validar o ficheiro completo com integridades reais. Não é seguro reconstruí-lo manualmente.
