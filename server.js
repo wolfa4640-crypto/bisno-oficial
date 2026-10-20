@@ -2,7 +2,6 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const session = require("express-session");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
@@ -23,11 +22,8 @@ app.use(express.urlencoded({ extended: false, limit: "2mb" }));
 app.use("/api/auth", rateLimit({ windowMs: 15 * 60 * 1000, limit: 40, standardHeaders: true, legacyHeaders: false }));
 app.use("/api", rateLimit({ windowMs: 60 * 1000, limit: 180, standardHeaders: true, legacyHeaders: false }));
 
-const dataDir = process.env.DATA_DIR || (process.env.RENDER ? "/var/data" : path.join(__dirname, "data"));
-fs.mkdirSync(dataDir, { recursive: true });
-if (isProduction && process.env.RENDER && !process.env.ALLOW_EPHEMERAL_STORAGE) {
-  console.warn("AVISO: no Render, o armazenamento local pode ser temporário. Configure um disco persistente antes de depender dos dados.");
-}
+const { dataDir, uploadsDir, ensureStorage } = require("./config/storage");
+ensureStorage();
 const sessionStore = new SQLiteStore({ db: "sessions.sqlite", dir: dataDir, table: "sessions" });
 app.use(session({
   name: "bisno.sid",
@@ -50,8 +46,6 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/social", require("./routes/social"));
 app.use("/api/stores", require("./routes/stores"));
-const uploadsDir = process.env.UPLOADS_DIR || (process.env.RENDER ? path.join("/var/data", "uploads") : path.join(__dirname, "uploads"));
-fs.mkdirSync(uploadsDir, { recursive: true });
 const exigirLogin = require("./middleware/auth");
 app.use("/uploads", exigirLogin, express.static(uploadsDir, { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
 const publicDir = path.join(__dirname, "public");
