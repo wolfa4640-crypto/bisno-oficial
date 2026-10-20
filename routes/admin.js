@@ -6,11 +6,11 @@ const nodemailer = require("nodemailer");
 const db = require("../data/database");
 const router = express.Router();
 const adminEmail = () => String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
-function exigirAdmin(req,res,next) {
+async function exigirAdmin(req,res,next) {
   if (!req.session?.userId) return res.status(401).json({erro:"Inicia sessão primeiro."});
   if (!adminEmail()) return res.status(503).json({erro:"Define ADMIN_EMAIL nas variáveis do Render."});
   try {
-    const u=db.prepare("SELECT id,email,is_blocked FROM users WHERE id=?").get(req.session.userId);
+    const u=await db.prepare("SELECT id,email,is_blocked FROM users WHERE id=?").get(req.session.userId);
     if(!u || u.is_blocked) return res.status(403).json({erro:"Conta não autorizada."});
     if(String(u.email).toLowerCase()!==adminEmail()) return res.status(403).json({erro:"Acesso reservado ao administrador."});
     next();
@@ -23,95 +23,95 @@ function sameOrigin(req,res,next){
   catch{return res.status(403).json({erro:"Origem inválida."});}
   next();
 }
-function log(req,action,type,id,reason){
-  db.prepare("INSERT INTO admin_audit_logs (admin_user_id,admin_email,action,target_type,target_id,reason,result,created_at) VALUES (?,?,?,?,?,?,?,CURRENT_TIMESTAMP)")
+async function log(req,action,type,id,reason){
+  await db.prepare("INSERT INTO admin_audit_logs (admin_user_id,admin_email,action,target_type,target_id,reason,result,created_at) VALUES (?,?,?,?,?,?,?,CURRENT_TIMESTAMP)")
     .run(req.session.userId,adminEmail(),action,type,String(id),reason?String(reason).slice(0,300):null,"success");
 }
 const idOf=x=>Number.isSafeInteger(Number(x))&&Number(x)>0?Number(x):null;
 const pageOf=x=>Number.isSafeInteger(Number(x))&&Number(x)>0?Math.min(Number(x),100000):1;
 router.use(exigirAdmin);
-router.use((req,res,next)=>["POST","PUT","PATCH","DELETE"].includes(req.method)?sameOrigin(req,res,next):next());
+router.use(async (req,res,next)=>["POST","PUT","PATCH","DELETE"].includes(req.method)?sameOrigin(req,res,next):next());
 
-router.get("/stats",(req,res)=>{
- const n=q=>db.prepare(q).get().n;
+router.get("/stats",async (req,res)=>{
+ const n=q=>await db.prepare(q).get().n;
  res.json({stats:{
   users:n("SELECT COUNT(*) n FROM users"),users24h:n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-1 day')"),
   users7d:n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-7 days')"),
   users30d:n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-30 days')"),
   blockedUsers:n("SELECT COUNT(*) n FROM users WHERE is_blocked=1"),products:n("SELECT COUNT(*) n FROM products"),
   activeProducts:n("SELECT COUNT(*) n FROM products WHERE is_blocked=0"),blockedProducts:n("SELECT COUNT(*) n FROM products WHERE is_blocked=1")},
-  registrations:db.prepare("SELECT date(created_at) day,COUNT(*) count FROM users WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all(),
-  publications:db.prepare("SELECT date(created_at) day,COUNT(*) count FROM products WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all()});
+  registrations:await db.prepare("SELECT date(created_at) day,COUNT(*) count FROM users WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all(),
+  publications:await db.prepare("SELECT date(created_at) day,COUNT(*) count FROM products WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all()});
 });
-router.get("/users",(req,res)=>{
+router.get("/users",async (req,res)=>{
  const page=pageOf(req.query.page),limit=Math.min(pageOf(req.query.limit||20),100),search=String(req.query.search||"").trim().slice(0,120),status=String(req.query.status||"");
  const w=[],a=[];if(search){w.push("(u.name LIKE ? OR u.email LIKE ? OR CAST(u.id AS TEXT)=?)");a.push("%"+search+"%","%"+search+"%",search);}
  if(status==="blocked")w.push("u.is_blocked=1");if(status==="active")w.push("u.is_blocked=0");
  const c=w.length?" WHERE "+w.join(" AND "):"";
- const total=db.prepare("SELECT COUNT(*) n FROM users u"+c).get(...a).n;
- const users=db.prepare("SELECT u.id,u.name,u.email,u.phone,u.created_at,u.is_blocked,u.blocked_reason,(SELECT COUNT(*) FROM products p WHERE p.user_id=u.id) product_count FROM users u"+c+" ORDER BY u.id DESC LIMIT ? OFFSET ?").all(...a,limit,(page-1)*limit);
+ const total=await db.prepare("SELECT COUNT(*) n FROM users u"+c).get(...a).n;
+ const users=await db.prepare("SELECT u.id,u.name,u.email,u.phone,u.created_at,u.is_blocked,u.blocked_reason,(SELECT COUNT(*) FROM products p WHERE p.user_id=u.id) product_count FROM users u"+c+" ORDER BY u.id DESC LIMIT ? OFFSET ?").all(...a,limit,(page-1)*limit);
  res.json({users,page,limit,total,pages:Math.ceil(total/limit)});
 });
-router.get("/users/:id",(req,res)=>{
+router.get("/users/:id",async (req,res)=>{
  const id=idOf(req.params.id);if(!id)return res.status(400).json({erro:"Identificador inválido."});
- const user=db.prepare("SELECT id,name,email,phone,created_at,is_blocked,blocked_reason FROM users WHERE id=?").get(id);
+ const user=await db.prepare("SELECT id,name,email,phone,created_at,is_blocked,blocked_reason FROM users WHERE id=?").get(id);
  if(!user)return res.status(404).json({erro:"Utilizador não encontrado."});
- const products=db.prepare("SELECT id,name,price,category,city,created_at,is_blocked,blocked_reason FROM products WHERE user_id=? ORDER BY id DESC LIMIT 100").all(id);
+ const products=await db.prepare("SELECT id,name,price,category,city,created_at,is_blocked,blocked_reason FROM products WHERE user_id=? ORDER BY id DESC LIMIT 100").all(id);
  res.json({user,products});
 });
-router.patch("/users/:id/status",(req,res)=>{
+router.patch("/users/:id/status",async (req,res)=>{
  const id=idOf(req.params.id),blocked=req.body?.blocked;if(!id||typeof blocked!=="boolean")return res.status(400).json({erro:"Estado inválido."});
- const u=db.prepare("SELECT id,email FROM users WHERE id=?").get(id);if(!u)return res.status(404).json({erro:"Utilizador não encontrado."});
+ const u=await db.prepare("SELECT id,email FROM users WHERE id=?").get(id);if(!u)return res.status(404).json({erro:"Utilizador não encontrado."});
  if(String(u.email).toLowerCase()===adminEmail())return res.status(400).json({erro:"Não podes bloquear a conta administrativa."});
  const reason=blocked?String(req.body.reason||"").trim().slice(0,300):null;
- db.prepare("UPDATE users SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,reason,id);
- log(req,blocked?"user.block":"user.unblock","user",id,reason);res.json({mensagem:blocked?"Utilizador bloqueado.":"Utilizador desbloqueado."});
+ await db.prepare("UPDATE users SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,reason,id);
+ await log(req,blocked?"user.block":"user.unblock","user",id,reason);res.json({mensagem:blocked?"Utilizador bloqueado.":"Utilizador desbloqueado."});
 });
-router.delete("/users/:id",(req,res)=>{
+router.delete("/users/:id",async (req,res)=>{
  const id=idOf(req.params.id);if(!id)return res.status(400).json({erro:"Identificador inválido."});
- const u=db.prepare("SELECT id,email FROM users WHERE id=?").get(id);if(!u)return res.status(404).json({erro:"Utilizador não encontrado."});
+ const u=await db.prepare("SELECT id,email FROM users WHERE id=?").get(id);if(!u)return res.status(404).json({erro:"Utilizador não encontrado."});
  if(String(u.email).toLowerCase()===adminEmail())return res.status(400).json({erro:"Não podes eliminar a conta administrativa."});
- try{db.transaction(()=>{log(req,"user.delete","user",id,req.body?.reason||"Eliminação administrativa");db.prepare("DELETE FROM users WHERE id=?").run(id);})();res.json({mensagem:"Utilizador eliminado."});}
+ try{await db.transaction(async () =>{await log(req,"user.delete","user",id,req.body?.reason||"Eliminação administrativa");await db.prepare("DELETE FROM users WHERE id=?").run(id);})();res.json({mensagem:"Utilizador eliminado."});}
  catch{return res.status(409).json({erro:"Não foi possível eliminar a conta devido a dados associados."});}
 });
-router.get("/products",(req,res)=>{
+router.get("/products",async (req,res)=>{
  const page=pageOf(req.query.page),limit=Math.min(pageOf(req.query.limit||20),100),search=String(req.query.search||"").trim().slice(0,120),status=String(req.query.status||"");
  const w=[],a=[];if(search){w.push("(p.name LIKE ? OR CAST(p.id AS TEXT)=? OR u.name LIKE ? OR u.email LIKE ?)");a.push("%"+search+"%",search,"%"+search+"%","%"+search+"%");}
  if(status==="blocked")w.push("p.is_blocked=1");if(status==="active")w.push("p.is_blocked=0");const c=w.length?" WHERE "+w.join(" AND "):"";
- const total=db.prepare("SELECT COUNT(*) n FROM products p LEFT JOIN users u ON u.id=p.user_id"+c).get(...a).n;
- const products=db.prepare("SELECT p.id,p.name,p.price,p.category,p.city,p.neighborhood,p.image,p.created_at,p.is_blocked,p.blocked_reason,p.user_id,u.name seller_name,u.email seller_email FROM products p LEFT JOIN users u ON u.id=p.user_id"+c+" ORDER BY p.id DESC LIMIT ? OFFSET ?").all(...a,limit,(page-1)*limit);
+ const total=await db.prepare("SELECT COUNT(*) n FROM products p LEFT JOIN users u ON u.id=p.user_id"+c).get(...a).n;
+ const products=await db.prepare("SELECT p.id,p.name,p.price,p.category,p.city,p.neighborhood,p.image,p.created_at,p.is_blocked,p.blocked_reason,p.user_id,u.name seller_name,u.email seller_email FROM products p LEFT JOIN users u ON u.id=p.user_id"+c+" ORDER BY p.id DESC LIMIT ? OFFSET ?").all(...a,limit,(page-1)*limit);
  res.json({products,page,limit,total,pages:Math.ceil(total/limit)});
 });
-router.patch("/products/:id/status",(req,res)=>{
+router.patch("/products/:id/status",async (req,res)=>{
  const id=idOf(req.params.id),blocked=req.body?.blocked;if(!id||typeof blocked!=="boolean")return res.status(400).json({erro:"Estado inválido."});
- const p=db.prepare("SELECT id FROM products WHERE id=?").get(id);if(!p)return res.status(404).json({erro:"Anúncio não encontrado."});
+ const p=await db.prepare("SELECT id FROM products WHERE id=?").get(id);if(!p)return res.status(404).json({erro:"Anúncio não encontrado."});
  const reason=blocked?String(req.body.reason||"").trim().slice(0,300):null;
- db.prepare("UPDATE products SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,reason,id);
- log(req,blocked?"product.suspend":"product.restore","product",id,reason);res.json({mensagem:blocked?"Anúncio suspenso.":"Anúncio reativado."});
+ await db.prepare("UPDATE products SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,reason,id);
+ await log(req,blocked?"product.suspend":"product.restore","product",id,reason);res.json({mensagem:blocked?"Anúncio suspenso.":"Anúncio reativado."});
 });
-router.delete("/products/:id",(req,res)=>{
+router.delete("/products/:id",async (req,res)=>{
  const id=idOf(req.params.id);if(!id)return res.status(400).json({erro:"Identificador inválido."});
- if(!db.prepare("SELECT id FROM products WHERE id=?").get(id))return res.status(404).json({erro:"Anúncio não encontrado."});
- db.transaction(()=>{log(req,"product.delete","product",id,req.body?.reason||"Eliminação administrativa");db.prepare("DELETE FROM products WHERE id=?").run(id);})();
+ if(!await db.prepare("SELECT id FROM products WHERE id=?").get(id))return res.status(404).json({erro:"Anúncio não encontrado."});
+ await db.transaction(async () =>{await log(req,"product.delete","product",id,req.body?.reason||"Eliminação administrativa");await db.prepare("DELETE FROM products WHERE id=?").run(id);})();
  res.json({mensagem:"Anúncio eliminado."});
 });
-router.get("/audit-logs",(req,res)=>{
+router.get("/audit-logs",async (req,res)=>{
  const page=pageOf(req.query.page),limit=Math.min(pageOf(req.query.limit||30),100);
- const logs=db.prepare("SELECT id,admin_user_id,admin_email,action,target_type,target_id,reason,result,created_at FROM admin_audit_logs ORDER BY id DESC LIMIT ? OFFSET ?").all(limit,(page-1)*limit);
- const total=db.prepare("SELECT COUNT(*) n FROM admin_audit_logs").get().n;res.json({logs,page,limit,total,pages:Math.ceil(total/limit)});
+ const logs=await db.prepare("SELECT id,admin_user_id,admin_email,action,target_type,target_id,reason,result,created_at FROM admin_audit_logs ORDER BY id DESC LIMIT ? OFFSET ?").all(limit,(page-1)*limit);
+ const total=await db.prepare("SELECT COUNT(*) n FROM admin_audit_logs").get().n;res.json({logs,page,limit,total,pages:Math.ceil(total/limit)});
 });
 
 // Pedidos confirmados por e-mail, com contadores para notificações do painel.
-router.get("/password-recovery-requests", (req,res) => {
-  const requests = db.prepare(`
+router.get("/password-recovery-requests", async (req,res) => {
+  const requests = await db.prepare(`
     SELECT r.id, r.user_id, r.email, r.status, r.requested_at, r.email_confirmed_at, u.name, u.phone
     FROM password_recovery_requests r JOIN users u ON u.id=r.user_id
     WHERE r.status='pending' AND r.email_confirmed_at IS NOT NULL
     ORDER BY r.requested_at ASC LIMIT 100
   `).all();
-  const pendingCount = db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='pending' AND email_confirmed_at IS NOT NULL").get().n;
-  const approvedCount = db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='approved' AND completed_at IS NULL").get().n;
-  const completedCount = db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE completed_at IS NOT NULL").get().n;
+  const pendingCount = await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='pending' AND email_confirmed_at IS NOT NULL").get().n;
+  const approvedCount = await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='approved' AND completed_at IS NULL").get().n;
+  const completedCount = await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE completed_at IS NOT NULL").get().n;
   res.json({requests, counts:{pending:pendingCount,approved:approvedCount,completed:completedCount}});
 });
 
@@ -119,17 +119,17 @@ router.get("/password-recovery-requests", (req,res) => {
 router.post("/password-recovery-requests/:id/approve", async (req,res) => {
   const id=idOf(req.params.id);
   if(!id) return res.status(400).json({erro:"Pedido inválido."});
-  const request=db.prepare("SELECT r.id,r.user_id,r.email,r.status,r.email_confirmed_at,u.name FROM password_recovery_requests r JOIN users u ON u.id=r.user_id WHERE r.id=?").get(id);
+  const request=await db.prepare("SELECT r.id,r.user_id,r.email,r.status,r.email_confirmed_at,u.name FROM password_recovery_requests r JOIN users u ON u.id=r.user_id WHERE r.id=?").get(id);
   if(!request || request.status!=="pending" || !request.email_confirmed_at) return res.status(404).json({erro:"Pedido confirmado e pendente não encontrado."});
   const token=crypto.randomBytes(32).toString("hex");
   const tokenHash=crypto.createHash("sha256").update(token).digest("hex");
   const baseUrl=String(process.env.APP_URL||"").trim().replace(/[/]+$/,"") || (req.protocol+"://"+req.get("host"));
   const resetUrl=baseUrl+"/redefinir.html?token="+token;
   try {
-    db.transaction(()=>{
-      const result=db.prepare("UPDATE password_recovery_requests SET status='approved',resolved_at=CURRENT_TIMESTAMP,resolved_by=?,reset_token_hash=?,reset_token_expires_at=? WHERE id=? AND status='pending' AND email_confirmed_at IS NOT NULL").run(req.session.userId,tokenHash,Date.now()+60*60*1000,id);
+    await db.transaction(async () =>{
+      const result=await db.prepare("UPDATE password_recovery_requests SET status='approved',resolved_at=CURRENT_TIMESTAMP,resolved_by=?,reset_token_hash=?,reset_token_expires_at=? WHERE id=? AND status='pending' AND email_confirmed_at IS NOT NULL").run(req.session.userId,tokenHash,Date.now()+60*60*1000,id);
       if(!result.changes) throw new Error("O pedido já foi tratado.");
-      log(req,"password_recovery.approve","password_recovery",id,"E-mail confirmado; link seguro criado por 60 minutos");
+      await log(req,"password_recovery.approve","password_recovery",id,"E-mail confirmado; link seguro criado por 60 minutos");
     })();
   } catch(e) { return res.status(409).json({erro:"Não foi possível aprovar este pedido. Atualiza a lista e tenta novamente."}); }
   let emailSent=false;
@@ -147,45 +147,45 @@ router.post("/password-recovery-requests/:id/approve", async (req,res) => {
   res.json({mensagem:emailSent?"Pedido aprovado e link enviado ao e-mail confirmado.":"Pedido aprovado, mas o e-mail não pôde ser enviado. Copia o link seguro e entrega-o ao utilizador por um canal privado.",email:request.email,emailSent,resetUrl:emailSent?null:resetUrl});
 });
 
-router.post("/password-recovery-requests/:id/reject", (req,res) => {
+router.post("/password-recovery-requests/:id/reject", async (req,res) => {
   const id = idOf(req.params.id);
   if (!id) return res.status(400).json({erro:"Pedido inválido."});
-  const result = db.prepare("UPDATE password_recovery_requests SET status='rejected',resolved_at=CURRENT_TIMESTAMP,resolved_by=? WHERE id=? AND status='pending'").run(req.session.userId,id);
+  const result = await db.prepare("UPDATE password_recovery_requests SET status='rejected',resolved_at=CURRENT_TIMESTAMP,resolved_by=? WHERE id=? AND status='pending'").run(req.session.userId,id);
   if (!result.changes) return res.status(404).json({erro:"Pedido pendente não encontrado."});
-  log(req,"password_recovery.reject","password_recovery",id,"Pedido rejeitado pelo administrador");
+  await log(req,"password_recovery.reject","password_recovery",id,"Pedido rejeitado pelo administrador");
   res.json({mensagem:"Pedido rejeitado."});
 });
 
 // Compatibilidade com os controlos já apresentados no painel do marketplace.
-router.get("/overview", (req,res) => {
+router.get("/overview", async (req,res) => {
   const stats = {
-    users: db.prepare("SELECT COUNT(*) n FROM users").get().n,
-    blockedUsers: db.prepare("SELECT COUNT(*) n FROM users WHERE is_blocked=1").get().n,
-    products: db.prepare("SELECT COUNT(*) n FROM products").get().n,
-    activeProducts: db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=0").get().n,
-    blockedProducts: db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=1").get().n
+    users: await db.prepare("SELECT COUNT(*) n FROM users").get().n,
+    blockedUsers: await db.prepare("SELECT COUNT(*) n FROM users WHERE is_blocked=1").get().n,
+    products: await db.prepare("SELECT COUNT(*) n FROM products").get().n,
+    activeProducts: await db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=0").get().n,
+    blockedProducts: await db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=1").get().n
   };
-  const users = db.prepare("SELECT id,name,email,phone,created_at,is_blocked FROM users ORDER BY id DESC LIMIT 100").all();
-  const products = db.prepare("SELECT p.id,p.name,p.city,p.is_blocked,u.name seller_name,u.email seller_email FROM products p LEFT JOIN users u ON u.id=p.user_id ORDER BY p.id DESC LIMIT 100").all();
+  const users = await db.prepare("SELECT id,name,email,phone,created_at,is_blocked FROM users ORDER BY id DESC LIMIT 100").all();
+  const products = await db.prepare("SELECT p.id,p.name,p.city,p.is_blocked,u.name seller_name,u.email seller_email FROM products p LEFT JOIN users u ON u.id=p.user_id ORDER BY p.id DESC LIMIT 100").all();
   res.json({stats,users,products});
 });
-router.patch("/users/:id/block", (req,res) => {
+router.patch("/users/:id/block", async (req,res) => {
   const id=idOf(req.params.id), blocked=req.body?.blocked;
   if(!id || typeof blocked!=="boolean") return res.status(400).json({erro:"Estado inválido."});
-  const u=db.prepare("SELECT id,email FROM users WHERE id=?").get(id);
+  const u=await db.prepare("SELECT id,email FROM users WHERE id=?").get(id);
   if(!u) return res.status(404).json({erro:"Utilizador não encontrado."});
   if(String(u.email).toLowerCase()===adminEmail()) return res.status(400).json({erro:"Não podes bloquear a conta administrativa."});
-  db.prepare("UPDATE users SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,blocked?"Bloqueado pelo administrador":null,id);
-  log(req,blocked?"user.block":"user.unblock","user",id,null);
+  await db.prepare("UPDATE users SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,blocked?"Bloqueado pelo administrador":null,id);
+  await log(req,blocked?"user.block":"user.unblock","user",id,null);
   res.json({mensagem:blocked?"Utilizador bloqueado.":"Utilizador desbloqueado."});
 });
-router.patch("/products/:id/block", (req,res) => {
+router.patch("/products/:id/block", async (req,res) => {
   const id=idOf(req.params.id), blocked=req.body?.blocked;
   if(!id || typeof blocked!=="boolean") return res.status(400).json({erro:"Estado inválido."});
-  const p=db.prepare("SELECT id FROM products WHERE id=?").get(id);
+  const p=await db.prepare("SELECT id FROM products WHERE id=?").get(id);
   if(!p) return res.status(404).json({erro:"Anúncio não encontrado."});
-  db.prepare("UPDATE products SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,blocked?"Suspenso pelo administrador":null,id);
-  log(req,blocked?"product.suspend":"product.restore","product",id,null);
+  await db.prepare("UPDATE products SET is_blocked=?,blocked_reason=? WHERE id=?").run(blocked?1:0,blocked?"Suspenso pelo administrador":null,id);
+  await log(req,blocked?"product.suspend":"product.restore","product",id,null);
   res.json({mensagem:blocked?"Anúncio suspenso.":"Anúncio reativado."});
 });
 
