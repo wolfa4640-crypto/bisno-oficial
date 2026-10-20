@@ -6,10 +6,30 @@ on:
     branches:
       - main
       - modernizacao/auditoria-e-seguranca
+      - neon-postgres-migration
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bisno_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d bisno_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bisno_test
+      PGSSL: disable
+      SESSION_SECRET: test-session-secret-with-more-than-32-characters
+      NODE_ENV: test
     strategy:
       matrix:
         node-version: [22]
@@ -23,5 +43,5 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install
-      - name: Check and run tests
+      - name: Check and run PostgreSQL integration tests
         run: npm test
