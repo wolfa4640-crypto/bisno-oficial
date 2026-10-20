@@ -87,3 +87,21 @@ if (!colUsersAdmin.some(c => c.name === "blocked_reason")) db.exec("ALTER TABLE 
 const colProductsAdmin = db.pragma("table_info(products)");
 if (!colProductsAdmin.some(c => c.name === "is_blocked")) db.exec("ALTER TABLE products ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0");
 if (!colProductsAdmin.some(c => c.name === "blocked_reason")) db.exec("ALTER TABLE products ADD COLUMN blocked_reason TEXT");
+
+
+// Registo imutável por utilizadores comuns das operações administrativas.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS admin_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_user_id INTEGER,
+    admin_email TEXT NOT NULL,
+    action TEXT NOT NULL,
+    target_type TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    reason TEXT,
+    result TEXT NOT NULL DEFAULT 'success',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit_logs(created_at);
+  CREATE INDEX IF NOT EXISTS idx_admin_audit_target ON admin_audit_logs(target_type, target_id);
+`);
