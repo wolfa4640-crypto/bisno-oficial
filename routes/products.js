@@ -122,9 +122,9 @@ function validarTexto(valor, limite) {
 // GET /api/products
 // ============================================
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const produtos = db.prepare(`
+    const produtos = await db.prepare(`
       SELECT
         products.id,
         products.user_id,
@@ -163,9 +163,9 @@ router.get("/", (req, res) => {
 // GET /api/products/mine
 // ============================================
 
-router.get("/mine", exigirLogin, (req, res) => {
+router.get("/mine", exigirLogin, async (req, res) => {
   try {
-    const produtos = db.prepare(`
+    const produtos = await db.prepare(`
       SELECT
         id,
         user_id,
@@ -200,7 +200,7 @@ router.get("/mine", exigirLogin, (req, res) => {
 // GET /api/products/seller/:id
 // ============================================
 
-router.get("/seller/:id", (req, res) => {
+router.get("/seller/:id", async (req, res) => {
   try {
     const vendedorId = validarId(req.params.id);
 
@@ -210,7 +210,7 @@ router.get("/seller/:id", (req, res) => {
       });
     }
 
-    const vendedor = db.prepare(`
+    const vendedor = await db.prepare(`
       SELECT id, name, avatar
       FROM users
       WHERE id = ?
@@ -222,7 +222,7 @@ router.get("/seller/:id", (req, res) => {
       });
     }
 
-    const produtos = db.prepare(`
+    const produtos = await db.prepare(`
       SELECT
         id,
         user_id,
@@ -264,16 +264,16 @@ router.get("/seller/:id", (req, res) => {
 router.post(
   "/",
   exigirLogin,
-  (req, res, next) => {
+  async (req, res, next) => {
     limparAnunciosExpirados();
-    const publicados = db.prepare("SELECT COUNT(*) AS total FROM products WHERE user_id = ? AND created_at >= datetime('now', '-24 hours')").get(req.session.userId).total;
+    const publicados = await db.prepare("SELECT COUNT(*) AS total FROM products WHERE user_id = ? AND created_at >= datetime('now', '-24 hours')").get(req.session.userId).total;
     if (publicados >= 5) {
       return res.status(429).json({ erro: "Atingiste o limite de 5 anúncios por período de 24 horas. Tenta novamente quando um dos teus anúncios completar 24 horas desde a publicação." });
     }
     next();
   },
 
-  (req, res, next) => {
+  async (req, res, next) => {
     upload.single("image")(req, res, (erro) => {
       if (!erro) return next();
 
@@ -302,7 +302,7 @@ router.post(
     });
   },
 
-  (req, res) => {
+  async (req, res) => {
     let imagem = null;
 
     try {
@@ -380,7 +380,7 @@ router.post(
         });
       }
 
-      const resultado = db.prepare(`
+      const resultado = await db.prepare(`
         INSERT INTO products (
           user_id,
           name,
@@ -443,7 +443,7 @@ router.post(
 // DELETE /api/products/:id
 // ============================================
 
-router.delete("/:id", exigirLogin, (req, res) => {
+router.delete("/:id", exigirLogin, async (req, res) => {
   try {
     const id = validarId(req.params.id);
 
@@ -453,7 +453,7 @@ router.delete("/:id", exigirLogin, (req, res) => {
       });
     }
 
-    const produto = db.prepare(`
+    const produto = await db.prepare(`
       SELECT id, image
       FROM products
       WHERE id = ? AND user_id = ?
@@ -466,7 +466,7 @@ router.delete("/:id", exigirLogin, (req, res) => {
       });
     }
 
-    const resultado = db.prepare(`
+    const resultado = await db.prepare(`
       DELETE FROM products
       WHERE id = ? AND user_id = ?
     `).run(id, req.session.userId);
