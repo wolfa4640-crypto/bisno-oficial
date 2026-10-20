@@ -106,7 +106,16 @@ const uploadsDir = process.env.UPLOADS_DIR || (process.env.RENDER ? path.join("/
 fs.mkdirSync(uploadsDir, { recursive: true });
 const exigirLogin = require("./middleware/auth");
 app.use("/uploads", exigirLogin, express.static(uploadsDir, { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
-app.use(express.static(path.join(__dirname, "public"), { dotfiles: "deny", index: "index.html", maxAge: isProduction ? "1h" : 0 }));
+const publicDir = path.join(__dirname, "public");
+const exigirPaginaAutenticada = (req, res, next) => {
+  if (!req.session?.userId) return res.sendFile(path.join(publicDir, "acesso.html"));
+  next();
+};
+// A página principal e o seu alias só entregam o marketplace após autenticação.
+app.get(["/", "/index.html"], exigirPaginaAutenticada, (_req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
+app.use(express.static(publicDir, { dotfiles: "deny", index: false, maxAge: isProduction ? "1h" : 0 }));
 app.use((req, res) => {
   if (req.path.startsWith("/api/")) return res.status(404).json({ erro: "Endpoint não encontrado." });
   res.status(404).send("Página não encontrada.");
