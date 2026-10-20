@@ -126,7 +126,7 @@ router.post('/:id/follow', exigirLogin, async (req,res) => {
  else {
   await db.prepare('INSERT INTO store_follows(store_id,follower_user_id) VALUES(?,?)').run(id,req.session.userId);
   await db.prepare(`INSERT INTO notifications(recipient_user_id,actor_user_id,type,message) VALUES(?,?, 'store_follow', ?)`)
-   .run(store.user_id,req.session.userId,`${db.prepare('SELECT name FROM users WHERE id=?').get(req.session.userId)?.name || 'Um utilizador'} começou a seguir a tua loja ${store.name}.`);
+   .run(store.user_id,req.session.userId,`${await db.prepare('SELECT name FROM users WHERE id=?').get(req.session.userId)?.name || 'Um utilizador'} começou a seguir a tua loja ${store.name}.`);
  }
  res.json({followed:!already,followers:await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id).total});
 });
