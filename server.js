@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const PgSession = require("connect-pg-simple")(session);
 const db = require("./data/database");
+const { verificarArmazenamento } = require("./storage/object-storage");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -72,6 +73,12 @@ app.use((erro, req, res, next) => {
 let servidor;
 async function iniciarServidor() {
   await db.initializeDatabase();
+  try {
+    await verificarArmazenamento();
+    console.log("[Object Storage] Verificação de escrita, leitura e eliminação concluída.");
+  } catch (erroStorage) {
+    console.error("[Object Storage] A verificação falhou:", erroStorage.message);
+  }
   servidor = app.listen(PORT, "0.0.0.0", () => console.log(`Bisno v${require("./package.json").version} ativo na porta ${PORT}`));
 }
 iniciarServidor().catch((erro) => {
