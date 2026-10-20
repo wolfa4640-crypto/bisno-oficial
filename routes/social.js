@@ -143,10 +143,10 @@ router.post("/interests/:productId", exigirLogin, async (req, res) => {
   `).get(productId, userId);
 
   if (existente) {
-    const total = await db.prepare(`
+    const total = (await db.prepare(`
       SELECT COUNT(*) AS total
       FROM product_interests WHERE product_id = ?
-    `).get(productId).total;
+    `).get(productId)).total;
 
     return res.json({
       mensagem: "Já demonstraste interesse neste anúncio.",
@@ -181,10 +181,10 @@ router.post("/interests/:productId", exigirLogin, async (req, res) => {
     }
 
     return {
-      total: await db.prepare(`
+      total: (await db.prepare(`
         SELECT COUNT(*) AS total
         FROM product_interests WHERE product_id = ?
-      `).get(productId).total,
+      `).get(productId)).total,
       inserido: Boolean(insercao.changes)
     };
   });
@@ -213,10 +213,10 @@ router.delete("/interests/:productId", exigirLogin, async (req, res) => {
     WHERE product_id = ? AND user_id = ?
   `).run(productId, req.session.userId);
 
-  const total = await db.prepare(`
+  const total = (await db.prepare(`
     SELECT COUNT(*) AS total
     FROM product_interests WHERE product_id = ?
-  `).get(productId).total;
+  `).get(productId)).total;
 
   res.json({
     mensagem: "Interesse atualizado.",
@@ -240,11 +240,11 @@ router.get("/notifications", exigirLogin, async (req, res) => {
     LIMIT 100
   `).all(req.session.userId);
 
-  const naoLidas = await db.prepare(`
+  const naoLidas = (await db.prepare(`
     SELECT COUNT(*) AS total
     FROM notifications
     WHERE recipient_user_id = ? AND is_read = 0
-  `).get(req.session.userId).total;
+  `).get(req.session.userId)).total;
 
   res.json({ notificacoes, naoLidas });
 });
@@ -473,7 +473,7 @@ router.get("/users/:id/follow", async (req, res) => {
   if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
   const target = await db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
   if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
-  const followers = await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  const followers = (await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId)).total;
   const following = req.session?.userId
     ? Boolean(await db.prepare("SELECT 1 FROM user_follows WHERE follower_id = ? AND followed_id = ?").get(req.session.userId, targetId))
     : false;
@@ -489,7 +489,7 @@ router.post("/users/:id/follow", exigirLogin, async (req, res) => {
   const target = await db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
   if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
   await db.prepare("INSERT OR IGNORE INTO user_follows (follower_id, followed_id) VALUES (?, ?)").run(followerId, targetId);
-  const followers = await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  const followers = (await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId)).total;
   res.json({ following: true, followers });
 });
 
@@ -499,7 +499,7 @@ router.delete("/users/:id/follow", exigirLogin, async (req, res) => {
   const followerId = Number(req.session.userId);
   if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
   await db.prepare("DELETE FROM user_follows WHERE follower_id = ? AND followed_id = ?").run(followerId, targetId);
-  const followers = await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  const followers = (await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId)).total;
   res.json({ following: false, followers });
 });
 
