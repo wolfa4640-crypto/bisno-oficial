@@ -43,9 +43,8 @@ function guardarToken(userId, purpose, token, minutos = 15) {
 
 const router = express.Router();
 
-const pastaUploads = process.env.UPLOADS_DIR || (process.env.RENDER ? path.join("/var/data", "uploads") : path.join(__dirname, "..", "uploads"));
-
-fs.mkdirSync(pastaUploads, { recursive: true });
+const { uploadsDir: pastaUploads, ensureStorage } = require("../config/storage");
+ensureStorage();
 
 const armazenamento = multer.diskStorage({
   destination: (req, file, callback) => {
