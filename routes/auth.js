@@ -123,7 +123,7 @@ router.post("/register", async (req, res) => {
 // Recuperação segura: enviar código ao e-mail registado antes de avisar a administração.
 router.post("/forgot-password", async (req, res) => {
   const email = String(req.body?.email || "").trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
   const user = db.prepare("SELECT id, is_blocked FROM users WHERE email=?").get(email);
   const generic = "Se a conta existir e estiver ativa, será enviado um código de confirmação para o e-mail registado.";
   if (!user || user.is_blocked) return res.json({ mensagem: generic });
@@ -141,7 +141,7 @@ router.post("/forgot-password", async (req, res) => {
 router.post("/confirm-password-recovery", (req, res) => {
   const email = String(req.body?.email || "").trim().toLowerCase();
   const code = String(req.body?.code || "").trim();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !/^\\d{6}$/.test(code)) return res.status(400).json({ erro: "Confirma o e-mail e introduz o código de seis dígitos." });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^\d{6}$/.test(code)) return res.status(400).json({ erro: "Confirma o e-mail e introduz o código de seis dígitos." });
   const user = db.prepare("SELECT id,is_blocked FROM users WHERE email=?").get(email);
   if (!user || user.is_blocked) return res.status(400).json({ erro: "Código inválido ou expirado. Pede um novo código." });
   const token = db.prepare("SELECT id FROM auth_tokens WHERE user_id=? AND purpose='reset_password' AND token_hash=? AND expires_at>?").get(user.id, hashToken(code), Date.now());
