@@ -94,6 +94,25 @@ function apagarFicheiroEnviado(ficheiro) {
   }
 }
 
+function limparAnunciosExpirados() {
+  try {
+    const expirados = db.prepare("SELECT id, image FROM products WHERE created_at <= datetime('now', '-90 hours')").all();
+    if (!expirados.length) return;
+    const remover = db.prepare("DELETE FROM products WHERE id = ?");
+    db.transaction((items) => { for (const item of items) remover.run(item.id); })(expirados);
+    for (const item of expirados) {
+      if (item.image && item.image.startsWith("/uploads/")) {
+        const caminho = path.join(pastaUploads, path.basename(item.image));
+        try { if (fs.existsSync(caminho)) fs.unlinkSync(caminho); } catch (e) { console.error("Não foi possível apagar imagem de anúncio expirado:", e.message); }
+      }
+    }
+    console.log("[Bisno] Anúncios expirados removidos:", expirados.length);
+  } catch (e) { console.error("[Bisno] Falha ao limpar anúncios expirados:", e.message); }
+}
+limparAnunciosExpirados();
+const temporizadorLimpezaAnuncios = setInterval(limparAnunciosExpirados, 15 * 60 * 1000);
+if (temporizadorLimpezaAnuncios.unref) temporizadorLimpezaAnuncios.unref();
+
 function validarId(valor) {
   const id = Number(valor);
 
@@ -257,6 +276,14 @@ router.get("/seller/:id", (req, res) => {
 router.post(
   "/",
   exigirLogin,
+  (req, res, next) => {
+    limparAnunciosExpirados();
+    const publicados = db.prepare("SELECT COUNT(*) AS total FROM products WHERE user_id = ? AND created_at >= datetime('now', '-24 hours')").get(req.session.userId).total;
+    if (publicados >= 5) {
+      return res.status(429).json({ erro: "Atingiste o limite de 5 anúncios por período de 24 horas. Tenta novamente quando um dos teus anúncios completar 24 horas desde a publicação." });
+    }
+    next();
+  },
 
   (req, res, next) => {
     upload.single("image")(req, res, (erro) => {
