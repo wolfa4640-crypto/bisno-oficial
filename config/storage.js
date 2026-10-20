@@ -18,7 +18,7 @@ function ensureStorage() {
     fs.mkdirSync(uploadsDir, { recursive: true });
     fs.accessSync(dataDir, fs.constants.R_OK | fs.constants.W_OK);
     fs.accessSync(uploadsDir, fs.constants.R_OK | fs.constants.W_OK);
-    if (process.env.RENDER && !process.env.DATA_DIR) {
+    if (process.env.RENDER && (!process.env.DATA_DIR || dataDir === "/tmp" || dataDir.startsWith("/tmp/"))) {
       console.warn("[Bisno] ALERTA: a usar armazenamento temporário em " + dataDir + ". Configura um disco persistente e define DATA_DIR/UPLOADS_DIR no Render.");
     } else if (process.env.RENDER && process.env.DATA_DIR) {
       console.log("[Bisno] Diretório de dados configurado via DATA_DIR: " + dataDir + ". Confirma que este caminho corresponde ao disco persistente montado no Render.");
