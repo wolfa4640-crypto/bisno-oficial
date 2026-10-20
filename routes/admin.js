@@ -33,13 +33,13 @@ router.use(exigirAdmin);
 router.use(async (req,res,next)=>["POST","PUT","PATCH","DELETE"].includes(req.method)?sameOrigin(req,res,next):next());
 
 router.get("/stats",async (req,res)=>{
- const n=q=>await db.prepare(q).get().n;
+ const n=q=>(await db.prepare(q).get()).n;
  res.json({stats:{
-  users:n("SELECT COUNT(*) n FROM users"),users24h:n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-1 day')"),
-  users7d:n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-7 days')"),
-  users30d:n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-30 days')"),
-  blockedUsers:n("SELECT COUNT(*) n FROM users WHERE is_blocked=1"),products:n("SELECT COUNT(*) n FROM products"),
-  activeProducts:n("SELECT COUNT(*) n FROM products WHERE is_blocked=0"),blockedProducts:n("SELECT COUNT(*) n FROM products WHERE is_blocked=1")},
+  users:await n("SELECT COUNT(*) n FROM users"),users24h:await n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-1 day')"),
+  users7d:await n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-7 days')"),
+  users30d:await n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-30 days')"),
+  blockedUsers:await n("SELECT COUNT(*) n FROM users WHERE is_blocked=1"),products:await n("SELECT COUNT(*) n FROM products"),
+  activeProducts:await n("SELECT COUNT(*) n FROM products WHERE is_blocked=0"),blockedProducts:await n("SELECT COUNT(*) n FROM products WHERE is_blocked=1")},
   registrations:await db.prepare("SELECT date(created_at) day,COUNT(*) count FROM users WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all(),
   publications:await db.prepare("SELECT date(created_at) day,COUNT(*) count FROM products WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all()});
 });
@@ -48,7 +48,7 @@ router.get("/users",async (req,res)=>{
  const w=[],a=[];if(search){w.push("(u.name LIKE ? OR u.email LIKE ? OR CAST(u.id AS TEXT)=?)");a.push("%"+search+"%","%"+search+"%",search);}
  if(status==="blocked")w.push("u.is_blocked=1");if(status==="active")w.push("u.is_blocked=0");
  const c=w.length?" WHERE "+w.join(" AND "):"";
- const total=await db.prepare("SELECT COUNT(*) n FROM users u"+c).get(...a).n;
+ const total=(await db.prepare("SELECT COUNT(*) n FROM users u"+c).get(...a)).n;
  const users=await db.prepare("SELECT u.id,u.name,u.email,u.phone,u.created_at,u.is_blocked,u.blocked_reason,(SELECT COUNT(*) FROM products p WHERE p.user_id=u.id) product_count FROM users u"+c+" ORDER BY u.id DESC LIMIT ? OFFSET ?").all(...a,limit,(page-1)*limit);
  res.json({users,page,limit,total,pages:Math.ceil(total/limit)});
 });
@@ -78,7 +78,7 @@ router.get("/products",async (req,res)=>{
  const page=pageOf(req.query.page),limit=Math.min(pageOf(req.query.limit||20),100),search=String(req.query.search||"").trim().slice(0,120),status=String(req.query.status||"");
  const w=[],a=[];if(search){w.push("(p.name LIKE ? OR CAST(p.id AS TEXT)=? OR u.name LIKE ? OR u.email LIKE ?)");a.push("%"+search+"%",search,"%"+search+"%","%"+search+"%");}
  if(status==="blocked")w.push("p.is_blocked=1");if(status==="active")w.push("p.is_blocked=0");const c=w.length?" WHERE "+w.join(" AND "):"";
- const total=await db.prepare("SELECT COUNT(*) n FROM products p LEFT JOIN users u ON u.id=p.user_id"+c).get(...a).n;
+ const total=(await db.prepare("SELECT COUNT(*) n FROM products p LEFT JOIN users u ON u.id=p.user_id"+c).get(...a)).n;
  const products=await db.prepare("SELECT p.id,p.name,p.price,p.category,p.city,p.neighborhood,p.image,p.created_at,p.is_blocked,p.blocked_reason,p.user_id,u.name seller_name,u.email seller_email FROM products p LEFT JOIN users u ON u.id=p.user_id"+c+" ORDER BY p.id DESC LIMIT ? OFFSET ?").all(...a,limit,(page-1)*limit);
  res.json({products,page,limit,total,pages:Math.ceil(total/limit)});
 });
@@ -98,7 +98,7 @@ router.delete("/products/:id",async (req,res)=>{
 router.get("/audit-logs",async (req,res)=>{
  const page=pageOf(req.query.page),limit=Math.min(pageOf(req.query.limit||30),100);
  const logs=await db.prepare("SELECT id,admin_user_id,admin_email,action,target_type,target_id,reason,result,created_at FROM admin_audit_logs ORDER BY id DESC LIMIT ? OFFSET ?").all(limit,(page-1)*limit);
- const total=await db.prepare("SELECT COUNT(*) n FROM admin_audit_logs").get().n;res.json({logs,page,limit,total,pages:Math.ceil(total/limit)});
+ const total=(await db.prepare("SELECT COUNT(*) n FROM admin_audit_logs").get()).n;res.json({logs,page,limit,total,pages:Math.ceil(total/limit)});
 });
 
 // Pedidos confirmados por e-mail, com contadores para notificações do painel.
@@ -109,9 +109,9 @@ router.get("/password-recovery-requests", async (req,res) => {
     WHERE r.status='pending' AND r.email_confirmed_at IS NOT NULL
     ORDER BY r.requested_at ASC LIMIT 100
   `).all();
-  const pendingCount = await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='pending' AND email_confirmed_at IS NOT NULL").get().n;
-  const approvedCount = await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='approved' AND completed_at IS NULL").get().n;
-  const completedCount = await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE completed_at IS NOT NULL").get().n;
+  const pendingCount = (await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='pending' AND email_confirmed_at IS NOT NULL").get()).n;
+  const approvedCount = (await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='approved' AND completed_at IS NULL").get()).n;
+  const completedCount = (await db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE completed_at IS NOT NULL").get()).n;
   res.json({requests, counts:{pending:pendingCount,approved:approvedCount,completed:completedCount}});
 });
 
@@ -159,11 +159,11 @@ router.post("/password-recovery-requests/:id/reject", async (req,res) => {
 // Compatibilidade com os controlos já apresentados no painel do marketplace.
 router.get("/overview", async (req,res) => {
   const stats = {
-    users: await db.prepare("SELECT COUNT(*) n FROM users").get().n,
-    blockedUsers: await db.prepare("SELECT COUNT(*) n FROM users WHERE is_blocked=1").get().n,
-    products: await db.prepare("SELECT COUNT(*) n FROM products").get().n,
-    activeProducts: await db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=0").get().n,
-    blockedProducts: await db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=1").get().n
+    users: (await db.prepare("SELECT COUNT(*) n FROM users").get()).n,
+    blockedUsers: (await db.prepare("SELECT COUNT(*) n FROM users WHERE is_blocked=1").get()).n,
+    products: (await db.prepare("SELECT COUNT(*) n FROM products").get()).n,
+    activeProducts: (await db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=0").get()).n,
+    blockedProducts: (await db.prepare("SELECT COUNT(*) n FROM products WHERE is_blocked=1").get()).n
   };
   const users = await db.prepare("SELECT id,name,email,phone,created_at,is_blocked FROM users ORDER BY id DESC LIMIT 100").all();
   const products = await db.prepare("SELECT p.id,p.name,p.city,p.is_blocked,u.name seller_name,u.email seller_email FROM products p LEFT JOIN users u ON u.id=p.user_id ORDER BY p.id DESC LIMIT 100").all();
