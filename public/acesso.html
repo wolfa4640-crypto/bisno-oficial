@@ -37,23 +37,30 @@ form{display:grid;gap:9px}form[hidden]{display:none}label{font-size:13px;font-we
   <button id="forgot-toggle" type="button" style="display:block;margin:12px auto 0;border:0;background:transparent;color:var(--green);font:inherit;font-weight:750;cursor:pointer">Esqueci-me da palavra-passe</button>
   <form id="forgot" hidden>
     <h2 style="font-size:20px">Recuperar palavra-passe</h2>
-    <p class="intro">O teu pedido será enviado ao administrador. Se for aprovado, receberás uma palavra-passe temporária através dele.</p>
+    <p class="intro">Vamos enviar um código ao e-mail da tua conta. Depois de confirmares o e-mail, o administrador poderá autorizar a alteração.</p>
     <label for="forgot-email">E-mail da conta</label><input id="forgot-email" name="email" type="email" autocomplete="email" required>
-    <button class="submit" type="submit">Pedir recuperação</button>
+    <button class="submit" type="submit">Enviar código de confirmação</button>
     <button id="forgot-cancel" type="button" style="margin-top:5px;border:0;background:transparent;color:var(--muted);padding:10px;cursor:pointer">Voltar ao início de sessão</button>
   </form>
+  <form id="forgot-confirm" hidden>
+    <h2 style="font-size:20px">Confirmar o teu e-mail</h2><p class="intro">Introduz o código de seis dígitos que enviámos ao teu e-mail. O código expira em 15 minutos.</p>
+    <input id="confirm-email" name="email" type="hidden"><label for="confirm-code">Código de confirmação</label><input id="confirm-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="000000" required>
+    <button class="submit" type="submit">Confirmar e enviar pedido</button><button id="confirm-back" type="button" style="margin-top:5px;border:0;background:transparent;color:var(--muted);padding:10px;cursor:pointer">Voltar</button>
+  </form>
   <p id="message" class="msg" role="status" aria-live="polite"></p>
-  <p class="note">O conteúdo do marketplace fica disponível após iniciares sessão. Não é necessária confirmação por código de e-mail.</p>
+  <p class="note">O conteúdo do marketplace fica disponível após iniciares sessão. A recuperação de palavra-passe exige confirmação do e-mail.</p>
 </main>
 <script>
 const $=s=>document.querySelector(s), msg=$('#message');
-function tab(which){$('#login').hidden=which!=='login';$('#register').hidden=which!=='register';$('#forgot').hidden=which!=='forgot';$('#forgot-toggle').hidden=which!=='login';$('#tab-login').classList.toggle('active',which==='login');$('#tab-register').classList.toggle('active',which==='register');}
+function tab(which){$('#login').hidden=which!=='login';$('#register').hidden=which!=='register';$('#forgot').hidden=which!=='forgot';$('#forgot-confirm').hidden=which!=='confirm';$('#forgot-toggle').hidden=which!=='login';$('#tab-login').classList.toggle('active',which==='login');$('#tab-register').classList.toggle('active',which==='register');}
 $('#tab-login').addEventListener('click',()=>tab('login'));$('#tab-register').addEventListener('click',()=>tab('register'));
 async function send(url,form){const data=Object.fromEntries(new FormData(form));const response=await fetch(url,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.erro||result.mensagem||'Não foi possível concluir. Tenta novamente.');return result;}
 $('#login').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;msg.textContent='A iniciar sessão…';try{const r=await send('/api/auth/login',e.currentTarget);msg.textContent=r.mensagem||'Sessão iniciada. A abrir o Bisno…';location.replace('/');}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
 $('#register').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;msg.textContent='A criar a conta…';try{const r=await send('/api/auth/register',e.currentTarget);tab('login');$('#login-email').value=$('#reg-email').value.trim();$('#login-password').value=$('#reg-password').value;msg.textContent=r.mensagem||'Conta criada. Já podes iniciar sessão.';}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
 $('#forgot-toggle').addEventListener('click',()=>{if($('#login-email').value)$('#forgot-email').value=$('#login-email').value;tab('forgot');});
 $('#forgot-cancel').addEventListener('click',()=>tab('login'));
-$('#forgot').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button[type="submit"]');b.disabled=true;msg.textContent='A enviar pedido ao administrador…';try{const r=await send('/api/auth/forgot-password',e.currentTarget);tab('login');msg.textContent=r.mensagem||'Pedido enviado para análise do administrador.';}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
+$('#forgot').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button[type="submit"]');b.disabled=true;msg.textContent='A enviar código ao teu e-mail…';try{const r=await send('/api/auth/forgot-password',e.currentTarget);$('#confirm-email').value=$('#forgot-email').value.trim().toLowerCase();tab('confirm');msg.textContent=r.mensagem||'Consulta o teu e-mail e introduz o código.';}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
+$('#forgot-confirm').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button[type="submit"]');b.disabled=true;msg.textContent='A confirmar o e-mail…';try{const r=await send('/api/auth/confirm-password-recovery',e.currentTarget);tab('login');msg.textContent=r.mensagem||'E-mail confirmado. Aguarda a decisão do administrador.';}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
+$('#confirm-back').addEventListener('click',()=>tab('forgot'));
 </script>
 </body></html>
