@@ -9,7 +9,7 @@ const dataDir = path.resolve(
   process.env.DATA_DIR || (process.env.RENDER ? "/var/data" : path.join(__dirname, "..", "data"))
 );
 const uploadsDir = path.resolve(
-  process.env.UPLOADS_DIR || path.join(dataDir, "uploads")
+  process.env.UPLOADS_DIR || (process.env.RENDER ? path.join(dataDir, "uploads") : path.join(__dirname, "..", "uploads"))
 );
 
 function ensureStorage() {
