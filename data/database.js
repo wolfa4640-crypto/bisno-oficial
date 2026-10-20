@@ -1,7 +1,8 @@
 "use strict";
 
 const { AsyncLocalStorage } = require("node:async_hooks");
-const { Pool } = require("pg");
+const { Pool, types } = require("pg");
+types.setTypeParser(20, (value) => Number(value));
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL não está configurada para o PostgreSQL do Neon.");
