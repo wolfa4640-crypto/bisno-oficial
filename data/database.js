@@ -99,6 +99,14 @@ if (!colProductsAdmin.some(c => c.name === "blocked_reason")) db.exec("ALTER TAB
 
 
 // Registo imutável por utilizadores comuns das operações administrativas.
+
+const recoveryColumns = db.pragma("table_info(password_recovery_requests)");
+if (!recoveryColumns.some(c => c.name === "email_confirmed_at")) db.exec("ALTER TABLE password_recovery_requests ADD COLUMN email_confirmed_at TEXT");
+if (!recoveryColumns.some(c => c.name === "reset_token_hash")) db.exec("ALTER TABLE password_recovery_requests ADD COLUMN reset_token_hash TEXT");
+if (!recoveryColumns.some(c => c.name === "reset_token_expires_at")) db.exec("ALTER TABLE password_recovery_requests ADD COLUMN reset_token_expires_at INTEGER");
+if (!recoveryColumns.some(c => c.name === "completed_at")) db.exec("ALTER TABLE password_recovery_requests ADD COLUMN completed_at TEXT");
+db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_recovery_reset_token ON password_recovery_requests(reset_token_hash) WHERE reset_token_hash IS NOT NULL");
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS admin_audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
