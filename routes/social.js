@@ -5,6 +5,16 @@ const exigirLogin = require("../middleware/auth");
 
 const router = express.Router();
 
+// As conversas e mensagens expiram após 72 horas.
+function limparConversasExpiradas() {
+  try {
+    db.prepare("DELETE FROM messages WHERE created_at <= datetime('now', '-72 hours')").run();
+    db.prepare("DELETE FROM conversations WHERE updated_at <= datetime('now', '-72 hours')").run();
+  } catch (e) { console.error("[Bisno] Falha ao limpar conversas expiradas:", e.message); }
+}
+const temporizadorLimpezaConversas = setInterval(limparConversasExpiradas, 15 * 60 * 1000);
+if (temporizadorLimpezaConversas.unref) temporizadorLimpezaConversas.unref();
+
 // Todo o conteúdo social exige uma sessão autenticada.
 router.use(exigirLogin);
 
@@ -64,6 +74,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_messages_conversation
     ON messages(conversation_id, id);
 `);
+
+limparConversasExpiradas();
 
 // Contar interesses de um anúncio — consulta pública.
 router.get("/products/:id/interests", (req, res) => {
