@@ -22,7 +22,6 @@ pool.on("error", (error) => {
 
 function translateSql(source) {
   let sql = String(source).trim().replace(/;+\s*$/, "");
-  sql = sql.replace(/\bINSERT\s+OR\s+IGNORE\s+INTO\b/gi, "INSERT INTO");
   sql = sql.replace(/datetime\s*\(\s*'now'\s*,\s*'-(\d+)\s+(hours?|days?|minutes?)'\s*\)/gi, "NOW() - INTERVAL '$1 $2'");
   sql = sql.replace(/datetime\s*\(\s*'now'\s*\)/gi, "NOW()");
   sql = sql.replace(/datetime\s*\(\s*([a-zA-Z_][\w.]*)\s*\)/gi, "$1");
@@ -48,6 +47,9 @@ function statement(sql) {
     },
     async run(...params) {
       let query = String(sql).trim().replace(/;+\s*$/, "");
+      const ignoreConflict = /^INSERT\s+OR\s+IGNORE\s+INTO\b/i.test(query);
+      query = query.replace(/^INSERT\s+OR\s+IGNORE\s+INTO\b/i, "INSERT INTO");
+      if (ignoreConflict && !/\bON\s+CONFLICT\b/i.test(query)) query += " ON CONFLICT DO NOTHING";
       if (/^INSERT\b/i.test(query) && !/\bRETURNING\b/i.test(query)) {
         if (/\bON\s+CONFLICT\b/i.test(query)) {
           query += " RETURNING id";
