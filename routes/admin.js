@@ -123,7 +123,8 @@ router.post("/password-recovery-requests/:id/approve", async (req,res) => {
   if(!request || request.status!=="pending" || !request.email_confirmed_at) return res.status(404).json({erro:"Pedido confirmado e pendente não encontrado."});
   const token=crypto.randomBytes(32).toString("hex");
   const tokenHash=crypto.createHash("sha256").update(token).digest("hex");
-  const resetUrl=(String(process.env.APP_URL||"").trim().replace(/\\/$/,"") || (req.protocol+"://"+req.get("host")))+"/redefinir.html?token="+token;
+  const baseUrl=String(process.env.APP_URL||"").trim().replace(/[/]+$/,"") || (req.protocol+"://"+req.get("host"));
+  const resetUrl=baseUrl+"/redefinir.html?token="+token;
   try {
     db.transaction(()=>{
       const result=db.prepare("UPDATE password_recovery_requests SET status='approved',resolved_at=CURRENT_TIMESTAMP,resolved_by=?,reset_token_hash=?,reset_token_expires_at=? WHERE id=? AND status='pending' AND email_confirmed_at IS NOT NULL").run(req.session.userId,tokenHash,Date.now()+60*60*1000,id);
