@@ -6,10 +6,10 @@ const exigirLogin = require("../middleware/auth");
 const router = express.Router();
 
 // As conversas e mensagens expiram após 72 horas.
-function limparConversasExpiradas() {
+async function limparConversasExpiradas() {
   try {
-    db.prepare("DELETE FROM messages WHERE created_at <= datetime('now', '-72 hours')").run();
-    db.prepare("DELETE FROM conversations WHERE updated_at <= datetime('now', '-72 hours')").run();
+    await db.prepare("DELETE FROM messages WHERE created_at <= datetime('now', '-72 hours')").run();
+    await db.prepare("DELETE FROM conversations WHERE updated_at <= datetime('now', '-72 hours')").run();
   } catch (e) { console.error("[Bisno] Falha ao limpar conversas expiradas:", e.message); }
 }
 const temporizadorLimpezaConversas = setInterval(limparConversasExpiradas, 15 * 60 * 1000);
@@ -78,14 +78,14 @@ db.exec(`
 limparConversasExpiradas();
 
 // Contar interesses de um anúncio — consulta pública.
-router.get("/products/:id/interests", (req, res) => {
+router.get("/products/:id/interests", async (req, res) => {
   const productId = Number(req.params.id);
 
   if (!Number.isInteger(productId) || productId < 1) {
     return res.status(400).json({ erro: "Anúncio inválido." });
   }
 
-  const produto = db.prepare(
+  const produto = await db.prepare(
     "SELECT id FROM products WHERE id = ?"
   ).get(productId);
 
@@ -93,14 +93,14 @@ router.get("/products/:id/interests", (req, res) => {
     return res.status(404).json({ erro: "Anúncio não encontrado." });
   }
 
-  const resultado = db.prepare(`
+  const resultado = await db.prepare(`
     SELECT COUNT(*) AS total
     FROM product_interests
     WHERE product_id = ?
   `).get(productId);
 
   const interessado = req.session?.userId
-    ? Boolean(db.prepare(`
+    ? Boolean(await db.prepare(`
         SELECT 1 FROM product_interests
         WHERE product_id = ? AND user_id = ?
       `).get(productId, req.session.userId))
@@ -113,7 +113,7 @@ router.get("/products/:id/interests", (req, res) => {
 });
 
 // Demonstrar interesse.
-router.post("/interests/:productId", exigirLogin, (req, res) => {
+router.post("/interests/:productId", exigirLogin, async (req, res) => {
   const productId = Number(req.params.productId);
   const userId = Number(req.session.userId);
 
@@ -121,7 +121,7 @@ router.post("/interests/:productId", exigirLogin, (req, res) => {
     return res.status(400).json({ erro: "Anúncio inválido." });
   }
 
-  const produto = db.prepare(`
+  const produto = await db.prepare(`
     SELECT id, user_id, name
     FROM products
     WHERE id = ?
@@ -137,13 +137,13 @@ router.post("/interests/:productId", exigirLogin, (req, res) => {
     });
   }
 
-  const existente = db.prepare(`
+  const existente = await db.prepare(`
     SELECT id FROM product_interests
     WHERE product_id = ? AND user_id = ?
   `).get(productId, userId);
 
   if (existente) {
-    const total = db.prepare(`
+    const total = await db.prepare(`
       SELECT COUNT(*) AS total
       FROM product_interests WHERE product_id = ?
     `).get(productId).total;
@@ -155,20 +155,20 @@ router.post("/interests/:productId", exigirLogin, (req, res) => {
     });
   }
 
-  const transacao = db.transaction(() => {
+  const transacao = db.transaction(async () => {
     // INSERT OR IGNORE evita erro 500 se dois pedidos simultâneos tentarem
     // registar o mesmo interesse protegido pela chave UNIQUE.
-    const insercao = db.prepare(`
+    const insercao = await db.prepare(`
       INSERT OR IGNORE INTO product_interests (product_id, user_id)
       VALUES (?, ?)
     `).run(productId, userId);
 
     if (insercao.changes) {
-      const utilizador = db.prepare(
+      const utilizador = await db.prepare(
         "SELECT name FROM users WHERE id = ?"
       ).get(userId);
 
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO notifications
           (recipient_user_id, actor_user_id, product_id, type, message)
         VALUES (?, ?, ?, 'interest', ?)
@@ -181,7 +181,7 @@ router.post("/interests/:productId", exigirLogin, (req, res) => {
     }
 
     return {
-      total: db.prepare(`
+      total: await db.prepare(`
         SELECT COUNT(*) AS total
         FROM product_interests WHERE product_id = ?
       `).get(productId).total,
@@ -189,7 +189,7 @@ router.post("/interests/:productId", exigirLogin, (req, res) => {
     };
   });
 
-  const resultado = transacao();
+  const resultado = await transacao();
 
   res.status(resultado.inserido ? 201 : 200).json({
     mensagem: resultado.inserido
@@ -201,19 +201,19 @@ router.post("/interests/:productId", exigirLogin, (req, res) => {
 });
 
 // Retirar interesse.
-router.delete("/interests/:productId", exigirLogin, (req, res) => {
+router.delete("/interests/:productId", exigirLogin, async (req, res) => {
   const productId = Number(req.params.productId);
 
   if (!Number.isInteger(productId) || productId < 1) {
     return res.status(400).json({ erro: "Anúncio inválido." });
   }
 
-  db.prepare(`
+  await db.prepare(`
     DELETE FROM product_interests
     WHERE product_id = ? AND user_id = ?
   `).run(productId, req.session.userId);
 
-  const total = db.prepare(`
+  const total = await db.prepare(`
     SELECT COUNT(*) AS total
     FROM product_interests WHERE product_id = ?
   `).get(productId).total;
@@ -226,8 +226,8 @@ router.delete("/interests/:productId", exigirLogin, (req, res) => {
 });
 
 // Listar notificações do utilizador autenticado.
-router.get("/notifications", exigirLogin, (req, res) => {
-  const notificacoes = db.prepare(`
+router.get("/notifications", exigirLogin, async (req, res) => {
+  const notificacoes = await db.prepare(`
     SELECT n.id, n.type, n.message, n.is_read, n.created_at,
            n.product_id, n.actor_user_id,
            u.name AS actor_name,
@@ -240,7 +240,7 @@ router.get("/notifications", exigirLogin, (req, res) => {
     LIMIT 100
   `).all(req.session.userId);
 
-  const naoLidas = db.prepare(`
+  const naoLidas = await db.prepare(`
     SELECT COUNT(*) AS total
     FROM notifications
     WHERE recipient_user_id = ? AND is_read = 0
@@ -250,13 +250,13 @@ router.get("/notifications", exigirLogin, (req, res) => {
 });
 
 // Marcar notificação como lida.
-router.patch("/notifications/:id/read", exigirLogin, (req, res) => {
+router.patch("/notifications/:id/read", exigirLogin, async (req, res) => {
   const notificationId = Number(req.params.id);
   if (!Number.isSafeInteger(notificationId) || notificationId < 1) {
     return res.status(400).json({ erro: "Notificação inválida." });
   }
 
-  const resultado = db.prepare(`
+  const resultado = await db.prepare(`
     UPDATE notifications
     SET is_read = 1
     WHERE id = ? AND recipient_user_id = ?
@@ -272,8 +272,8 @@ router.patch("/notifications/:id/read", exigirLogin, (req, res) => {
 });
 
 // Listar conversas do utilizador.
-router.get("/conversations", exigirLogin, (req, res) => {
-  const conversas = db.prepare(`
+router.get("/conversations", exigirLogin, async (req, res) => {
+  const conversas = await db.prepare(`
     SELECT c.id, c.product_id, c.buyer_id, c.seller_id,
            c.created_at, c.updated_at,
            p.name AS product_name,
@@ -303,7 +303,7 @@ router.get("/conversations", exigirLogin, (req, res) => {
 });
 
 // Iniciar ou recuperar conversa sobre um anúncio.
-router.post("/conversations", exigirLogin, (req, res) => {
+router.post("/conversations", exigirLogin, async (req, res) => {
   const productId = Number(req.body.productId);
   const buyerId = Number(req.session.userId);
 
@@ -311,7 +311,7 @@ router.post("/conversations", exigirLogin, (req, res) => {
     return res.status(400).json({ erro: "Anúncio inválido." });
   }
 
-  const produto = db.prepare(`
+  const produto = await db.prepare(`
     SELECT id, user_id FROM products WHERE id = ?
   `).get(productId);
 
@@ -325,22 +325,22 @@ router.post("/conversations", exigirLogin, (req, res) => {
     });
   }
 
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO conversations (product_id, buyer_id, seller_id)
     VALUES (?, ?, ?)
     ON CONFLICT(product_id, buyer_id) DO NOTHING
   `).run(productId, buyerId, produto.user_id);
 
-  const conversa = db.prepare(`
+  const conversa = await db.prepare(`
     SELECT id, product_id, buyer_id, seller_id
     FROM conversations
     WHERE product_id = ? AND buyer_id = ?
   `).get(productId, buyerId);
 
   // If the seller has an active store, count the first contact by this customer.
-  const loja = db.prepare('SELECT id FROM stores WHERE user_id = ? AND is_active = 1').get(produto.user_id);
+  const loja = await db.prepare('SELECT id FROM stores WHERE user_id = ? AND is_active = 1').get(produto.user_id);
   if (loja) {
-    db.prepare(`INSERT INTO store_contacts(store_id,customer_user_id,product_id,channel,contact_key)
+    await db.prepare(`INSERT INTO store_contacts(store_id,customer_user_id,product_id,channel,contact_key)
       VALUES(?,?,?,'message',?) ON CONFLICT(store_id,contact_key) DO NOTHING`)
       .run(loja.id, buyerId, productId, `${buyerId}:message`);
   }
@@ -348,14 +348,14 @@ router.post("/conversations", exigirLogin, (req, res) => {
 });
 
 // Ler mensagens e marcar como lidas.
-router.get("/conversations/:id/messages", exigirLogin, (req, res) => {
+router.get("/conversations/:id/messages", exigirLogin, async (req, res) => {
   const conversationId = Number(req.params.id);
   const userId = Number(req.session.userId);
   if (!Number.isSafeInteger(conversationId) || conversationId < 1) {
     return res.status(400).json({ erro: "Conversa inválida." });
   }
 
-  const conversa = db.prepare(`
+  const conversa = await db.prepare(`
     SELECT id FROM conversations
     WHERE id = ? AND (buyer_id = ? OR seller_id = ?)
   `).get(conversationId, userId, userId);
@@ -366,7 +366,7 @@ router.get("/conversations/:id/messages", exigirLogin, (req, res) => {
     });
   }
 
-  db.prepare(`
+  await db.prepare(`
     UPDATE messages
     SET read_at = CURRENT_TIMESTAMP
     WHERE conversation_id = ?
@@ -374,7 +374,7 @@ router.get("/conversations/:id/messages", exigirLogin, (req, res) => {
       AND read_at IS NULL
   `).run(conversationId, userId);
 
-  const mensagens = db.prepare(`
+  const mensagens = await db.prepare(`
     SELECT m.id, m.sender_id, m.body, m.created_at, m.read_at,
            u.name AS sender_name
     FROM messages m
@@ -387,7 +387,7 @@ router.get("/conversations/:id/messages", exigirLogin, (req, res) => {
 });
 
 // Enviar mensagem.
-router.post("/conversations/:id/messages", exigirLogin, (req, res) => {
+router.post("/conversations/:id/messages", exigirLogin, async (req, res) => {
   const conversationId = Number(req.params.id);
   const userId = Number(req.session.userId);
   const body = String(req.body.body || "").trim();
@@ -401,7 +401,7 @@ router.post("/conversations/:id/messages", exigirLogin, (req, res) => {
     });
   }
 
-  const conversa = db.prepare(`
+  const conversa = await db.prepare(`
     SELECT id, product_id, buyer_id, seller_id
     FROM conversations
     WHERE id = ? AND (buyer_id = ? OR seller_id = ?)
@@ -417,19 +417,19 @@ router.post("/conversations/:id/messages", exigirLogin, (req, res) => {
     ? conversa.seller_id
     : conversa.buyer_id;
 
-  const transacao = db.transaction(() => {
-    const resultado = db.prepare(`
+  const transacao = db.transaction(async () => {
+    const resultado = await db.prepare(`
       INSERT INTO messages (conversation_id, sender_id, body)
       VALUES (?, ?, ?)
     `).run(conversationId, userId, body);
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE conversations
       SET updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(conversationId);
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO notifications
         (recipient_user_id, actor_user_id, product_id, type, message)
       VALUES (?, ?, ?, 'message', ?)
@@ -440,7 +440,7 @@ router.post("/conversations/:id/messages", exigirLogin, (req, res) => {
       "Recebeste uma nova mensagem no Bisno."
     );
 
-    return db.prepare(`
+    return await db.prepare(`
       SELECT id, conversation_id, sender_id, body, created_at, read_at
       FROM messages WHERE id = ?
     `).get(resultado.lastInsertRowid);
@@ -468,38 +468,38 @@ db.exec(`
 `);
 
 // Contagem pública de seguidores e estado do seguimento para o utilizador autenticado.
-router.get("/users/:id/follow", (req, res) => {
+router.get("/users/:id/follow", async (req, res) => {
   const targetId = Number(req.params.id);
   if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
-  const target = db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
+  const target = await db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
   if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
-  const followers = db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  const followers = await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
   const following = req.session?.userId
-    ? Boolean(db.prepare("SELECT 1 FROM user_follows WHERE follower_id = ? AND followed_id = ?").get(req.session.userId, targetId))
+    ? Boolean(await db.prepare("SELECT 1 FROM user_follows WHERE follower_id = ? AND followed_id = ?").get(req.session.userId, targetId))
     : false;
   res.json({ followers, following, isSelf: Number(req.session?.userId) === targetId });
 });
 
 // Seguir vendedor.
-router.post("/users/:id/follow", exigirLogin, (req, res) => {
+router.post("/users/:id/follow", exigirLogin, async (req, res) => {
   const targetId = Number(req.params.id);
   const followerId = Number(req.session.userId);
   if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
   if (targetId === followerId) return res.status(400).json({ erro: "Não podes seguir o teu próprio perfil." });
-  const target = db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
+  const target = await db.prepare("SELECT id FROM users WHERE id = ?").get(targetId);
   if (!target) return res.status(404).json({ erro: "Utilizador não encontrado." });
-  db.prepare("INSERT OR IGNORE INTO user_follows (follower_id, followed_id) VALUES (?, ?)").run(followerId, targetId);
-  const followers = db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  await db.prepare("INSERT OR IGNORE INTO user_follows (follower_id, followed_id) VALUES (?, ?)").run(followerId, targetId);
+  const followers = await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
   res.json({ following: true, followers });
 });
 
 // Deixar de seguir vendedor.
-router.delete("/users/:id/follow", exigirLogin, (req, res) => {
+router.delete("/users/:id/follow", exigirLogin, async (req, res) => {
   const targetId = Number(req.params.id);
   const followerId = Number(req.session.userId);
   if (!Number.isInteger(targetId) || targetId < 1) return res.status(400).json({ erro: "Utilizador inválido." });
-  db.prepare("DELETE FROM user_follows WHERE follower_id = ? AND followed_id = ?").run(followerId, targetId);
-  const followers = db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
+  await db.prepare("DELETE FROM user_follows WHERE follower_id = ? AND followed_id = ?").run(followerId, targetId);
+  const followers = await db.prepare("SELECT COUNT(*) AS total FROM user_follows WHERE followed_id = ?").get(targetId).total;
   res.json({ following: false, followers });
 });
 
