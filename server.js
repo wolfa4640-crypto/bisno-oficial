@@ -38,7 +38,7 @@ app.get("/api/health", (_req, res) => res.json({ estado: "ok", servico: "Bisno",
 
 const adminRoutes = require("./routes/admin");
 app.use("/api/admin", adminRoutes.router);
-app.get("/admin", adminRoutes.exigirAdmin, (_req, res) => {
+app.get("/admin", (_req, res) => {
   res.sendFile(path.join(__dirname, "admin", "index.html"));
 });
 
