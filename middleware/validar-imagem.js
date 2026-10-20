@@ -2,16 +2,20 @@
 
 const fs = require("fs");
 
-function assinaturaImagemValida(caminho, mime) {
+function assinaturaImagemValida(fonte, mime) {
   let cabecalho;
   try {
-    const fd = fs.openSync(caminho, "r");
-    try {
-      cabecalho = Buffer.alloc(12);
-      const lidos = fs.readSync(fd, cabecalho, 0, cabecalho.length, 0);
-      cabecalho = cabecalho.subarray(0, lidos);
-    } finally {
-      fs.closeSync(fd);
+    if (Buffer.isBuffer(fonte)) {
+      cabecalho = fonte.subarray(0, 12);
+    } else {
+      const fd = fs.openSync(fonte, "r");
+      try {
+        cabecalho = Buffer.alloc(12);
+        const lidos = fs.readSync(fd, cabecalho, 0, cabecalho.length, 0);
+        cabecalho = cabecalho.subarray(0, lidos);
+      } finally {
+        fs.closeSync(fd);
+      }
     }
   } catch (_) {
     return false;
