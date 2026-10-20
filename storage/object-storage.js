@@ -1,6 +1,6 @@
 "use strict";
 
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 
 const bucket = process.env.BISNO_STORAGE_BUCKET || "bisno-public";
 
@@ -48,6 +48,28 @@ async function eliminarImagem(key) {
   await criarCliente().send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 }
 
+async function verificarArmazenamento() {
+  const s3 = criarCliente();
+  const key = "health-check/" + require("crypto").randomUUID() + ".txt";
+  const expected = "bisno-neon-storage-ok";
+  await s3.send(new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    Body: Buffer.from(expected),
+    ContentType: "text/plain"
+  }));
+  try {
+    const response = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    const bytes = await response.Body.transformToByteArray();
+    if (Buffer.from(bytes).toString("utf8") !== expected) {
+      throw new Error("A verificação de leitura do armazenamento devolveu conteúdo inesperado.");
+    }
+  } finally {
+    await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+  }
+  return true;
+}
+
 async function eliminarImagemPorUrl(url) {
   if (!url || typeof url !== "string") return;
   const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
@@ -57,4 +79,4 @@ async function eliminarImagemPorUrl(url) {
   await eliminarImagem(key);
 }
 
-module.exports = { guardarImagem, eliminarImagem, eliminarImagemPorUrl, bucket };
+module.exports = { guardarImagem, eliminarImagem, eliminarImagemPorUrl, verificarArmazenamento, bucket };
