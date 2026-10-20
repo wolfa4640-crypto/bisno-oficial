@@ -106,7 +106,7 @@ router.get('/:id', async (req,res) => {
  if(!store) return res.status(404).json({erro:'Loja não encontrada.'});
  const products=await db.prepare(`SELECT id,user_id,name,description,price,condition,category,city,neighborhood,image,created_at FROM products WHERE user_id=? ORDER BY id DESC LIMIT 100`).all(store.user_id);
  const followed=req.session.userId ? !!await db.prepare('SELECT 1 FROM store_follows WHERE store_id=? AND follower_user_id=?').get(id,req.session.userId) : false;
- res.json({store,products,followed,stats:{followers:await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id).total}});
+ res.json({store,products,followed,stats:{followers:(await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id)).total}});
 });
 router.post('/:id/view', async (req,res) => {
  const id=validId(req.params.id); if(!id) return res.status(400).json({erro:'Loja inválida.'});
@@ -128,7 +128,7 @@ router.post('/:id/follow', exigirLogin, async (req,res) => {
   await db.prepare(`INSERT INTO notifications(recipient_user_id,actor_user_id,type,message) VALUES(?,?, 'store_follow', ?)`)
    .run(store.user_id,req.session.userId,`${await db.prepare('SELECT name FROM users WHERE id=?').get(req.session.userId)?.name || 'Um utilizador'} começou a seguir a tua loja ${store.name}.`);
  }
- res.json({followed:!already,followers:await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id).total});
+ res.json({followed:!already,followers:(await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id)).total});
 });
 // Register contacts when a chat or WhatsApp action is started. Count each customer once per store.
 router.post('/:id/contact', exigirLogin, async (req,res) => {
