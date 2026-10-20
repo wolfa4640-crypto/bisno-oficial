@@ -142,4 +142,39 @@ router.post("/forgot-password", (req, res) => {
   }
 });
 
+
+router.post("/login", (req, res, next) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
+  if (!email || !password) return res.status(400).json({ erro: "Introduz o e-mail e a palavra-passe." });
+  const user = db.prepare("SELECT id,name,email,phone,password,avatar,is_blocked FROM users WHERE email=?").get(email);
+  if (!user || !bcrypt.compareSync(password, user.password)) return res.status(401).json({ erro: "E-mail ou palavra-passe incorretos." });
+  if (user.is_blocked) return res.status(403).json({ erro: "Esta conta está bloqueada." });
+  req.session.regenerate((err) => {
+    if (err) return next(err);
+    req.session.userId = user.id;
+    req.session.save((saveErr) => {
+      if (saveErr) return next(saveErr);
+      const isAdmin = Boolean(process.env.ADMIN_EMAIL) && email === String(process.env.ADMIN_EMAIL).trim().toLowerCase();
+      const { password: storedPassword, ...safeUser } = user;
+      res.json({ mensagem: "Sessão iniciada com sucesso.", utilizador: { ...safeUser, isAdmin } });
+    });
+  });
+});
+router.get("/me", (req, res) => {
+  if (!req.session?.userId) return res.status(401).json({ erro: "Inicia sessão primeiro." });
+  const user = db.prepare("SELECT id,name,email,phone,avatar,created_at,is_blocked FROM users WHERE id=?").get(req.session.userId);
+  if (!user || user.is_blocked) return req.session.destroy(() => res.status(401).json({ erro: "A sessão expirou ou a conta está bloqueada." }));
+  const isAdmin = Boolean(process.env.ADMIN_EMAIL) && user.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase();
+  res.json({ utilizador: { ...user, isAdmin } });
+});
+router.post("/logout", (req, res) => {
+  if (!req.session) return res.json({ mensagem: "Sessão terminada." });
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ erro: "Não foi possível terminar a sessão." });
+    res.clearCookie("bisno.sid", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+    res.json({ mensagem: "Sessão terminada." });
+  });
+});
+
 module.exports = router;
