@@ -161,8 +161,13 @@ router.post("/complete-password-reset", async (req, res) => {
 });
 
 router.post("/login", async (req, res, next) => {
-  const email = String(req.body?.email || "").trim().toLowerCase();
-  const password = String(req.body?.password || "");
+  const emailRecebido = req.body?.email;
+  const passwordRecebida = req.body?.password;
+  if (typeof emailRecebido !== "string" || typeof passwordRecebida !== "string") {
+    return res.status(400).json({ erro: "Introduz o e-mail e a palavra-passe em formato válido." });
+  }
+  const email = emailRecebido.trim().toLowerCase();
+  const password = passwordRecebida;
   if (!email || !password) return res.status(400).json({ erro: "Introduz o e-mail e a palavra-passe." });
   const user = await db.prepare("SELECT id,name,email,phone,password,avatar,is_blocked FROM users WHERE email=?").get(email);
   if (!user || !bcrypt.compareSync(password, user.password)) return res.status(401).json({ erro: "E-mail ou palavra-passe incorretos." });
