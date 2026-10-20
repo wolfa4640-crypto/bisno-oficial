@@ -120,28 +120,68 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Pedir recuperação de palavra-passe: o administrador aprova o pedido no painel.
-router.post("/forgot-password", (req, res) => {
-  const email = String(req.body.email || "").trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ erro: "Introduz um e-mail válido." });
-  }
-  const user = db.prepare("SELECT id, is_blocked FROM users WHERE email = ?").get(email);
-  // Resposta genérica para não revelar se o e-mail está registado.
-  const mensagem = "Se a conta existir, o pedido foi enviado para análise do administrador. Aguarda o contacto para receber uma palavra-passe temporária.";
-  if (!user || user.is_blocked) return res.json({ mensagem });
+// Recuperação segura: enviar código ao e-mail registado antes de avisar a administração.
+router.post("/forgot-password", async (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return res.status(400).json({ erro: "Introduz um e-mail válido." });
+  const user = db.prepare("SELECT id, is_blocked FROM users WHERE email=?").get(email);
+  const generic = "Se a conta existir e estiver ativa, será enviado um código de confirmação para o e-mail registado.";
+  if (!user || user.is_blocked) return res.json({ mensagem: generic });
+  const code = criarCodigo();
   try {
-    const pending = db.prepare("SELECT id FROM password_recovery_requests WHERE user_id = ? AND status = 'pending'").get(user.id);
-    if (!pending) {
-      db.prepare("INSERT INTO password_recovery_requests (user_id, email, status) VALUES (?, ?, 'pending')").run(user.id, email);
-    }
-    res.json({ mensagem });
-  } catch (erro) {
-    console.error("Erro ao criar pedido de recuperação:", erro.message);
+    guardarToken(user.id, "reset_password", code, 15);
+    await enviarEmail(email, "Código de recuperação do Bisno", `O teu código de confirmação é: ${code}. Expira em 15 minutos. Se não pediste esta recuperação, ignora esta mensagem.`, `<p>O teu código de confirmação do Bisno é:</p><p style="font-size:28px;font-weight:bold;letter-spacing:6px">${code}</p><p>Expira em 15 minutos. Se não pediste esta recuperação, ignora esta mensagem.</p>`);
+    res.json({ mensagem: "Enviámos um código para o e-mail associado à conta. Introduz o código para confirmar a tua identidade." });
+  } catch (err) {
+    console.error("Falha ao enviar código de recuperação:", err.message);
+    res.status(503).json({ erro: "Não foi possível enviar o código. O serviço de e-mail precisa de ser configurado no servidor." });
+  }
+});
+
+router.post("/confirm-password-recovery", (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const code = String(req.body?.code || "").trim();
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !/^\\d{6}$/.test(code)) return res.status(400).json({ erro: "Confirma o e-mail e introduz o código de seis dígitos." });
+  const user = db.prepare("SELECT id,is_blocked FROM users WHERE email=?").get(email);
+  if (!user || user.is_blocked) return res.status(400).json({ erro: "Código inválido ou expirado. Pede um novo código." });
+  const token = db.prepare("SELECT id FROM auth_tokens WHERE user_id=? AND purpose='reset_password' AND token_hash=? AND expires_at>?").get(user.id, hashToken(code), Date.now());
+  if (!token) return res.status(400).json({ erro: "Código inválido ou expirado. Pede um novo código." });
+  try {
+    db.transaction(() => {
+      db.prepare("DELETE FROM auth_tokens WHERE id=?").run(token.id);
+      const pending = db.prepare("SELECT id FROM password_recovery_requests WHERE user_id=? AND status='pending'").get(user.id);
+      if (pending) {
+        db.prepare("UPDATE password_recovery_requests SET email_confirmed_at=CURRENT_TIMESTAMP,email=? WHERE id=?").run(email, pending.id);
+      } else {
+        db.prepare("INSERT INTO password_recovery_requests (user_id,email,status,email_confirmed_at) VALUES (?,?,'pending',CURRENT_TIMESTAMP)").run(user.id, email);
+      }
+    })();
+    res.json({ mensagem: "E-mail confirmado! O teu pedido já está visível na área do administrador. Aguarda a autorização para alterares a palavra-passe." });
+  } catch (err) {
+    console.error("Falha ao confirmar pedido:", err.message);
     res.status(500).json({ erro: "Não foi possível registar o pedido. Tenta novamente." });
   }
 });
 
+router.post("/complete-password-reset", (req, res) => {
+  const token = String(req.body?.token || "");
+  const password = String(req.body?.password || "");
+  if (token.length < 40 || token.length > 200) return res.status(400).json({ erro: "Link de recuperação inválido." });
+  if (password.length < 8 || Buffer.byteLength(password, "utf8") > 72) return res.status(400).json({ erro: "A palavra-passe deve ter pelo menos 8 caracteres." });
+  const request = db.prepare("SELECT id,user_id FROM password_recovery_requests WHERE status='approved' AND completed_at IS NULL AND reset_token_hash=? AND reset_token_expires_at>?").get(hashToken(token), Date.now());
+  if (!request) return res.status(400).json({ erro: "Este link expirou ou já foi utilizado. Pede uma nova recuperação." });
+  try {
+    db.transaction(() => {
+      db.prepare("UPDATE users SET password=? WHERE id=?").run(bcrypt.hashSync(password, 12), request.user_id);
+      db.prepare("UPDATE password_recovery_requests SET completed_at=CURRENT_TIMESTAMP,reset_token_hash=NULL,reset_token_expires_at=NULL WHERE id=?").run(request.id);
+      db.prepare("DELETE FROM auth_tokens WHERE user_id=? AND purpose='reset_password'").run(request.user_id);
+    })();
+    res.json({ mensagem: "Palavra-passe alterada com sucesso. Já podes iniciar sessão." });
+  } catch (err) {
+    console.error("Falha ao definir nova palavra-passe:", err.message);
+    res.status(500).json({ erro: "Não foi possível alterar a palavra-passe." });
+  }
+});
 
 router.post("/login", (req, res, next) => {
   const email = String(req.body?.email || "").trim().toLowerCase();
