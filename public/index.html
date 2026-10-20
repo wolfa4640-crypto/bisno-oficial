@@ -347,9 +347,7 @@
         </div>
         <div class="bisno-perfil-identidade">
           <div class="bisno-perfil-avatar-wrap">
-            <img id="foto-perfil" src="" alt="Fotografia do perfil" width="120" height="120" hidden>
-            <div id="perfil-sem-foto" class="bisno-avatar-fallback">B</div>
-            <label for="perfil-foto-input" class="bisno-editar-foto" title="Alterar fotografia" aria-label="Alterar fotografia">📷</label>
+            <div id="perfil-sem-foto" class="bisno-avatar-fallback" aria-label="Inicial do utilizador">?</div>
           </div>
           <div class="bisno-perfil-titulos">
             <h2 id="perfil-nome"></h2>
@@ -368,11 +366,7 @@
             <label for="perfil-telefone-input">Telefone de contacto</label>
             <input id="perfil-telefone-input" name="phone" type="tel" autocomplete="tel" required>
           </div>
-          <div class="bisno-perfil-campo bisno-foto-campo">
-            <label for="perfil-foto-input">Fotografia do perfil</label>
-            <input id="perfil-foto-input" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
-            <small>JPEG, PNG ou WEBP · máximo 5 MB</small>
-          </div>
+          
           <button type="submit" class="bisno-guardar-perfil">Guardar alterações</button>
         </form>
       </section>
