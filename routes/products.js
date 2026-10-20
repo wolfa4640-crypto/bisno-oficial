@@ -16,9 +16,8 @@ const router = express.Router();
 // O catálogo e os anúncios não podem ser consultados sem autenticação.
 router.use(exigirLogin);
 
-const pastaUploads = process.env.UPLOADS_DIR || (process.env.RENDER ? path.join("/var/data", "uploads") : path.join(__dirname, "..", "uploads"));
-
-fs.mkdirSync(pastaUploads, { recursive: true });
+const { uploadsDir: pastaUploads, ensureStorage } = require("../config/storage");
+ensureStorage();
 
 const extensoes = {
   "image/jpeg": ".jpg",
