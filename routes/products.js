@@ -94,24 +94,12 @@ function apagarFicheiroEnviado(ficheiro) {
   }
 }
 
+// Os anúncios não expiram automaticamente. Permanecem publicados até o respetivo
+// proprietário os eliminar explicitamente (ou uma ação administrativa autorizada).
+// Esta função é mantida como no-op para compatibilidade com chamadas existentes.
 function limparAnunciosExpirados() {
-  try {
-    const expirados = db.prepare("SELECT id, image FROM products WHERE created_at <= datetime('now', '-90 hours')").all();
-    if (!expirados.length) return;
-    const remover = db.prepare("DELETE FROM products WHERE id = ?");
-    db.transaction((items) => { for (const item of items) remover.run(item.id); })(expirados);
-    for (const item of expirados) {
-      if (item.image && item.image.startsWith("/uploads/")) {
-        const caminho = path.join(pastaUploads, path.basename(item.image));
-        try { if (fs.existsSync(caminho)) fs.unlinkSync(caminho); } catch (e) { console.error("Não foi possível apagar imagem de anúncio expirado:", e.message); }
-      }
-    }
-    console.log("[Bisno] Anúncios expirados removidos:", expirados.length);
-  } catch (e) { console.error("[Bisno] Falha ao limpar anúncios expirados:", e.message); }
+  return;
 }
-limparAnunciosExpirados();
-const temporizadorLimpezaAnuncios = setInterval(limparAnunciosExpirados, 15 * 60 * 1000);
-if (temporizadorLimpezaAnuncios.unref) temporizadorLimpezaAnuncios.unref();
 
 function validarId(valor) {
   const id = Number(valor);
