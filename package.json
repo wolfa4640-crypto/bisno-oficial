@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check config/storage.js && node --check middleware/auth.js && node --check middleware/validar-imagem.js && node --check server.js && node --check routes/auth.js && node --check routes/products.js && node --check routes/social.js && node --check data/database.js && node --check public/script.js && node --check routes/stores.js && node --check routes/admin.js",
-    "test": "npm run check && node --test"
+    "check": "node --check storage/object-storage.js && node --check config/storage.js && node --check middleware/auth.js && node --check middleware/validar-imagem.js && node --check server.js && node --check routes/auth.js && node --check routes/products.js && node --check routes/social.js && node --check data/database.js && node --check public/script.js && node --check routes/stores.js && node --check routes/admin.js",
+    "test": "npm run check && node --test --test-concurrency=1"
   },
   "keywords": [],
   "author": "",
