@@ -597,43 +597,18 @@ function atualizarPerfil() {
 
 
 
-  const foto = $("#foto-perfil");
+  const foto = $("#foto-perfil");
+  const semFoto = $("#perfil-sem-foto");
+  // Perfil por iniciais: não exige upload nem armazenamento de fotografias.
+  if (foto) { foto.hidden = true; foto.removeAttribute("src"); }
+  if (semFoto) {
+    const nome = String(nomeUtilizadorAtual() || utilizadorAtual.name || "").trim();
+    semFoto.textContent = nome ? Array.from(nome)[0].toLocaleUpperCase("pt-AO") : "?";
+    semFoto.hidden = false;
+    semFoto.setAttribute("aria-label", nome ? "Inicial do nome " + nome : "Inicial do utilizador");
+  }
 
-  const semFoto = $("#perfil-sem-foto");
-
-
-
-  const avatar =
-
-    utilizadorAtual.avatar ??
-
-    utilizadorAtual.foto ??
-
-    utilizadorAtual.user?.avatar ??
-
-    "";
-
-
-
-  if (foto && avatar) {
-
-    foto.src = obterImagem(avatar);
-
-    foto.hidden = false;
-
-    if (semFoto) semFoto.hidden = true;
-
-  } else {
-
-    if (foto) foto.hidden = true;
-
-    if (semFoto) semFoto.hidden = false;
-
-  }
-
-
-
-  definirTexto("#perfil-nome", nomeUtilizadorAtual());
+  definirTexto("#perfil-nome", nomeUtilizadorAtual());
 
   definirTexto("#perfil-nome-utilizador", nomeUtilizadorAtual());
 }
