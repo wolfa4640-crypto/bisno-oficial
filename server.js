@@ -5,7 +5,9 @@ const path = require("path");
 const session = require("express-session");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const SQLiteStore = require("connect-sqlite3")(session);
+require("express-async-errors");
+const PgSession = require("connect-pg-simple")(session);
+const db = require("./data/database");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -22,9 +24,8 @@ app.use(express.urlencoded({ extended: false, limit: "2mb" }));
 app.use("/api/auth", rateLimit({ windowMs: 15 * 60 * 1000, limit: 40, standardHeaders: true, legacyHeaders: false }));
 app.use("/api", rateLimit({ windowMs: 60 * 1000, limit: 180, standardHeaders: true, legacyHeaders: false }));
 
-const { dataDir, uploadsDir, ensureStorage } = require("./config/storage");
-ensureStorage();
-const sessionStore = new SQLiteStore({ db: "sessions.sqlite", dir: dataDir, table: "sessions" });
+const { uploadsDir } = require("./config/storage");
+const sessionStore = new PgSession({ pool: db.pool, tableName: "sessions", createTableIfMissing: false, pruneSessionInterval: 15 * 60 });
 app.use(session({
   name: "bisno.sid",
   secret: sessionSecret,
@@ -69,15 +70,23 @@ app.use((erro, req, res, next) => {
   if ([400, 413, 415, 429].includes(status)) return res.status(status).json({ erro: status === 429 ? "Muitos pedidos. Aguarda um pouco e tenta novamente." : (erro.message || "Pedido inválido.") });
   res.status(500).json({ erro: "Ocorreu um erro interno. Tenta novamente." });
 });
-const servidor = app.listen(PORT, "0.0.0.0", () => console.log(`Bisno v${require("./package.json").version} ativo na porta ${PORT}`));
-function encerrar(signal) {
+let servidor;
+async function iniciarServidor() {
+  await db.initializeDatabase();
+  servidor = app.listen(PORT, "0.0.0.0", () => console.log(`Bisno v${require("./package.json").version} ativo na porta ${PORT}`));
+}
+iniciarServidor().catch((erro) => {
+  console.error("[Bisno] Não foi possível iniciar com PostgreSQL:", erro);
+  process.exit(1);
+});
+async function encerrar(signal) {
   console.log(`\n${signal}: a encerrar o Bisno...`);
   servidor.close(() => {
-    try { require("./data/database").close(); } catch (_) {}
+    try { await require("./data/database").close(); } catch (_) {}
     if (sessionStore.close) sessionStore.close();
     process.exit(0);
   });
   setTimeout(() => process.exit(1), 10000).unref();
 }
-process.on("SIGINT", () => encerrar("SIGINT"));
-process.on("SIGTERM", () => encerrar("SIGTERM"));
+process.on("SIGINT", () => { encerrar("SIGINT"); });
+process.on("SIGTERM", () => { encerrar("SIGTERM"); });
