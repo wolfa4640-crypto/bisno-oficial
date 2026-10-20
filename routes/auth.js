@@ -2,8 +2,6 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 const crypto = require("crypto");
 const verificarImagem = require("../middleware/validar-imagem");
 const db = require("../data/database");
@@ -43,29 +41,8 @@ async function guardarToken(userId, purpose, token, minutos = 15) {
 
 const router = express.Router();
 
-const { uploadsDir: pastaUploads, ensureStorage } = require("../config/storage");
-ensureStorage();
-
-const armazenamento = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, pastaUploads);
-  },
-  filename: (req, file, callback) => {
-    const extensoesPermitidas = {
-      "image/jpeg": ".jpg",
-      "image/png": ".png",
-      "image/webp": ".webp"
-    };
-
-    const extensao = extensoesPermitidas[file.mimetype];
-    const nome = `perfil-${req.session.userId}-${crypto.randomUUID()}${extensao}`;
-
-    callback(null, nome);
-  }
-});
-
 const uploadAvatar = multer({
-  storage: armazenamento,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, callback) => {
     const tiposPermitidos = [
