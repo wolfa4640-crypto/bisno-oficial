@@ -1,6 +1,5 @@
 "use strict";
 
-require("express-async-errors");
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const express = require("express");
