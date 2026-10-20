@@ -1,11 +1,9 @@
 
 const Database = require("better-sqlite3");
 const path = require("path");
-
-const diretorioDados = process.env.DATA_DIR || (process.env.RENDER ? "/var/data" : __dirname);
-const fs = require("fs");
-fs.mkdirSync(diretorioDados, { recursive: true });
-const caminho = path.join(diretorioDados, "marketplace.db");
+const { dataDir, ensureStorage } = require("../config/storage");
+ensureStorage();
+const caminho = path.join(dataDir, "marketplace.db");
 
 const db = new Database(caminho);
 
