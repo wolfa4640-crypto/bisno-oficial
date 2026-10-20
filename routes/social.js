@@ -75,7 +75,6 @@ db.exec(`
     ON messages(conversation_id, id);
 `);
 
-limparConversasExpiradas();
 
 // Contar interesses de um anúncio — consulta pública.
 router.get("/products/:id/interests", async (req, res) => {
