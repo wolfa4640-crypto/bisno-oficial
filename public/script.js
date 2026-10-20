@@ -487,7 +487,7 @@ function abrirPagina(id) {
 }
 
 function mostrarAba(aba) {
-  const formularios = { login: $("#form-login"), registo: $("#form-registo"), verificar: $("#form-verificar-email"), recuperar: $("#form-recuperar-password"), nova: $("#form-nova-password") };
+  const formularios = { login: $("#form-login"), registo: $("#form-registo"), recuperar: $("#form-recuperar-password") };
   Object.entries(formularios).forEach(([nome, formulario]) => { if (formulario) formulario.hidden = nome !== aba; });
   $("#aba-login")?.classList.toggle("ativa", aba === "login");
   $("#aba-registo")?.classList.toggle("ativa", aba === "registo");
@@ -687,13 +687,14 @@ async function registarUtilizador(evento) {
   evento.preventDefault();
   const formulario = evento.currentTarget, botao = formulario.querySelector('button[type="submit"]');
   if (formulario.dataset.enviando === "true") return;
-  formulario.dataset.enviando = "true"; if (botao) { botao.disabled = true; botao.textContent = "A enviar código…"; }
+  formulario.dataset.enviando = "true"; if (botao) { botao.disabled = true; botao.textContent = "A criar conta…"; }
   try {
     const dados = Object.fromEntries(new FormData(formulario).entries());
     const resposta = await pedidoAPI("/api/auth/register", { method: "POST", body: dados });
-    $("#verificar-email").value = resposta.email || dados.email;
-    formulario.reset(); mostrarAba("verificar");
-    mostrarMensagem(resposta.mensagem || "Confirma o teu e-mail para ativar a conta.", "sucesso");
+    formulario.reset(); mostrarAba("login");
+    if ($("#login-email")) $("#login-email").value = dados.email;
+    if ($("#login-password")) $("#login-password").value = dados.password;
+    mostrarMensagem(resposta.mensagem || "Conta criada com sucesso. Já podes iniciar sessão.", "sucesso");
   } catch (erro) { mostrarMensagem(erro.message || "Não foi possível criar a conta.", "erro"); }
   finally { delete formulario.dataset.enviando; if (botao) { botao.disabled = false; botao.textContent = "Criar conta"; } }
 }
@@ -2802,15 +2803,6 @@ function configurarFormularios() {
   $("#form-login")?.addEventListener("submit", entrarUtilizador);
 
   $("#form-registo")?.addEventListener("submit", registarUtilizador);
-  $("#form-verificar-email")?.addEventListener("submit", async evento => {
-    evento.preventDefault(); const dados = Object.fromEntries(new FormData(evento.currentTarget).entries());
-    try { const r = await pedidoAPI("/api/auth/verify-email", { method: "POST", body: dados }); mostrarAba("login"); $("#login-email").value = dados.email; mostrarMensagem(r.mensagem, "sucesso"); }
-    catch (e) { mostrarMensagem(e.message || "Não foi possível confirmar o e-mail.", "erro"); }
-  });
-  $("#botao-reenviar-codigo")?.addEventListener("click", async () => {
-    try { const r = await pedidoAPI("/api/auth/resend-verification", { method: "POST", body: { email: $("#verificar-email")?.value || "" } }); mostrarMensagem(r.mensagem, "sucesso"); }
-    catch (e) { mostrarMensagem(e.message || "Não foi possível reenviar o código.", "erro"); }
-  });
   $("#botao-recuperar-password")?.addEventListener("click", () => { if ($("#recuperar-email") && $("#login-email")) $("#recuperar-email").value = $("#login-email").value; mostrarAba("recuperar"); });
   $("#botao-confirmar-email")?.addEventListener("click", () => { if ($("#verificar-email") && $("#login-email")) $("#verificar-email").value = $("#login-email").value.trim(); mostrarAba("verificar"); });
   $("#botao-cancelar-recuperacao")?.addEventListener("click", () => mostrarAba("login"));
@@ -2952,7 +2944,7 @@ function configurarLoja() {
 
 
 async function carregarPainelAdmin() {
-  const statsEl = $("#admin-estatisticas"), usersEl = $("#admin-utilizadores"), productsEl = $("#admin-anuncios");
+  const statsEl = $("#admin-estatisticas"), usersEl = $("#admin-utilizadores"), productsEl = $("#admin-anuncios"), recoveriesEl = $("#admin-recuperacoes");
   if (!statsEl || !usersEl || !productsEl) return;
   statsEl.textContent = "A carregar estatísticas…";
   try {
@@ -2964,6 +2956,12 @@ async function carregarPainelAdmin() {
     ].map(([label, value]) => '<article><span>' + escaparHTML(label) + '</span><strong>' + numero(value) + '</strong></article>').join("");
     usersEl.innerHTML = (data.users || []).map(u => '<article class="admin-item"><div><strong>' + escaparHTML(u.name) + '</strong><p>E-mail: ' + escaparHTML(u.email) + ' · Telefone: ' + escaparHTML(u.phone || 'Não indicado') + '</p><p>ID ' + u.id + ' · Registado: ' + escaparHTML(u.created_at || 'Data indisponível') + ' · Estado: ' + (u.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-user-block="' + u.id + '" data-blocked="' + (u.is_blocked ? 'false' : 'true') + '">' + (u.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-user-delete="' + u.id + '">Eliminar</button></div></article>').join("") || "<p>Sem utilizadores.</p>";
     productsEl.innerHTML = (data.products || []).map(p => '<article class="admin-item"><div><strong>' + escaparHTML(p.name) + '</strong><p>ID ' + p.id + ' · ' + escaparHTML(p.seller_name || p.seller_email || 'Vendedor') + ' · ' + escaparHTML(p.city || '') + ' · ' + (p.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-product-block="' + p.id + '" data-blocked="' + (p.is_blocked ? 'false' : 'true') + '">' + (p.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-product-delete="' + p.id + '">Eliminar</button></div></article>').join("") || "<p>Sem anúncios.</p>";
+    if (recoveriesEl) {
+      try {
+        const pending = await pedidoAPI("/api/admin/password-recovery-requests");
+        recoveriesEl.innerHTML = (pending.requests || []).map(r => '<article class="admin-item"><div><strong>' + escaparHTML(r.name || "Utilizador") + '</strong><p>E-mail: ' + escaparHTML(r.email) + ' · Telefone: ' + escaparHTML(r.phone || "Não indicado") + '</p><p>Pedido #' + r.id + ' · ' + escaparHTML(r.requested_at || "") + '</p></div><div class="admin-acoes"><button type="button" data-admin-recovery-approve="' + r.id + '">Aprovar e gerar senha</button><button type="button" data-admin-recovery-reject="' + r.id + '">Rejeitar</button></div></article>').join("") || "<p>Não há pedidos pendentes.</p>";
+      } catch (e) { recoveriesEl.textContent = e.message || "Não foi possível carregar os pedidos."; }
+    }
   } catch (erro) {
     statsEl.textContent = erro.message || "Não foi possível carregar o painel.";
     usersEl.innerHTML = ""; productsEl.innerHTML = "";
@@ -2979,7 +2977,13 @@ function configurarPainelAdmin() {
     const b = evento.target.closest("button");
     if (!b) return;
     try {
-      if (b.dataset.adminUserBlock) {
+      if (b.dataset.adminRecoveryApprove) {
+        const result = await pedidoAPI("/api/admin/password-recovery-requests/" + b.dataset.adminRecoveryApprove + "/approve", { method: "POST", body: {} });
+        alert("Pedido aprovado para: " + result.email + "\n\nPALAVRA-PASSE TEMPORÁRIA (aparece apenas agora):\n" + result.temporaryPassword + "\n\nCopia-a e entrega-a ao utilizador por um canal seguro.");
+      } else if (b.dataset.adminRecoveryReject) {
+        if (!confirm("Rejeitar este pedido de recuperação?")) return;
+        await pedidoAPI("/api/admin/password-recovery-requests/" + b.dataset.adminRecoveryReject + "/reject", { method: "POST", body: {} });
+      } else if (b.dataset.adminUserBlock) {
         await pedidoAPI("/api/admin/users/" + b.dataset.adminUserBlock + "/block", { method: "PATCH", body: { blocked: b.dataset.blocked === "true" } });
       } else if (b.dataset.adminUserDelete) {
         if (!confirm("Eliminar definitivamente este utilizador?")) return;
