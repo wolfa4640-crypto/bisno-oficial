@@ -2,6 +2,7 @@
 const express = require("express");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
+const nodemailer = require("nodemailer");
 const db = require("../data/database");
 const router = express.Router();
 const adminEmail = () => String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
@@ -100,37 +101,49 @@ router.get("/audit-logs",(req,res)=>{
  const total=db.prepare("SELECT COUNT(*) n FROM admin_audit_logs").get().n;res.json({logs,page,limit,total,pages:Math.ceil(total/limit)});
 });
 
-// Pedidos de recuperação de palavra-passe aguardando decisão administrativa.
+// Pedidos confirmados por e-mail, com contadores para notificações do painel.
 router.get("/password-recovery-requests", (req,res) => {
   const requests = db.prepare(`
-    SELECT r.id, r.user_id, r.email, r.status, r.requested_at, u.name, u.phone
-    FROM password_recovery_requests r
-    JOIN users u ON u.id = r.user_id
-    WHERE r.status = 'pending'
-    ORDER BY r.requested_at ASC
-    LIMIT 100
+    SELECT r.id, r.user_id, r.email, r.status, r.requested_at, r.email_confirmed_at, u.name, u.phone
+    FROM password_recovery_requests r JOIN users u ON u.id=r.user_id
+    WHERE r.status='pending' AND r.email_confirmed_at IS NOT NULL
+    ORDER BY r.requested_at ASC LIMIT 100
   `).all();
-  res.json({requests});
+  const pendingCount = db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='pending' AND email_confirmed_at IS NOT NULL").get().n;
+  const approvedCount = db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE status='approved' AND completed_at IS NULL").get().n;
+  const completedCount = db.prepare("SELECT COUNT(*) n FROM password_recovery_requests WHERE completed_at IS NOT NULL").get().n;
+  res.json({requests, counts:{pending:pendingCount,approved:approvedCount,completed:completedCount}});
 });
 
-// Aprovar e criar uma palavra-passe temporária. É devolvida apenas nesta resposta.
-router.post("/password-recovery-requests/:id/approve", (req,res) => {
-  const id = idOf(req.params.id);
-  if (!id) return res.status(400).json({erro:"Pedido inválido."});
-  const request = db.prepare("SELECT id,user_id,email,status FROM password_recovery_requests WHERE id=?").get(id);
-  if (!request || request.status !== "pending") return res.status(404).json({erro:"Pedido pendente não encontrado."});
-  const temporaryPassword = crypto.randomBytes(9).toString("base64url") + "B7!";
+// Aprovar recuperação: o utilizador recebe um link de utilização única para definir a própria palavra-passe.
+router.post("/password-recovery-requests/:id/approve", async (req,res) => {
+  const id=idOf(req.params.id);
+  if(!id) return res.status(400).json({erro:"Pedido inválido."});
+  const request=db.prepare("SELECT r.id,r.user_id,r.email,r.status,r.email_confirmed_at,u.name FROM password_recovery_requests r JOIN users u ON u.id=r.user_id WHERE r.id=?").get(id);
+  if(!request || request.status!=="pending" || !request.email_confirmed_at) return res.status(404).json({erro:"Pedido confirmado e pendente não encontrado."});
+  const token=crypto.randomBytes(32).toString("hex");
+  const tokenHash=crypto.createHash("sha256").update(token).digest("hex");
+  const resetUrl=(String(process.env.APP_URL||"").trim().replace(/\\/$/,"") || (req.protocol+"://"+req.get("host")))+"/redefinir.html?token="+token;
   try {
-    db.transaction(() => {
-      db.prepare("UPDATE users SET password=? WHERE id=?").run(bcrypt.hashSync(temporaryPassword, 12), request.user_id);
-      db.prepare("UPDATE password_recovery_requests SET status='approved',resolved_at=CURRENT_TIMESTAMP,resolved_by=? WHERE id=? AND status='pending'").run(req.session.userId,id);
-      log(req,"password_recovery.approve","password_recovery",id,"Palavra-passe temporária gerada");
+    db.transaction(()=>{
+      const result=db.prepare("UPDATE password_recovery_requests SET status='approved',resolved_at=CURRENT_TIMESTAMP,resolved_by=?,reset_token_hash=?,reset_token_expires_at=? WHERE id=? AND status='pending' AND email_confirmed_at IS NOT NULL").run(req.session.userId,tokenHash,Date.now()+60*60*1000,id);
+      if(!result.changes) throw new Error("O pedido já foi tratado.");
+      log(req,"password_recovery.approve","password_recovery",id,"E-mail confirmado; link seguro criado por 60 minutos");
     })();
-    res.json({mensagem:"Pedido aprovado. Copia a palavra-passe temporária e entrega-a ao utilizador por um canal seguro; ela não será mostrada novamente.", email:request.email, temporaryPassword});
-  } catch (e) {
-    console.error("Falha ao aprovar recuperação:",e.message);
-    res.status(500).json({erro:"Não foi possível aprovar o pedido."});
-  }
+  } catch(e) { return res.status(409).json({erro:"Não foi possível aprovar este pedido. Atualiza a lista e tenta novamente."}); }
+  let emailSent=false;
+  try {
+    const {SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASS}=process.env;
+    if(!SMTP_HOST||!SMTP_PORT||!SMTP_USER||!SMTP_PASS) throw new Error("SMTP não configurado");
+    const transporter=nodemailer.createTransport({host:SMTP_HOST,port:Number(SMTP_PORT),secure:Number(SMTP_PORT)===465,auth:{user:SMTP_USER,pass:SMTP_PASS}});
+    await transporter.sendMail({
+      from:process.env.SMTP_FROM||SMTP_USER,to:request.email,subject:"Bisno — autorização para alterar a palavra-passe",
+      text:"Olá "+request.name+". O teu pedido de recuperação foi aprovado. Define uma nova palavra-passe neste link (válido durante 60 minutos): "+resetUrl+" . Se não pediste esta alteração, ignora esta mensagem.",
+      html:"<p>Olá "+String(request.name).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))+".</p><p>O teu pedido de recuperação foi aprovado.</p><p><a href=\""+resetUrl+"\">Clica aqui para definir uma nova palavra-passe</a>. O link é válido durante 60 minutos e só pode ser utilizado uma vez.</p><p>Se não pediste esta alteração, ignora esta mensagem.</p>"
+    });
+    emailSent=true;
+  } catch(e) { console.warn("[Bisno] Link aprovado, mas não foi possível enviar e-mail:",e.message); }
+  res.json({mensagem:emailSent?"Pedido aprovado e link enviado ao e-mail confirmado.":"Pedido aprovado, mas o e-mail não pôde ser enviado. Copia o link seguro e entrega-o ao utilizador por um canal privado.",email:request.email,emailSent,resetUrl:emailSent?null:resetUrl});
 });
 
 router.post("/password-recovery-requests/:id/reject", (req,res) => {
