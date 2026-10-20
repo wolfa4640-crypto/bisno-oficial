@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check config/storage.js && node --check middleware/auth.js && node --check middleware/validar-imagem.js && node --check server.js && node --check routes/auth.js && node --check routes/products.js && node --check routes/social.js && node --check data/database.js && node --check public/script.js && node --check routes/stores.js && node --check routes/admin.js",
-    "test": "npm run check && node --test"
+    "check": "node --check storage/object-storage.js && node --check config/storage.js && node --check middleware/auth.js && node --check middleware/validar-imagem.js && node --check server.js && node --check routes/auth.js && node --check routes/products.js && node --check routes/social.js && node --check data/database.js && node --check public/script.js && node --check routes/stores.js && node --check routes/admin.js",
+    "test": "npm run check && node --test --test-concurrency=1"
   },
   "keywords": [],
   "author": "",
@@ -15,14 +15,15 @@
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^13.0.3",
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
     "express-session": "^1.19.0",
     "multer": "^2.4.0",
-    "connect-sqlite3": "^0.9.16",
     "helmet": "^8.1.0",
     "express-rate-limit": "^7.5.0",
-    "nodemailer": "^7.0.3"
+    "nodemailer": "^7.0.3",
+    "pg": "^8.16.3",
+    "connect-pg-simple": "^10.0.0",
+    "@aws-sdk/client-s3": "^3.800.0"
   }
 }

@@ -2,9 +2,7 @@
 "use strict";
 
 const express = require("express");
-const path = require("path");
-const fs = require("fs");
-const crypto = require("crypto");
+const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
 const verificarImagem = require("../middleware/validar-imagem");
 const multer = require("multer");
 
@@ -16,8 +14,7 @@ const router = express.Router();
 // O catálogo e os anúncios não podem ser consultados sem autenticação.
 router.use(exigirLogin);
 
-const { uploadsDir: pastaUploads, ensureStorage } = require("../config/storage");
-ensureStorage();
+
 
 const extensoes = {
   "image/jpeg": ".jpg",
@@ -47,51 +44,17 @@ if (!colunasProdutos.some((coluna) => coluna.name === "whatsapp")) {
 // FOTOGRAFIAS
 // ============================================
 
-const armazenamento = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, pastaUploads);
-  },
-
-  filename: (req, file, cb) => {
-    cb(null, crypto.randomUUID() + extensoes[file.mimetype]);
-  }
-});
-
 const upload = multer({
-  storage: armazenamento,
-
-  limits: {
-    fileSize: LIMITE_IMAGEM,
-    files: 1
-  },
-
+  storage: multer.memoryStorage(),
+  limits: { fileSize: LIMITE_IMAGEM, files: 1 },
   fileFilter: (req, file, cb) => {
-    if (!extensoes[file.mimetype]) {
-      return cb(
-        new Error("Usa uma imagem JPG, PNG ou WEBP.")
-      );
-    }
-
+    if (!extensoes[file.mimetype]) return cb(new Error("Usa uma imagem JPG, PNG ou WEBP."));
     cb(null, true);
   }
 });
 
-function apagarFicheiroEnviado(ficheiro) {
-  if (!ficheiro?.filename) return;
-
-  const nome = path.basename(ficheiro.filename);
-  const caminho = path.join(pastaUploads, nome);
-
-  try {
-    if (fs.existsSync(caminho)) {
-      fs.unlinkSync(caminho);
-    }
-  } catch (erro) {
-    console.error(
-      "Não foi possível limpar a fotografia:",
-      erro
-    );
-  }
+function apagarFicheiroEnviado() {
+  // Os ficheiros são validados em memória e só são persistidos depois da validação.
 }
 
 // Os anúncios não expiram automaticamente. Permanecem publicados até o respetivo
@@ -122,9 +85,9 @@ function validarTexto(valor, limite) {
 // GET /api/products
 // ============================================
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const produtos = db.prepare(`
+    const produtos = await db.prepare(`
       SELECT
         products.id,
         products.user_id,
@@ -163,9 +126,9 @@ router.get("/", (req, res) => {
 // GET /api/products/mine
 // ============================================
 
-router.get("/mine", exigirLogin, (req, res) => {
+router.get("/mine", exigirLogin, async (req, res) => {
   try {
-    const produtos = db.prepare(`
+    const produtos = await db.prepare(`
       SELECT
         id,
         user_id,
@@ -200,7 +163,7 @@ router.get("/mine", exigirLogin, (req, res) => {
 // GET /api/products/seller/:id
 // ============================================
 
-router.get("/seller/:id", (req, res) => {
+router.get("/seller/:id", async (req, res) => {
   try {
     const vendedorId = validarId(req.params.id);
 
@@ -210,7 +173,7 @@ router.get("/seller/:id", (req, res) => {
       });
     }
 
-    const vendedor = db.prepare(`
+    const vendedor = await db.prepare(`
       SELECT id, name, avatar
       FROM users
       WHERE id = ?
@@ -222,7 +185,7 @@ router.get("/seller/:id", (req, res) => {
       });
     }
 
-    const produtos = db.prepare(`
+    const produtos = await db.prepare(`
       SELECT
         id,
         user_id,
@@ -264,16 +227,16 @@ router.get("/seller/:id", (req, res) => {
 router.post(
   "/",
   exigirLogin,
-  (req, res, next) => {
+  async (req, res, next) => {
     limparAnunciosExpirados();
-    const publicados = db.prepare("SELECT COUNT(*) AS total FROM products WHERE user_id = ? AND created_at >= datetime('now', '-24 hours')").get(req.session.userId).total;
+    const publicados = (await db.prepare("SELECT COUNT(*) AS total FROM products WHERE user_id = ? AND created_at >= datetime('now', '-24 hours')").get(req.session.userId)).total;
     if (publicados >= 5) {
       return res.status(429).json({ erro: "Atingiste o limite de 5 anúncios por período de 24 horas. Tenta novamente quando um dos teus anúncios completar 24 horas desde a publicação." });
     }
     next();
   },
 
-  (req, res, next) => {
+  async (req, res, next) => {
     upload.single("image")(req, res, (erro) => {
       if (!erro) return next();
 
@@ -302,7 +265,7 @@ router.post(
     });
   },
 
-  (req, res) => {
+  async (req, res) => {
     let imagem = null;
 
     try {
@@ -317,11 +280,9 @@ router.post(
         whatsapp
       } = req.body;
 
-      imagem = req.file
-        ? "/uploads/" + req.file.filename
-        : null;
+      imagem = null;
 
-      if (req.file && !verificarImagem(req.file.path, req.file.mimetype)) {
+      if (req.file && !verificarImagem(req.file.buffer, req.file.mimetype)) {
         apagarFicheiroEnviado(req.file);
         return res.status(400).json({ erro: "O ficheiro não corresponde a uma imagem válida." });
       }
@@ -380,7 +341,12 @@ router.post(
         });
       }
 
-      const resultado = db.prepare(`
+      if (req.file) {
+        const guardada = await guardarImagem({ prefixo: "products", nome: req.file.originalname, buffer: req.file.buffer, contentType: req.file.mimetype });
+        imagem = guardada.url;
+      }
+
+      const resultado = await db.prepare(`
         INSERT INTO products (
           user_id,
           name,
@@ -428,6 +394,7 @@ router.post(
     } catch (erro) {
       // Se a gravação falhar, evitar deixar uma imagem órfã.
       apagarFicheiroEnviado(req.file);
+      if (imagem) { try { await eliminarImagemPorUrl(imagem); } catch (erroImagem) { console.error("Falha ao remover imagem órfã:", erroImagem.message); } }
 
       console.error("Erro ao publicar anúncio:", erro);
 
@@ -443,7 +410,7 @@ router.post(
 // DELETE /api/products/:id
 // ============================================
 
-router.delete("/:id", exigirLogin, (req, res) => {
+router.delete("/:id", exigirLogin, async (req, res) => {
   try {
     const id = validarId(req.params.id);
 
@@ -453,7 +420,7 @@ router.delete("/:id", exigirLogin, (req, res) => {
       });
     }
 
-    const produto = db.prepare(`
+    const produto = await db.prepare(`
       SELECT id, image
       FROM products
       WHERE id = ? AND user_id = ?
@@ -466,7 +433,7 @@ router.delete("/:id", exigirLogin, (req, res) => {
       });
     }
 
-    const resultado = db.prepare(`
+    const resultado = await db.prepare(`
       DELETE FROM products
       WHERE id = ? AND user_id = ?
     `).run(id, req.session.userId);
@@ -477,21 +444,9 @@ router.delete("/:id", exigirLogin, (req, res) => {
       });
     }
 
-    // Apagar apenas ficheiros pertencentes à pasta de uploads.
-    if (produto.image && produto.image.startsWith("/uploads/")) {
-      const nomeFicheiro = path.basename(produto.image);
-      const caminhoImagem = path.join(pastaUploads, nomeFicheiro);
-
-      try {
-        if (fs.existsSync(caminhoImagem)) {
-          fs.unlinkSync(caminhoImagem);
-        }
-      } catch (erroImagem) {
-        console.error(
-          "O anúncio foi eliminado, mas não foi possível apagar a fotografia:",
-          erroImagem
-        );
-      }
+    if (produto.image) {
+      try { await eliminarImagemPorUrl(produto.image); }
+      catch (erroImagem) { console.error("O anúncio foi eliminado, mas não foi possível apagar a fotografia:", erroImagem.message); }
     }
 
     return res.json({

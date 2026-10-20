@@ -42,26 +42,31 @@ let conversation;
 let notification;
 
 test.before(async () => {
-  const addUser = (name, email, phone) => Number(db.prepare(
-    "INSERT INTO users(name,email,phone,password) VALUES(?,?,?,?)"
-  ).run(name,email,phone,"test-hash").lastInsertRowid);
-  buyer = addUser("Buyer", "buyer@test.local", "900000001");
-  seller = addUser("Seller", "seller@test.local", "900000002");
-  outsider = addUser("Outsider", "outsider@test.local", "900000003");
-  productId = Number(db.prepare(`
+  await db.initializeDatabase();
+  await db.prepare("TRUNCATE TABLE users RESTART IDENTITY CASCADE").run();
+  const addUser = async (name, email, phone) => {
+    const result = await db.prepare(
+      "INSERT INTO users(name,email,phone,password) VALUES(?,?,?,?)"
+    ).run(name,email,phone,"test-hash");
+    return Number(result.lastInsertRowid);
+  };
+  buyer = await addUser("Buyer", "buyer@test.local", "900000001");
+  seller = await addUser("Seller", "seller@test.local", "900000002");
+  outsider = await addUser("Outsider", "outsider@test.local", "900000003");
+  productId = Number((await db.prepare(`
     INSERT INTO products(user_id,name,description,price,condition,category,city,neighborhood)
     VALUES(?,?,?,?,?,?,?,?)
-  `).run(seller,"Test item","Test description",1000,"Novo","Tecnologia","Luanda","Maianga").lastInsertRowid);
-  storeId = Number(db.prepare("INSERT INTO stores(user_id,name,description,city) VALUES(?,?,?,?)").run(seller,"Seller Store","Private test store","Luanda").lastInsertRowid);
-  unrelatedProductId = Number(db.prepare(`INSERT INTO products(user_id,name,description,price,condition,category,city,neighborhood) VALUES(?,?,?,?,?,?,?,?)`).run(buyer,"Unrelated item","Owned by buyer",500,"Usado","Casa","Luanda","Ingombota").lastInsertRowid);
-  conversation = Number(db.prepare(
+  `).run(seller,"Test item","Test description",1000,"Novo","Tecnologia","Luanda","Maianga")).lastInsertRowid);
+  storeId = Number((await db.prepare("INSERT INTO stores(user_id,name,description,city) VALUES(?,?,?,?)").run(seller,"Seller Store","Private test store","Luanda")).lastInsertRowid);
+  unrelatedProductId = Number((await db.prepare(`INSERT INTO products(user_id,name,description,price,condition,category,city,neighborhood) VALUES(?,?,?,?,?,?,?,?)`).run(buyer,"Unrelated item","Owned by buyer",500,"Usado","Casa","Luanda","Ingombota")).lastInsertRowid);
+  conversation = Number((await db.prepare(
     "INSERT INTO conversations(product_id,buyer_id,seller_id) VALUES(?,?,?)"
-  ).run(productId,buyer,seller).lastInsertRowid);
-  db.prepare("INSERT INTO messages(conversation_id,sender_id,body) VALUES(?,?,?)")
+  ).run(productId,buyer,seller)).lastInsertRowid);
+  await db.prepare("INSERT INTO messages(conversation_id,sender_id,body) VALUES(?,?,?)")
     .run(conversation,seller,"Private message");
-  notification = Number(db.prepare(
+  notification = Number((await db.prepare(
     "INSERT INTO notifications(recipient_user_id,actor_user_id,type,message) VALUES(?,?,?,?)"
-  ).run(buyer,seller,"message","Private notification").lastInsertRowid);
+  ).run(buyer,seller,"message","Private notification")).lastInsertRowid);
   server = app.listen(0);
   await new Promise((resolve, reject) => {
     server.once("listening", resolve);
@@ -87,7 +92,7 @@ test("login rejects object-valued credentials with a client error", async () => 
 });
 
 test("registration rejects non-string fields without creating an account", async () => {
-  const before = db.prepare("SELECT COUNT(*) AS n FROM users").get().n;
+  const before = (await db.prepare("SELECT COUNT(*) AS n FROM users").get()).n;
   const res = await fetch(base + "/auth/register", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -97,32 +102,32 @@ test("registration rejects non-string fields without creating an account", async
     })
   });
   assert.equal(res.status, 400);
-  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM users").get().n, before);
+  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM users").get()).n, before);
 });
 
 test("outsider cannot read another user's messages", async () => {
   const cookie = await sessionFor(outsider);
   const res = await fetch(base + "/conversations/" + conversation + "/messages", { headers: { cookie } });
   assert.equal(res.status, 404);
-  assert.equal(db.prepare("SELECT read_at FROM messages WHERE conversation_id=?").get(conversation).read_at, null);
+  assert.equal((await db.prepare("SELECT read_at FROM messages WHERE conversation_id=?").get(conversation)).read_at, null);
 });
 
 test("outsider cannot send messages to another user's conversation", async () => {
   const cookie = await sessionFor(outsider);
-  const before = db.prepare("SELECT COUNT(*) AS n FROM messages WHERE conversation_id=?").get(conversation).n;
+  const before = (await db.prepare("SELECT COUNT(*) AS n FROM messages WHERE conversation_id=?").get(conversation)).n;
   const res = await fetch(base + "/conversations/" + conversation + "/messages", {
     method: "POST", headers: { cookie, "content-type": "application/json" },
     body: JSON.stringify({ body: "Unauthorized attempt" })
   });
   assert.equal(res.status, 404);
-  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM messages WHERE conversation_id=?").get(conversation).n, before);
+  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM messages WHERE conversation_id=?").get(conversation)).n, before);
 });
 
 test("outsider cannot mark another user's notification as read", async () => {
   const cookie = await sessionFor(outsider);
   const res = await fetch(base + "/notifications/" + notification + "/read", { method: "PATCH", headers: { cookie } });
   assert.equal(res.status, 404);
-  assert.equal(db.prepare("SELECT is_read FROM notifications WHERE id=?").get(notification).is_read, 0);
+  assert.equal((await db.prepare("SELECT is_read FROM notifications WHERE id=?").get(notification)).is_read, 0);
 });
 
 test("notifications list is scoped to the signed-in user", async () => {
@@ -151,7 +156,7 @@ test("outsider cannot delete another seller's listing", async () => {
     headers: { cookie }
   });
   assert.equal(res.status, 404);
-  assert.ok(db.prepare("SELECT id FROM products WHERE id=? AND user_id=?").get(productId, seller));
+  assert.ok(await db.prepare("SELECT id FROM products WHERE id=? AND user_id=?").get(productId, seller));
 });
 
 
@@ -163,7 +168,7 @@ test("outsider cannot edit another seller's store through their own store endpoi
     body: JSON.stringify({ name: "Hijacked store", description: "Changed by outsider" })
   });
   assert.equal(res.status, 404);
-  const store = db.prepare("SELECT name,description FROM stores WHERE id=? AND user_id=?").get(storeId, seller);
+  const store = await db.prepare("SELECT name,description FROM stores WHERE id=? AND user_id=?").get(storeId, seller);
   assert.equal(store.name, "Seller Store");
   assert.equal(store.description, "Private test store");
 });
@@ -178,7 +183,7 @@ test("store contact rejects a product owned by a different seller", async () => 
   });
   assert.equal(res.status, 400);
   assert.equal(
-    db.prepare("SELECT COUNT(*) AS n FROM store_contacts WHERE store_id=?").get(storeId).n,
+    (await db.prepare("SELECT COUNT(*) AS n FROM store_contacts WHERE store_id=?").get(storeId)).n,
     0
   );
 });
@@ -192,7 +197,7 @@ test("store owner cannot follow their own store", async () => {
   });
   assert.equal(res.status, 400);
   assert.equal(
-    db.prepare("SELECT COUNT(*) AS n FROM store_follows WHERE store_id=?").get(storeId).n,
+    (await db.prepare("SELECT COUNT(*) AS n FROM store_follows WHERE store_id=?").get(storeId)).n,
     0
   );
 });
@@ -206,7 +211,7 @@ test("customer can register a valid contact with the store's own listing", async
   });
   assert.equal(res.status, 200);
   assert.deepEqual(await res.json(), { recorded: true, channel: "whatsapp" });
-  const contact = db.prepare(
+  const contact = await db.prepare(
     "SELECT customer_user_id,product_id,channel FROM store_contacts WHERE store_id=?"
   ).get(storeId);
   assert.equal(contact.customer_user_id, buyer);
@@ -223,14 +228,14 @@ test("customer can follow another user's store and the count updates", async () 
   });
   assert.equal(res.status, 200);
   assert.deepEqual(await res.json(), { followed: true, followers: 1 });
-  assert.ok(db.prepare(
+  assert.ok(await db.prepare(
     "SELECT 1 FROM store_follows WHERE store_id=? AND follower_user_id=?"
   ).get(storeId, buyer));
 });
 
 test.after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
-  db.close();
+  await db.close();
   fs.rmSync(tmp, { recursive: true, force: true });
   delete process.env.DATA_DIR;
   delete process.env.UPLOADS_DIR;
