@@ -229,7 +229,7 @@ router.post(
   exigirLogin,
   async (req, res, next) => {
     limparAnunciosExpirados();
-    const publicados = await db.prepare("SELECT COUNT(*) AS total FROM products WHERE user_id = ? AND created_at >= datetime('now', '-24 hours')").get(req.session.userId).total;
+    const publicados = (await db.prepare("SELECT COUNT(*) AS total FROM products WHERE user_id = ? AND created_at >= datetime('now', '-24 hours')").get(req.session.userId)).total;
     if (publicados >= 5) {
       return res.status(429).json({ erro: "Atingiste o limite de 5 anúncios por período de 24 horas. Tenta novamente quando um dos teus anúncios completar 24 horas desde a publicação." });
     }
