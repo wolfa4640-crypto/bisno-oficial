@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#176b45">
+<title>Entrar ou criar conta — Bisno</title>
+<style>
+:root{color-scheme:light;--green:#176b45;--ink:#17231c;--muted:#647168;--line:#dfe8e1}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(145deg,#f3f8f4,#e8f2eb);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+.card{width:min(100%,440px);background:#fff;border:1px solid var(--line);border-radius:24px;padding:clamp(22px,5vw,36px);box-shadow:0 18px 55px #143c2512}
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:24px}.logo{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:var(--green);color:#fff;font-size:25px;font-weight:900}.brand strong{font-size:25px;letter-spacing:-.7px}.brand small{display:block;color:var(--muted);margin-top:2px}
+h1{font-size:25px;line-height:1.2;margin:0 0 9px;letter-spacing:-.6px} .intro{color:var(--muted);line-height:1.55;margin:0 0 22px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f0f5f1;padding:5px;border-radius:12px;margin-bottom:20px}.tabs button{border:0;border-radius:9px;padding:11px;background:transparent;color:var(--muted);font-weight:750;cursor:pointer}.tabs button.active{background:#fff;color:var(--green);box-shadow:0 2px 7px #122e1c12}
+form{display:grid;gap:9px}form[hidden]{display:none}label{font-size:13px;font-weight:750;margin-top:5px}input{width:100%;padding:13px 14px;border:1px solid #d5e0d7;border-radius:11px;font:inherit;outline:none}input:focus{border-color:var(--green);box-shadow:0 0 0 3px #176b4517} .submit{margin-top:8px;padding:14px;border:0;border-radius:11px;background:var(--green);color:white;font:inherit;font-weight:800;cursor:pointer}.submit:disabled{opacity:.65;cursor:wait}.msg{margin:14px 0 0;padding:11px 12px;border-radius:10px;background:#f2f6f3;color:#344b3a;font-size:14px;line-height:1.45}.msg:empty{display:none}.note{font-size:12px;color:var(--muted);line-height:1.5;text-align:center;margin:18px 0 0}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand"><div class="logo">B</div><div><strong>Bisno</strong><small>O teu mercado, num só lugar</small></div></div>
+  <h1>Entra para continuar</h1>
+  <p class="intro">Cria uma conta ou inicia sessão para aceder aos anúncios e às funcionalidades do Bisno.</p>
+  <div class="tabs" role="tablist"><button id="tab-login" class="active" type="button">Iniciar sessão</button><button id="tab-register" type="button">Criar conta</button></div>
+  <form id="login">
+    <label for="login-email">E-mail</label><input id="login-email" name="email" type="email" autocomplete="email" placeholder="nome@exemplo.com" required>
+    <label for="login-password">Palavra-passe</label><input id="login-password" name="password" type="password" autocomplete="current-password" required>
+    <button class="submit" type="submit">Entrar no Bisno</button>
+  </form>
+  <form id="register" hidden>
+    <label for="reg-name">Nome completo</label><input id="reg-name" name="name" autocomplete="name" maxlength="100" required>
+    <label for="reg-email">E-mail</label><input id="reg-email" name="email" type="email" autocomplete="email" required>
+    <label for="reg-phone">Telefone</label><input id="reg-phone" name="phone" type="tel" autocomplete="tel" required>
+    <label for="reg-password">Palavra-passe (mínimo 8 caracteres)</label><input id="reg-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+    <button class="submit" type="submit">Criar conta</button>
+  </form>
+  <form id="verify" hidden>
+    <label for="verify-email">E-mail usado no registo</label><input id="verify-email" name="email" type="email" autocomplete="email" required>
+    <label for="verify-code">Código de confirmação de 6 dígitos</label><input id="verify-code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+    <button class="submit" type="submit">Confirmar e-mail</button>
+  </form>
+  <p id="message" class="msg" role="status" aria-live="polite"></p>
+  <p class="note">O conteúdo do marketplace fica disponível após iniciares sessão. Ao criar uma conta, confirma o teu e-mail para a ativar.</p>
+</main>
+<script>
+const $=s=>document.querySelector(s), msg=$('#message');
+function tab(which){$('#login').hidden=which!=='login';$('#register').hidden=which!=='register';$('#verify').hidden=which!=='verify';$('#tab-login').classList.toggle('active',which==='login');$('#tab-register').classList.toggle('active',which==='register');}
+$('#tab-login').addEventListener('click',()=>tab('login'));$('#tab-register').addEventListener('click',()=>tab('register'));
+async function send(url,form){const data=Object.fromEntries(new FormData(form));const response=await fetch(url,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.erro||result.mensagem||'Não foi possível concluir. Tenta novamente.');return result;}
+$('#login').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;msg.textContent='A iniciar sessão…';try{const r=await send('/api/auth/login',e.currentTarget);msg.textContent=r.mensagem||'Sessão iniciada. A abrir o Bisno…';location.replace('/');}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
+$('#register').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;msg.textContent='A criar a conta…';try{const r=await send('/api/auth/register',e.currentTarget);$('#verify-email').value=$('#reg-email').value.trim();tab('verify');msg.textContent=r.mensagem||'Confirma o teu e-mail com o código enviado.';}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
+$('#verify').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;msg.textContent='A confirmar o e-mail…';try{const r=await send('/api/auth/verify-email',e.currentTarget);msg.textContent=r.mensagem||'E-mail confirmado. Já podes iniciar sessão.';tab('login');$('#login-email').value=$('#verify-email').value;}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
+</script>
+</body></html>
