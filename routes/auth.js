@@ -108,12 +108,11 @@ router.post("/register", async (req, res) => {
         .run(nome, emailNormalizado, telefone, bcrypt.hashSync(palavraPasse, 12));
       userId = Number(result.lastInsertRowid);
     }
-    const codigo = criarCodigo();
-    guardarToken(userId, "verify_email", codigo, 10);
-    await enviarEmail(emailNormalizado, "Confirma o teu e-mail — Bisno",
-      "O teu código de confirmação do Bisno é: " + codigo + ". Expira em 10 minutos.",
-      '<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px"><h2 style="color:#176b45">Confirma o teu e-mail</h2><p>Usa este código para ativar a tua conta Bisno:</p><p style="font-size:32px;font-weight:bold;letter-spacing:8px">' + codigo + '</p><p>O código expira em 10 minutos. Se não pediste esta conta, ignora esta mensagem.</p></div>');
-    res.status(201).json({ requerVerificacao: true, email: emailNormalizado, mensagem: "Enviámos um código de 6 dígitos para o teu e-mail. Confirma-o para ativar a conta." });
+    // Registo imediato: não bloquear novas contas por falta de configuração SMTP.
+    // A confirmação por e-mail continua disponível como funcionalidade opcional.
+    db.prepare("UPDATE users SET email_verified = 1 WHERE id = ?").run(userId);
+    db.prepare("DELETE FROM auth_tokens WHERE user_id = ? AND purpose = 'verify_email'").run(userId);
+    res.status(201).json({ requerVerificacao: false, email: emailNormalizado, mensagem: "Conta criada com sucesso! Já podes iniciar sessão." });
   } catch (erro) {
     if (erro.code === "SQLITE_CONSTRAINT_UNIQUE") return res.status(409).json({ erro: "Este e-mail já está registado." });
     console.error("Erro no registo/envio de confirmação:", erro.message);
@@ -212,7 +211,6 @@ router.post("/login", (req, res) => {
     WHERE email = ?
   `).get(String(email).trim().toLowerCase());
 
-  if (utilizador && !utilizador.email_verified) return res.status(403).json({ erro: "Confirma o teu e-mail antes de iniciar sessão." });
   if (utilizador && utilizador.is_blocked) return res.status(403).json({ erro: "Esta conta foi bloqueada. Contacta o suporte do Bisno." });
 
   if (!utilizador || !bcrypt.compareSync(password, utilizador.password)) {
