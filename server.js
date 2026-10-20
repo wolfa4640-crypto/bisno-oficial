@@ -81,7 +81,7 @@ iniciarServidor().catch((erro) => {
 });
 async function encerrar(signal) {
   console.log(`\n${signal}: a encerrar o Bisno...`);
-  servidor.close(() => {
+  servidor.close(async () => {
     try { await require("./data/database").close(); } catch (_) {}
     if (sessionStore.close) sessionStore.close();
     process.exit(0);
