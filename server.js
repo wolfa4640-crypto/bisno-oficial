@@ -5,7 +5,6 @@ const path = require("path");
 const session = require("express-session");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-require("express-async-errors");
 const PgSession = require("connect-pg-simple")(session);
 const db = require("./data/database");
 
