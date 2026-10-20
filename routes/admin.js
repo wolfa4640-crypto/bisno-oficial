@@ -33,7 +33,7 @@ router.use(exigirAdmin);
 router.use(async (req,res,next)=>["POST","PUT","PATCH","DELETE"].includes(req.method)?sameOrigin(req,res,next):next());
 
 router.get("/stats",async (req,res)=>{
- const n=q=>(await db.prepare(q).get()).n;
+ const n = async (q) => (await db.prepare(q).get()).n;
  res.json({stats:{
   users:await n("SELECT COUNT(*) n FROM users"),users24h:await n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-1 day')"),
   users7d:await n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-7 days')"),
