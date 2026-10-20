@@ -39,8 +39,21 @@ app.get("/api/health", (_req, res) => res.json({ estado: "ok", servico: "Bisno",
 
 const adminRoutes = require("./routes/admin");
 app.use("/api/admin", adminRoutes.router);
-app.get("/admin", (_req, res) => {
-  res.sendFile(path.join(__dirname, "admin", "index.html"));
+
+// A própria página também é protegida no servidor: esconder o botão no navegador não é segurança.
+app.get("/admin", async (req, res, next) => {
+  if (!req.session?.userId) return res.redirect("/");
+  const adminEmail = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+  if (!adminEmail) return res.status(503).send("A administração ainda não foi configurada.");
+  try {
+    const user = await db.prepare("SELECT email,is_blocked FROM users WHERE id=?").get(req.session.userId);
+    if (!user || user.is_blocked || String(user.email).trim().toLowerCase() !== adminEmail) {
+      return res.status(404).send("Página não encontrada.");
+    }
+    return res.sendFile(path.join(__dirname, "admin", "index.html"));
+  } catch (error) {
+    return next(error);
+  }
 });
 
 app.use("/api/auth", require("./routes/auth"));
@@ -86,7 +99,7 @@ iniciarServidor().catch((erro) => {
   process.exit(1);
 });
 async function encerrar(signal) {
-  console.log(`\n${signal}: a encerrar o Bisno...`);
+  console.log(`\\n${signal}: a encerrar o Bisno...`);
   servidor.close(async () => {
     try { await require("./data/database").close(); } catch (_) {}
     if (sessionStore.close) sessionStore.close();
