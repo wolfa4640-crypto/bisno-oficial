@@ -2804,7 +2804,6 @@ function configurarFormularios() {
 
   $("#form-registo")?.addEventListener("submit", registarUtilizador);
   $("#botao-recuperar-password")?.addEventListener("click", () => { if ($("#recuperar-email") && $("#login-email")) $("#recuperar-email").value = $("#login-email").value; mostrarAba("recuperar"); });
-  $("#botao-confirmar-email")?.addEventListener("click", () => { if ($("#verificar-email") && $("#login-email")) $("#verificar-email").value = $("#login-email").value.trim(); mostrarAba("verificar"); });
   $("#botao-cancelar-recuperacao")?.addEventListener("click", () => mostrarAba("login"));
   $("#botao-voltar-login")?.addEventListener("click", () => mostrarAba("login"));
   $("#form-recuperar-password")?.addEventListener("submit", async evento => {
@@ -2812,13 +2811,6 @@ function configurarFormularios() {
     try { const r = await pedidoAPI("/api/auth/forgot-password", { method: "POST", body: { email: $("#recuperar-email")?.value || "" } }); mostrarAba("login"); mostrarMensagem(r.mensagem, "sucesso"); }
     catch (e) { mostrarMensagem(e.message || "Não foi possível pedir a recuperação.", "erro"); }
   });
-  $("#form-nova-password")?.addEventListener("submit", async evento => {
-    evento.preventDefault(); const params = new URLSearchParams(window.location.search), password = $("#nova-password")?.value || "";
-    if (password !== ($("#confirmar-nova-password")?.value || "")) return mostrarMensagem("As palavras-passe não coincidem.", "erro");
-    try { const r = await pedidoAPI("/api/auth/reset-password", { method: "POST", body: { email: params.get("email"), token: params.get("reset"), password } }); window.history.replaceState({}, document.title, window.location.pathname); evento.currentTarget.reset(); mostrarAba("login"); mostrarMensagem(r.mensagem, "sucesso"); }
-    catch (e) { mostrarMensagem(e.message || "Não foi possível alterar a palavra-passe.", "erro"); }
-  });
-
 
   $("#perfil-foto-input")?.addEventListener("change", evento => {
     const ficheiro = evento.currentTarget.files?.[0];
