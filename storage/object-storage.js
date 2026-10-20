@@ -48,4 +48,13 @@ async function eliminarImagem(key) {
   await criarCliente().send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 }
 
-module.exports = { guardarImagem, eliminarImagem, bucket };
+async function eliminarImagemPorUrl(url) {
+  if (!url || typeof url !== "string") return;
+  const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
+  const prefix = endpoint + "/" + bucket + "/";
+  if (!endpoint || !url.startsWith(prefix)) return;
+  const key = url.slice(prefix.length).split("/").map((part) => decodeURIComponent(part)).join("/");
+  await eliminarImagem(key);
+}
+
+module.exports = { guardarImagem, eliminarImagem, eliminarImagemPorUrl, bucket };
