@@ -1,0 +1,12 @@
+# Dependências e segredos
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Dados persistentes e ficheiros enviados por utilizadores: nunca versionar
+/data/*.db
+/data/*.db-*
+/data/*.sqlite
+/data/*.sqlite-*
+/uploads/
