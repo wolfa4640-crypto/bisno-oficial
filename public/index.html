@@ -27,7 +27,7 @@
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css?v=20261022-store-directory-v2">
-  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261020-admin-panel-v33">
+  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261022-store-nav-audit-v1">
   <style>
 
     .bisno-download-app { display:flex; flex-direction:column; align-items:center; gap:8px; margin:18px auto; }
@@ -149,7 +149,7 @@
     .admin-acoes-compact{display:flex;gap:6px;flex-shrink:0}.admin-acoes-compact button{min-width:38px;min-height:38px;padding:6px}
     #form-pedido-procura button[type="submit"]:disabled{opacity:.65;cursor:wait}
   </style>
-  <script src="/script.js?v=20261022-admin-icons-duplicate-publish-v3" defer></script>
+  <script src="/script.js?v=20261022-store-nav-audit-v2" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -234,7 +234,7 @@
       <button type="button" class="nav-social" data-menu-acao="notifications" aria-label="Notificações" title="Notificações"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
       <button type="button" class="nav-social" data-menu-acao="messages" aria-label="Mensagens" title="Mensagens"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
-      <a href="#area-diretorio-lojas" data-bisno-page="stores" aria-label="Explorar lojas"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg><span>Lojas</span></a>
+      <a href="#area-loja" data-bisno-page="store" aria-label="A minha loja"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6"/><path d="M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg><span>A minha loja</span></a>
       
     </div>
   </nav>
@@ -679,7 +679,7 @@
           <button type="button" data-categoria-rapida="Moda"><span aria-hidden="true">✦</span> Moda</button>
           <button type="button" data-categoria-rapida="Veículos"><span aria-hidden="true">↗</span> Veículos</button>
           <button type="button" data-categoria-rapida="Casa e Jardim"><span aria-hidden="true">⌂</span> Casa e jardim</button>
-          <button type="button" data-categoria-rapida="Outros"><span aria-hidden="true">＋</span> Outros</button>
+          <button type="button" data-bisno-page="stores" aria-label="Explorar lojas"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg> Lojas</button>
         </div>
       </section>
 

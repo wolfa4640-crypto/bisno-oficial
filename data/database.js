@@ -51,17 +51,12 @@ function statement(sql) {
       const ignoreConflict = /^INSERT\s+OR\s+IGNORE\s+INTO\b/i.test(query);
       query = query.replace(/^INSERT\s+OR\s+IGNORE\s+INTO\b/i, "INSERT INTO");
       if (ignoreConflict && !/\bON\s+CONFLICT\b/i.test(query)) query += " ON CONFLICT DO NOTHING";
-      if (/^INSERT\b/i.test(query) && !/\bRETURNING\b/i.test(query)) {
-        if (/\bON\s+CONFLICT\b/i.test(query)) {
-          query += " RETURNING id";
-        } else {
-          query += " RETURNING id";
-        }
-      }
+      // RETURNING * also supports tables whose primary key is not named id (e.g. site_settings).
+      if (query.toUpperCase().startsWith("INSERT ") && !/RETURNING/i.test(query)) query += " RETURNING *";
       const result = await currentQuery(query, params);
       return {
         changes: result.rowCount || 0,
-        lastInsertRowid: result.rows && result.rows[0] ? Number(result.rows[0].id) : undefined
+        lastInsertRowid: result.rows && result.rows[0] && result.rows[0].id != null ? Number(result.rows[0].id) : undefined
       };
     }
   };
