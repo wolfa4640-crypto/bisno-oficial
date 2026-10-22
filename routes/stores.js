@@ -111,7 +111,7 @@ router.post('/activate', exigirLogin, async (req,res) => {
  const description=clean(req.body.description,500);
  const city=clean(req.body.city,100);
  const brandImage=clean(req.body.brand_image,1000)||null;
- if(brandImage && !/^https:\\/\\//i.test(brandImage)) return res.status(400).json({erro:'A imagem da marca deve usar um endereço HTTPS válido.'});
+ if(brandImage && !brandImage.startsWith("https://")) return res.status(400).json({erro:"A imagem da marca deve usar um endereço HTTPS válido."});
  await db.prepare(`INSERT INTO stores(user_id,name,description,city,avatar,brand_image) VALUES(?,?,?,?,?,?)
  ON CONFLICT(user_id) DO UPDATE SET name=excluded.name, description=excluded.description, city=excluded.city, avatar=excluded.avatar, brand_image=excluded.brand_image, is_active=1, updated_at=CURRENT_TIMESTAMP`)
  .run(user.id,name,description,city,user.avatar||null,brandImage);
@@ -126,7 +126,7 @@ router.patch('/mine', exigirLogin, async (req,res) => {
  const description=clean(req.body.description,500);
  const city=typeof req.body.city === 'string' ? clean(req.body.city,100) : store.city;
  const brandImage=typeof req.body.brand_image==='string'?clean(req.body.brand_image,1000):store.brand_image;
- if(brandImage && !/^https:\\/\\//i.test(brandImage)) return res.status(400).json({erro:'A imagem da marca deve usar um endereço HTTPS válido.'});
+ if(brandImage && !brandImage.startsWith("https://")) return res.status(400).json({erro:"A imagem da marca deve usar um endereço HTTPS válido."});
  await db.prepare('UPDATE stores SET name=?,description=?,city=?,brand_image=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(name,description,city,brandImage||null,store.id,req.session.userId);
  res.json({store:await getStore.get(req.session.userId),stats:await storeSummary(store.id)});
 });
