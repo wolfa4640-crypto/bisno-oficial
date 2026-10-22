@@ -996,6 +996,25 @@ async function carregarMeusAnuncios() {
 
 
 
+document.getElementById("lista-meus-anuncios")?.addEventListener("click", async evento => {
+  const botao = evento.target.closest("[data-guardar-stock]");
+  if (!botao) return;
+  const id = botao.dataset.guardarStock;
+  const campo = document.querySelector('[data-stock-valor="' + CSS.escape(id) + '"]');
+  const stock = Number(campo?.value);
+  if (!Number.isSafeInteger(stock) || stock < 0 || stock > 1000000) {
+    mostrarMensagem("O stock deve ser um número inteiro entre 0 e 1.000.000.", "erro");
+    return;
+  }
+  botao.disabled = true;
+  try {
+    await pedidoAPI("/api/products/" + encodeURIComponent(id) + "/stock", { method: "PATCH", body: { stock } });
+    mostrarMensagem("Stock atualizado.", "sucesso");
+    await carregarProdutos();
+  } catch (erro) { mostrarMensagem(erro.message || "Não foi possível atualizar o stock.", "erro"); }
+  finally { botao.disabled = false; }
+});
+
 async function apagarAnuncio(id) {
 
   if (!exigirLogin()) return;
@@ -2907,13 +2926,13 @@ function preencherPainelLoja(data = {}) {
     if ($("#titulo-form-loja")) $("#titulo-form-loja").textContent = "Ativa a tua loja gratuitamente";
     if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Ativar a minha loja";
     if (preview) preview.hidden = true;
-    if (form) { form.elements.name.value = ""; form.elements.description.value = ""; form.elements.city.value = ""; }
+    if (form) { form.elements.name.value = ""; form.elements.description.value = ""; form.elements.city.value = ""; if (form.elements.brand_image) form.elements.brand_image.value = ""; }
     return;
   }
   if (status) { status.textContent = "Loja ativa"; status.classList.add("ativa"); }
   if ($("#titulo-form-loja")) $("#titulo-form-loja").textContent = "Personaliza a tua loja";
   if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Guardar alterações";
-  if (form) { form.elements.name.value = store.name || ""; form.elements.description.value = store.description || ""; form.elements.city.value = store.city || ""; }
+  if (form) { form.elements.name.value = store.name || ""; form.elements.description.value = store.description || ""; form.elements.city.value = store.city || ""; if (form.elements.brand_image) form.elements.brand_image.value = store.brand_image || ""; }
   if (preview) preview.hidden = false;
   definirTexto("#loja-nome-preview", store.name || "A tua loja");
   definirTexto("#loja-descricao-preview", store.description || "Adiciona uma descrição para apresentar a tua loja.");
@@ -2928,7 +2947,7 @@ function configurarLoja() {
   $("#form-loja")?.addEventListener("submit", async evento => {
     evento.preventDefault();
     const form = evento.currentTarget, existente = $("#estado-loja")?.classList.contains("ativa");
-    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim() };
+    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim(), brand_image: form.elements.brand_image?.value.trim() || "" };
     const botao = $("#botao-guardar-loja");
     if (botao) { botao.disabled = true; botao.textContent = "A guardar…"; }
     try {
