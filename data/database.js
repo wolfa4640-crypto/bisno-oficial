@@ -56,7 +56,7 @@ function statement(sql) {
       const result = await currentQuery(query, params);
       return {
         changes: result.rowCount || 0,
-        lastInsertRowid: result.rows && result.rows[0] ? Number(result.rows[0].id) : undefined
+        lastInsertRowid: result.rows && result.rows[0] && result.rows[0].id != null ? Number(result.rows[0].id) : undefined
       };
     }
   };
