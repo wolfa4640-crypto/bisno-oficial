@@ -904,185 +904,7 @@ async function terminarSessao() {
 
 
 
-async function publicarAnuncio(evento) {
-  evento.preventDefault();
-  if (!exigirLogin()) return;
-
-  const formulario = evento.currentTarget;
-  if (formulario.dataset.enviando === "true") return;
-  if (!formulario.reportValidity()) return;
-
-  const botao = formulario.querySelector('button[type="submit"]');
-  const textoOriginal = botao?.textContent || "＋ Publicar anúncio";
-  const dados = new FormData(formulario);
-  const imagem = dados.get("image");
-
-  if (imagem instanceof File && imagem.size > LIMITE_IMAGEM) {
-    mostrarMensagem("A imagem do produto não pode ultrapassar 5 MB.", "erro");
-    return;
-  }
-
-  formulario.dataset.enviando = "true";
-  if (botao) { botao.disabled = true; botao.textContent = "A publicar…"; }
-  try {
-    const resposta = await pedidoAPI("/api/products", { method: "POST", body: dados });
-    formulario.reset();
-    mostrarMensagem(resposta.mensagem || "Anúncio publicado com sucesso!", "sucesso");
-    await carregarProdutos();
-    await carregarMeusAnuncios();
-    abrirPagina("area-produtos");
-  } catch (erro) {
-    mostrarMensagem(erro.message || "Não foi possível publicar o anúncio. Confirma os campos e tenta novamente.", "erro");
-  } finally {
-    delete formulario.dataset.enviando;
-    if (botao) { botao.disabled = false; botao.textContent = textoOriginal; }
-  }
-}
-
-async function carregarMeusAnuncios() {
-
-  const lista = $("#lista-meus-anuncios");
-
-  if (!lista || !utilizadorAtual) return;
-
-
-
-  lista.innerHTML = "<p>A carregar os teus anúncios...</p>";
-
-
-
-  try {
-
-    const dados = await pedidoAPI("/api/products/mine", { cache: "no-store" });
-
-    const produtos = dados.produtos ?? dados.products ?? [];
-
-
-
-    if (!produtos.length) {
-
-      lista.innerHTML = "<p>Ainda não publicaste anúncios.</p>";
-
-      return;
-
-    }
-
-
-
-    lista.innerHTML = produtos.map(produto => `
-
-      <article class="cartao-produto">
-
-        <img
-
-          src="${escaparHTML(obterImagem(produto.image))}"
-
-          alt="${escaparHTML(produto.name)}"
-
-          loading="lazy"
-
-          onerror="this.onerror=null;this.src='${IMAGEM_PADRAO}'"
-
-        >
-
-        <div class="cartao-produto-conteudo">
-
-          <h3>${escaparHTML(produto.name)}</h3>
-
-          <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
-
-          <p>${escaparHTML(produto.city ?? "")}</p>
-          <label for="stock-produto-${escaparHTML(produto.id)}">Stock</label>
-          <input id="stock-produto-${escaparHTML(produto.id)}" type="number" min="0" max="1000000" step="1" value="${Number.isSafeInteger(Number(produto.stock)) ? Number(produto.stock) : 1}" data-stock-valor="${escaparHTML(produto.id)}" aria-label="Quantidade em stock de ${escaparHTML(produto.name)}">
-          <button type="button" data-guardar-stock="${escaparHTML(produto.id)}" aria-label="Guardar stock">✓</button>
-          <button type="button" data-apagar-anuncio="${escaparHTML(produto.id)}">
-
-            Apagar anúncio
-
-          </button>
-
-        </div>
-
-      </article>
-
-    `).join("");
-
-  } catch (erro) {
-
-    lista.innerHTML = `<p>${escaparHTML(erro.message)}</p>`;
-
-  }
-
-}
-
-
-
-document.getElementById("lista-meus-anuncios")?.addEventListener("click", async evento => {
-  const botao = evento.target.closest("[data-guardar-stock]");
-  if (!botao) return;
-  const id = botao.dataset.guardarStock;
-  const campo = document.querySelector('[data-stock-valor="' + CSS.escape(id) + '"]');
-  const stock = Number(campo?.value);
-  if (!Number.isSafeInteger(stock) || stock < 0 || stock > 1000000) {
-    mostrarMensagem("O stock deve ser um número inteiro entre 0 e 1.000.000.", "erro");
-    return;
-  }
-  botao.disabled = true;
-  try {
-    await pedidoAPI("/api/products/" + encodeURIComponent(id) + "/stock", { method: "PATCH", body: { stock } });
-    mostrarMensagem("Stock atualizado.", "sucesso");
-    await carregarProdutos();
-  } catch (erro) { mostrarMensagem(erro.message || "Não foi possível atualizar o stock.", "erro"); }
-  finally { botao.disabled = false; }
-});
-
-async function apagarAnuncio(id) {
-
-  if (!exigirLogin()) return;
-
-
-
-  if (!confirm("Tens a certeza de que queres apagar este anúncio?")) return;
-
-
-
-  try {
-
-    await pedidoAPI(`/api/products/${encodeURIComponent(id)}`, {
-
-      method: "DELETE"
-
-    });
-
-
-
-    mostrarMensagem("Anúncio apagado.", "sucesso");
-
-
-
-    await carregarProdutos();
-
-    await carregarMeusAnuncios();
-
-  } catch (erro) {
-
-    mostrarMensagem(erro.message || "Não foi possível apagar o anúncio.", "erro");
-
-  }
-
-}
-
-
-
-/* =========================================================
-
-   CARTÕES DE PRODUTOS E CATÁLOGO
-
-   ========================================================= */
-
-
-
-function eProdutoDoUtilizador(produto) {
+async function eProdutoDoUtilizador(produto) {
 
   const idUtilizador = obterIdUtilizador();
 
@@ -2906,7 +2728,6 @@ function configurarFormularios() {
   $("#acao-editar-dados-perfil")?.addEventListener("click", () => { const f = $("#form-perfil"); if (f) f.hidden = !f.hidden; });
   $("#form-perfil")?.addEventListener("submit", guardarPerfil);
 
-  $("#form-anuncio")?.addEventListener("submit", publicarAnuncio);
 
   $("#form-enviar-mensagem")?.addEventListener("submit", enviarMensagem);
 
@@ -3397,7 +3218,7 @@ function configurarMenuPublicacao() {
   document.querySelectorAll("[data-publicar-tipo]").forEach(button => button.addEventListener("click", () => {
     if (!utilizadorAtual) { fechar(); mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
     const type = button.dataset.publicarTipo; fechar();
-    if (type === "vendedor") { abrirPagina("area-publicar"); } else { const secao = document.getElementById("area-pedidos-procura"); const home = document.getElementById("area-produtos"); if (home) abrirPagina("area-produtos"); if (secao) { secao.hidden = false; secao.style.display = ""; secao.scrollIntoView({ behavior: "smooth", block: "start" }); } window.bisnoCarregarPedidosProcura?.(); }
+    if (type === "comprador") { const secao = document.getElementById("area-pedidos-procura"); const home = document.getElementById("area-produtos"); if (home) abrirPagina("area-produtos"); if (secao) { secao.hidden = false; secao.style.display = ""; secao.scrollIntoView({ behavior: "smooth", block: "start" }); } window.bisnoCarregarPedidosProcura?.(); }
   }));
   document.querySelectorAll("[data-menu-acao]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.menuAcao; fechar();
