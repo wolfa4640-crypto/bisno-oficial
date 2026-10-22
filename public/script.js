@@ -494,7 +494,33 @@ function abrirPagina(id) {
     else link.removeAttribute("aria-current");
   });
 
+  // Reintegra explicitamente o painel de publicação no contentor da conta.
+  // Alguns estilos/componentes antigos podem deixar a secção ou o contentor ocultos
+  // após uma navegação anterior; garantir ambos os estados evita um painel vazio.
+  if (id === "area-publicar" && autenticado) {
+    if (account) account.hidden = false;
+    if (publish) {
+      publish.hidden = false;
+      publish.style.removeProperty("display");
+      publish.setAttribute("aria-hidden", "false");
+    }
+    const formAnuncio = document.getElementById("form-anuncio");
+    if (formAnuncio) {
+      formAnuncio.hidden = false;
+      formAnuncio.style.removeProperty("display");
+    }
+  } else if (publish) {
+    publish.setAttribute("aria-hidden", String(publish.hidden));
+  }
+
   window.scrollTo({ top: 0, behavior: "smooth" });
+  if (id === "area-publicar" && autenticado) {
+    window.requestAnimationFrame(() => {
+      const formAnuncio = document.getElementById("form-anuncio");
+      formAnuncio?.scrollIntoView({ behavior: "smooth", block: "start" });
+      formAnuncio?.querySelector('input[name="name"]')?.focus({ preventScroll: true });
+    });
+  }
 }
 
 function mostrarAba(aba) {
