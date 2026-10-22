@@ -71,6 +71,24 @@
       opacity: .75;
       cursor: wait;
     }
+  
+    .botao-menu-superior{border:0;border-radius:50%;width:44px;height:44px;background:#252a33;color:inherit;font-size:1.35rem;cursor:pointer;flex-shrink:0}
+    .bisno-nav-inner .nav-publish{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+    .bisno-menu-overlay{position:fixed;z-index:10050;top:12px;right:12px;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;background:var(--painel,#fff);color:var(--texto,#171717);border:1px solid rgba(120,120,120,.28);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.28);padding:18px;display:flex;flex-direction:column;gap:8px}
+    .bisno-menu-overlay[hidden]{display:none}
+    .bisno-menu-overlay h2{margin:4px 0 12px;font-size:1.25rem}
+    .bisno-menu-overlay>button:not(.bisno-fechar-overlay){display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border:1px solid rgba(120,120,120,.2);border-radius:12px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+    .bisno-menu-overlay>button small{display:block;font-size:.78rem;opacity:.72;margin-left:auto}
+    .bisno-fechar-overlay{align-self:flex-end;border:0;background:transparent;color:inherit;font-size:1.7rem;cursor:pointer;line-height:1}
+    .bisno-plus-overlay{top:50%;right:50%;transform:translate(50%,-50%);width:min(380px,calc(100vw - 28px))}
+    .bisno-cover-preview{width:100%;height:120px;border-radius:12px;background:#e6e8eb center/cover no-repeat;margin:8px 0}
+    .bisno-cover-preview.tem-capa{background-size:cover}
+    .bisno-avatar-fallback#foto-perfil{object-fit:cover;border-radius:50%}
+    .bisno-pedido-imagem{display:block;width:100%;max-height:260px;object-fit:contain;border-radius:12px;margin:10px 0}
+    body.bisno-acessibilidade-grande{font-size:1.12em}
+    body.bisno-acessibilidade-grande button,body.bisno-acessibilidade-grande input,body.bisno-acessibilidade-grande textarea,body.bisno-acessibilidade-grande select{font-size:1.08em}
+    @media(max-width:600px){.topo-conteudo{gap:8px}.topo-slogan-secundario{display:none}.bisno-nav-inner{justify-content:space-around}.bisno-nav-inner>a,.bisno-nav-inner>.nav-publish{min-width:0;padding-left:8px;padding-right:8px}}
+
   </style>
   <script src="/script.js?v=20261022-wanted-stock-v1" defer></script>
   <script src="/pwa-register.js" defer></script>
