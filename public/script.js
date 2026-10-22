@@ -3043,7 +3043,12 @@ async function abrirDetalheLoja(id) {
  }catch(error){detail.innerHTML='<button type="button" class="botao-secundario" id="voltar-diretorio-lojas">← Voltar às lojas</button><p class="bisno-directory-error">'+escaparHTML(error.message||"Não foi possível abrir esta loja.")+'</p>';}
 }
 function configurarDiretorioLojas(){
- $("#form-pesquisa-lojas")?.addEventListener("submit",event=>{event.preventDefault();carregarDiretorioLojas(1);});
+ const painelPesquisa=$("#painel-pesquisa-lojas");
+ const botaoPesquisa=$("#botao-abrir-pesquisa-lojas");
+ const fecharPesquisa=()=>{if(painelPesquisa)painelPesquisa.hidden=true;if(botaoPesquisa)botaoPesquisa.setAttribute("aria-expanded","false");};
+ botaoPesquisa?.addEventListener("click",()=>{const abrir=!!painelPesquisa?.hidden;if(painelPesquisa)painelPesquisa.hidden=!abrir;botaoPesquisa.setAttribute("aria-expanded",String(abrir));if(abrir)$("#pesquisa-lojas")?.focus();});
+ $("#botao-fechar-pesquisa-lojas")?.addEventListener("click",fecharPesquisa);
+ $("#form-pesquisa-lojas")?.addEventListener("submit",event=>{event.preventDefault();carregarDiretorioLojas(1);fecharPesquisa();});
  $("#limpar-pesquisa-lojas")?.addEventListener("click",()=>{$("#pesquisa-lojas").value="";$("#filtro-cidade-lojas").value="";$("#filtro-categoria-lojas").value="";$("#ordenar-lojas").value="recent";carregarDiretorioLojas(1);});
  $("#lojas-pagina-anterior")?.addEventListener("click",()=>carregarDiretorioLojas(paginaDiretorioLojas-1));
  $("#lojas-pagina-seguinte")?.addEventListener("click",()=>carregarDiretorioLojas(paginaDiretorioLojas+1));
