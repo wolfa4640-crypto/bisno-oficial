@@ -3110,6 +3110,73 @@ function configurarBannerDestaque() {
   agendarProximo();
 }
 
+
+function configurarPedidosProcura() {
+  const form = document.getElementById("form-pedido-procura");
+  const lista = document.getElementById("lista-pedidos-procura");
+  const atualizar = document.getElementById("botao-atualizar-pedidos");
+  if (!form || !lista || form.dataset.configurado === "true") return;
+  form.dataset.configurado = "true";
+
+  async function carregar() {
+    lista.innerHTML = "<p>A carregar pedidos...</p>";
+    try {
+      const dados = await pedidoAPI("/api/wanted");
+      if (!dados.ads || !dados.ads.length) {
+        lista.innerHTML = "<p>Ainda não existem pedidos de procura. Sê o primeiro a publicar!</p>";
+        return;
+      }
+      lista.innerHTML = dados.ads.map(ad => {
+        const contacto = /^https:\/\/wa\.me\/[0-9]+\?/.test(ad.contact_url || "") ? ad.contact_url : "";
+        const meuPedido = Number(ad.user_id) === Number(obterIdUtilizador());
+        return `<article class="cartao-produto bisno-pedido-procura">
+          <h3>${escaparHTML(ad.product_name)}</h3>
+          <p>${escaparHTML(ad.description)}</p>
+          <p><strong>Local:</strong> ${escaparHTML(ad.city)} · <strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
+          <p><small>Publicado por ${escaparHTML(ad.buyer_name)}</small></p>
+          ${contacto ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer" aria-label="Contactar ${escaparHTML(ad.buyer_name)} pelo WhatsApp">☏ Contactar pelo WhatsApp</a>` : "<p>O comprador ainda não tem um contacto válido.</p>"}
+          ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
+        </article>`;
+      }).join("");
+    } catch (error) {
+      lista.innerHTML = "<p>Não foi possível carregar os pedidos. Tenta novamente.</p>";
+    }
+  }
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!exigirLogin()) return;
+    const data = new FormData(form);
+    const body = {
+      product_name: data.get("product_name"),
+      description: data.get("description"),
+      budget: data.get("budget") || null,
+      city: data.get("city")
+    };
+    const submit = form.querySelector('button[type="submit"]');
+    if (submit) submit.disabled = true;
+    try {
+      await pedidoAPI("/api/wanted", { method: "POST", body });
+      form.reset();
+      mostrarMensagem("Pedido de procura publicado!", "sucesso");
+      await carregar();
+    } catch (error) {
+      mostrarMensagem(error.message || "Não foi possível publicar o pedido.", "erro");
+    } finally { if (submit) submit.disabled = false; }
+  });
+  lista.addEventListener("click", async event => {
+    const button = event.target.closest("[data-encerrar-pedido]");
+    if (!button) return;
+    if (!confirm("Queres encerrar este pedido de procura?")) return;
+    try {
+      await pedidoAPI("/api/wanted/" + button.dataset.encerrarPedido, { method: "DELETE" });
+      mostrarMensagem("Pedido encerrado.", "sucesso");
+      await carregar();
+    } catch (error) { mostrarMensagem(error.message || "Não foi possível encerrar o pedido.", "erro"); }
+  });
+  atualizar?.addEventListener("click", carregar);
+  window.bisnoCarregarPedidosProcura = carregar;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
 
   // Mantém o conteúdo protegido enquanto a sessão é verificada.
@@ -3122,6 +3189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   configurarFormularios();
 
   configurarLoja();
+  configurarPedidosProcura();
   configurarDiretorioLojas();
   configurarPainelAdmin();
 
