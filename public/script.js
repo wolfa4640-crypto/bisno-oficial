@@ -3331,7 +3331,7 @@ function configurarPedidosProcura() {
       if (submit) { submit.disabled = false; submit.textContent = "＋ Publicar pedido"; }
     }
   });
-  lista.addEventListener("click", async event => {
+  document.addEventListener("click", async event => {
     const button = event.target.closest("[data-encerrar-pedido]");
     if (!button) return;
     if (!confirm("Queres encerrar este pedido de procura?")) return;
