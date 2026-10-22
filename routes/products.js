@@ -80,6 +80,17 @@ function validarTexto(valor, limite) {
   );
 }
 
+// Categorias dinâmicas com contagens reais, sem depender de opções fixas no HTML.
+router.get("/categories", async (_req,res) => {
+  try {
+    const categories = await db.prepare("SELECT category AS name, COUNT(*) AS products FROM products WHERE is_blocked=0 AND TRIM(category)<>'' GROUP BY category ORDER BY LOWER(category) ASC").all();
+    res.json({categories});
+  } catch (error) {
+    console.error("Erro ao carregar categorias:", error.message);
+    res.status(500).json({erro:"Não foi possível carregar as categorias."});
+  }
+});
+
 // ============================================
 // 1. CATÁLOGO PÚBLICO
 // GET /api/products
