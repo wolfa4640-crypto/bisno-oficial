@@ -112,6 +112,7 @@ router.get("/", async (req, res) => {
         products.neighborhood,
         products.whatsapp,
         products.image,
+        products.stock,
         products.created_at,
         users.name AS seller_name,
         users.avatar AS seller_avatar
@@ -211,6 +212,7 @@ router.get("/seller/:id", async (req, res) => {
         neighborhood,
         whatsapp,
         image,
+        stock,
         created_at
       FROM products
       WHERE user_id = ? AND is_blocked = 0
