@@ -189,4 +189,25 @@ router.patch("/products/:id/block", async (req,res) => {
   res.json({mensagem:blocked?"Anúncio suspenso.":"Anúncio reativado."});
 });
 
+
+router.get("/stores", async (_req,res) => {
+  const stores = await db.prepare(`SELECT s.id,s.user_id,s.name,s.description,s.city,s.is_active,s.created_at,
+    u.name AS owner_name,u.email AS owner_email,
+    (SELECT COUNT(*) FROM products p WHERE p.user_id=s.user_id AND p.is_blocked=0) AS product_count,
+    (SELECT COUNT(*) FROM store_follows f WHERE f.store_id=s.id) AS followers,
+    (SELECT COUNT(*) FROM store_views v WHERE v.store_id=s.id) AS views,
+    (SELECT COUNT(*) FROM store_contacts c WHERE c.store_id=s.id) AS contacts
+    FROM stores s JOIN users u ON u.id=s.user_id ORDER BY s.created_at DESC LIMIT 200`).all();
+  res.json({stores});
+});
+router.patch("/stores/:id/status", async (req,res) => {
+  const id=idOf(req.params.id), active=req.body?.active;
+  if(!id || typeof active!=="boolean") return res.status(400).json({erro:"Estado da loja inválido."});
+  const store=await db.prepare("SELECT id,name FROM stores WHERE id=?").get(id);
+  if(!store) return res.status(404).json({erro:"Loja não encontrada."});
+  await db.prepare("UPDATE stores SET is_active=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(active?1:0,id);
+  await log(req,active?"store.activate":"store.suspend","store",id,null);
+  res.json({mensagem:active?"Loja reativada.":"Loja suspensa.",active});
+});
+
 module.exports={router,exigirAdmin};
