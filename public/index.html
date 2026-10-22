@@ -155,6 +155,7 @@
       <a href="#area-mensagens" data-bisno-page="messages"><span class="nav-icon" aria-hidden="true">✉</span><span>Mensagens</span><span class="nav-badge" id="badge-mensagens" hidden>0</span></a>
       <a href="#area-publicar" data-bisno-page="publish" class="nav-publish" aria-label="Publicar anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></a>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
+      <a href="#area-diretorio-lojas" data-bisno-page="stores" aria-label="Explorar lojas"><span class="nav-icon" aria-hidden="true">▦</span><span>Lojas</span></a>
       <a href="#area-loja" data-bisno-page="store" aria-label="A minha loja"><span class="nav-icon" aria-hidden="true">▣</span><span>Loja</span></a>
       <a href="#area-meus-anuncios" data-bisno-page="listings" aria-label="Os meus anúncios"><span class="nav-icon" aria-hidden="true">▤</span><span>Os meus</span></a>
     </div>
@@ -602,6 +603,22 @@
       >
         <p>A carregar produtos...</p>
       </div>
+    </section>
+
+    <!-- DIRETÓRIO PROFISSIONAL DE LOJAS -->
+    <section id="area-diretorio-lojas" class="painel bisno-store-directory" hidden>
+      <div class="bisno-directory-hero"><span class="bisno-secao-kicker">Compra e venda em Angola</span><h1>Descobre lojas no Bisno</h1><p>Encontra vendedores, explora os seus catálogos e contacta-os diretamente.</p></div>
+      <form id="form-pesquisa-lojas" class="bisno-directory-filters">
+        <label for="pesquisa-lojas">Pesquisar lojas</label><input id="pesquisa-lojas" name="q" type="search" maxlength="100" placeholder="Nome da loja, vendedor ou descrição">
+        <label for="filtro-cidade-lojas">Província ou cidade</label><input id="filtro-cidade-lojas" name="city" type="search" maxlength="100" placeholder="Ex.: N'dalatando">
+        <label for="filtro-categoria-lojas">Categoria de produtos</label><select id="filtro-categoria-lojas" name="category"><option value="">Todas as categorias</option></select>
+        <label for="ordenar-lojas">Ordenar por</label><select id="ordenar-lojas" name="sort"><option value="recent">Mais recentes</option><option value="products">Mais produtos</option><option value="name">Nome da loja</option></select>
+        <button type="submit">Pesquisar lojas</button><button type="button" id="limpar-pesquisa-lojas" class="botao-secundario">Limpar filtros</button>
+      </form>
+      <p id="contagem-lojas" class="resultado-contagem" aria-live="polite">A preparar o diretório…</p>
+      <div id="lista-diretorio-lojas" class="bisno-directory-grid" aria-live="polite"><p>A carregar lojas…</p></div>
+      <div id="paginacao-lojas" class="bisno-directory-pagination" hidden><button type="button" id="lojas-pagina-anterior" class="botao-secundario">← Anterior</button><span id="lojas-pagina-info" aria-live="polite"></span><button type="button" id="lojas-pagina-seguinte" class="botao-secundario">Seguinte →</button></div>
+      <section id="detalhe-diretorio-loja" class="bisno-directory-detail" hidden aria-live="polite"></section>
     </section>
   </main>
 

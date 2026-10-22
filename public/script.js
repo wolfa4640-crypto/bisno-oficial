@@ -434,6 +434,7 @@ function abrirPagina(id) {
   const myAds = document.getElementById("area-meus-anuncios");
   const notifications = document.getElementById("area-notificacoes");
   const store = document.getElementById("area-loja");
+  const storeDirectory = document.getElementById("area-diretorio-lojas");
   const footer = document.querySelector("body > footer");
 
   const destinosConta = ["area-conta", "area-meus-anuncios", "area-publicar", "area-mensagens", "area-notificacoes", "area-loja"];
@@ -449,6 +450,7 @@ function abrirPagina(id) {
   if (myAds) myAds.hidden = !["area-conta", "area-meus-anuncios"].includes(id);
   if (notifications) notifications.hidden = id !== "area-notificacoes";
   if (store) store.hidden = id !== "area-loja";
+  if (storeDirectory) storeDirectory.hidden = id !== "area-diretorio-lojas";
   if (footer) footer.hidden = id !== "area-produtos";
 
   // Dentro do contentor da conta, mostrar somente a secção escolhida.
@@ -477,7 +479,8 @@ function abrirPagina(id) {
       (page === "publish" && id === "area-publicar") ||
       (page === "profile" && id === "area-conta") ||
       (page === "listings" && id === "area-meus-anuncios") ||
-      (page === "store" && id === "area-loja");
+      (page === "store" && id === "area-loja") ||
+      (page === "stores" && id === "area-diretorio-lojas");
     link.classList.toggle("is-active", active);
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
@@ -504,6 +507,10 @@ function configurarNavegacao() {
       evento.preventDefault();
       const page = link.dataset.bisnoPage;
       if (page === "home") abrirPagina("area-produtos");
+      else if (page === "stores") {
+        if (utilizadorAtual) { abrirPagina("area-diretorio-lojas"); carregarDiretorioLojas(); }
+        else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
+      }
       else if (page === "messages") {
         if (utilizadorAtual) { abrirPagina("area-mensagens"); atualizarConversas(); }
         else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
@@ -2910,6 +2917,54 @@ function configurarLoja() {
 
 
 
+
+let paginaDiretorioLojas = 1;
+let detalheLojaAtual = null;
+async function carregarCategoriasLojas() {
+ const select=$("#filtro-categoria-lojas");
+ if(!select||select.dataset.carregado==="true")return;
+ try{const data=await pedidoLoja("/api/stores/categories");const atual=select.value;select.innerHTML='<option value="">Todas as categorias</option>'+(data.categories||[]).map(c=>'<option value="'+escaparHTML(c.name)+'">'+escaparHTML(c.name)+' ('+numero(c.products)+')</option>').join("");select.value=atual;select.dataset.carregado="true";}catch(_){}
+}
+async function carregarDiretorioLojas(page=1) {
+ const list=$("#lista-diretorio-lojas"),count=$("#contagem-lojas"),pager=$("#paginacao-lojas"),detail=$("#detalhe-diretorio-loja");
+ if(!list||!count)return;
+ paginaDiretorioLojas=Math.max(1,page);if(detail){detail.hidden=true;detail.innerHTML="";}list.hidden=false;list.innerHTML="<p>A carregar lojas…</p>";count.textContent="A procurar lojas…";
+ await carregarCategoriasLojas();
+ const params=new URLSearchParams({q:$("#pesquisa-lojas")?.value.trim()||"",city:$("#filtro-cidade-lojas")?.value.trim()||"",category:$("#filtro-categoria-lojas")?.value||"",sort:$("#ordenar-lojas")?.value||"recent",page:String(paginaDiretorioLojas),limit:"12"});
+ try{
+  const data=await pedidoLoja("/api/stores/directory?"+params.toString()),stores=data.stores||[];
+  count.textContent=data.total?data.total+(data.total===1?" loja encontrada":" lojas encontradas"):"Ainda não existem lojas que correspondam à pesquisa.";
+  list.innerHTML=stores.length?stores.map(store=>{
+   const initial=(store.name||"B").trim().charAt(0).toUpperCase();
+   const avatar=store.avatar?'<img src="'+escaparHTML(obterImagem(store.avatar))+'" alt="" loading="lazy">':'<span aria-hidden="true">'+escaparHTML(initial)+'</span>';
+   const cover=store.cover?'<img class="bisno-directory-cover" src="'+escaparHTML(obterImagem(store.cover))+'" alt="" loading="lazy">':'<div class="bisno-directory-cover bisno-directory-cover-empty" aria-hidden="true"></div>';
+   return '<article class="bisno-directory-card">'+cover+'<div class="bisno-directory-card-body"><div class="bisno-directory-avatar">'+avatar+'</div><h2>'+escaparHTML(store.name)+'</h2><p class="bisno-directory-location">⌖ '+escaparHTML(store.city||"Angola")+'</p><p class="bisno-directory-description">'+escaparHTML(store.description||"Descobre os produtos desta loja.")+'</p><div class="bisno-directory-meta"><span>'+numero(store.product_count).toLocaleString("pt-AO")+' produtos</span><span>'+numero(store.followers).toLocaleString("pt-AO")+' seguidores</span></div><button type="button" data-visitar-loja="'+escaparHTML(store.id)+'">Visitar loja →</button></div></article>';
+  }).join(""):'<div class="bisno-directory-empty"><strong>Nenhuma loja encontrada</strong><p>Experimenta alterar a pesquisa ou limpar os filtros.</p></div>';
+  if(pager){pager.hidden=Number(data.pages||0)<=1;$("#lojas-pagina-info").textContent="Página "+(data.page||1)+" de "+(data.pages||1);$("#lojas-pagina-anterior").disabled=Number(data.page||1)<=1;$("#lojas-pagina-seguinte").disabled=Number(data.page||1)>=Number(data.pages||1);}
+ }catch(error){list.innerHTML='<p class="bisno-directory-error">'+escaparHTML(error.message||"Não foi possível carregar as lojas.")+'</p>';count.textContent="Erro ao carregar o diretório.";if(pager)pager.hidden=true;}
+}
+async function abrirDetalheLoja(id) {
+ const list=$("#lista-diretorio-lojas"),detail=$("#detalhe-diretorio-loja");if(!detail)return;detail.hidden=false;detail.innerHTML="<p>A carregar a loja…</p>";if(list)list.hidden=true;if($("#paginacao-lojas"))$("#paginacao-lojas").hidden=true;
+ try{
+  const data=await pedidoLoja("/api/stores/"+encodeURIComponent(id)),store=data.store;if(!store)throw new Error("Loja não encontrada.");detalheLojaAtual=store;
+  const products=data.products||[],avatar=store.avatar?'<img src="'+escaparHTML(obterImagem(store.avatar))+'" alt="">':'<span aria-hidden="true">'+escaparHTML((store.name||"B").charAt(0).toUpperCase())+'</span>';
+  detail.innerHTML='<button type="button" class="botao-secundario" id="voltar-diretorio-lojas">← Voltar às lojas</button><div class="bisno-store-profile-hero">'+(store.cover?'<img class="bisno-store-profile-cover" src="'+escaparHTML(obterImagem(store.cover))+'" alt="" loading="lazy">':'<div class="bisno-store-profile-cover bisno-directory-cover-empty"></div>')+'<div class="bisno-store-profile-heading"><div class="bisno-directory-avatar bisno-directory-avatar-large">'+avatar+'</div><div><span class="bisno-secao-kicker">Loja no Bisno</span><h2>'+escaparHTML(store.name)+'</h2><p>'+escaparHTML(store.description||"Bem-vindo à nossa loja.")+'</p><small>⌖ '+escaparHTML(store.city||"Angola")+' · Desde '+escaparHTML(String(store.created_at||"").slice(0,10)||"—")+'</small></div></div></div><div class="bisno-store-profile-actions"><button type="button" id="seguir-diretorio-loja" aria-pressed="'+String(Boolean(data.followed))+'">'+(data.followed?"✓ A seguir":"＋ Seguir loja")+'</button><button type="button" id="partilhar-diretorio-loja" class="botao-secundario">↗ Partilhar loja</button><span id="seguidores-diretorio-loja">'+numero(data.stats?.followers).toLocaleString("pt-AO")+' seguidores</span></div><div class="bisno-store-products-heading"><h3>Produtos desta loja</h3><span>'+products.length+' produtos apresentados</span></div><div class="bisno-directory-products">'+(products.length?products.map(p=>'<article class="bisno-directory-product">'+(p.image?'<img src="'+escaparHTML(obterImagem(p.image))+'" alt="" loading="lazy">':'<div class="bisno-directory-product-placeholder">Bisno</div>')+'<div><h4>'+escaparHTML(p.name)+'</h4><strong>'+formatarPreco(p.price)+'</strong><p>'+escaparHTML(p.category||"Sem categoria")+' · '+escaparHTML(p.condition||"")+'</p><p>'+escaparHTML(p.city||store.city||"Angola")+'</p>'+(p.whatsapp?'<a class="bisno-directory-contact" href="https://wa.me/'+escaparHTML(String(p.whatsapp).replace(/\D/g,""))+'" target="_blank" rel="noopener noreferrer" data-store-contact="'+escaparHTML(p.id)+'">Contactar vendedor</a>':'')+'</div></article>').join(""):'<p class="bisno-directory-empty">Esta loja ainda não tem produtos disponíveis.</p>')+'</div>';
+ }catch(error){detail.innerHTML='<button type="button" class="botao-secundario" id="voltar-diretorio-lojas">← Voltar às lojas</button><p class="bisno-directory-error">'+escaparHTML(error.message||"Não foi possível abrir esta loja.")+'</p>';}
+}
+function configurarDiretorioLojas(){
+ $("#form-pesquisa-lojas")?.addEventListener("submit",event=>{event.preventDefault();carregarDiretorioLojas(1);});
+ $("#limpar-pesquisa-lojas")?.addEventListener("click",()=>{$("#pesquisa-lojas").value="";$("#filtro-cidade-lojas").value="";$("#filtro-categoria-lojas").value="";$("#ordenar-lojas").value="recent";carregarDiretorioLojas(1);});
+ $("#lojas-pagina-anterior")?.addEventListener("click",()=>carregarDiretorioLojas(paginaDiretorioLojas-1));
+ $("#lojas-pagina-seguinte")?.addEventListener("click",()=>carregarDiretorioLojas(paginaDiretorioLojas+1));
+ $("#lista-diretorio-lojas")?.addEventListener("click",event=>{const b=event.target.closest("[data-visitar-loja]");if(b)abrirDetalheLoja(b.dataset.visitarLoja);});
+ $("#detalhe-diretorio-loja")?.addEventListener("click",async event=>{
+  if(event.target.closest("#voltar-diretorio-lojas")){detalheLojaAtual=null;carregarDiretorioLojas(paginaDiretorioLojas);return;}
+  if(event.target.closest("#partilhar-diretorio-loja")&&detalheLojaAtual){const url=window.location.origin+"/?loja="+encodeURIComponent(detalheLojaAtual.id);try{if(navigator.share)await navigator.share({title:detalheLojaAtual.name,text:"Visita esta loja no Bisno",url});else{await navigator.clipboard.writeText(url);mostrarMensagem("Ligação da loja copiada.","sucesso");}}catch(error){if(error.name!=="AbortError")mostrarMensagem("Não foi possível partilhar a loja.","erro");}return;}
+  if(event.target.closest("#seguir-diretorio-loja")&&detalheLojaAtual){const b=$("#seguir-diretorio-loja");b.disabled=true;try{const data=await pedidoLoja("/api/stores/"+encodeURIComponent(detalheLojaAtual.id)+"/follow",{method:"POST"});b.textContent=data.followed?"✓ A seguir":"＋ Seguir loja";b.setAttribute("aria-pressed",String(Boolean(data.followed)));$("#seguidores-diretorio-loja").textContent=numero(data.followers).toLocaleString("pt-AO")+" seguidores";}catch(error){mostrarMensagem(error.message||"Não foi possível seguir a loja.","erro");}finally{b.disabled=false;}return;}
+  const contact=event.target.closest("[data-store-contact]");if(contact&&detalheLojaAtual)pedidoLoja("/api/stores/"+encodeURIComponent(detalheLojaAtual.id)+"/contact",{method:"POST",body:JSON.stringify({channel:"whatsapp",productId:contact.dataset.storeContact})}).catch(()=>{});
+ });
+}
+
 async function carregarPainelAdmin() {
   const statsEl = $("#admin-estatisticas"), usersEl = $("#admin-utilizadores"), productsEl = $("#admin-anuncios"), recoveriesEl = $("#admin-recuperacoes");
   if (!statsEl || !usersEl || !productsEl) return;
@@ -3028,6 +3083,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   configurarFormularios();
 
   configurarLoja();
+  configurarDiretorioLojas();
   configurarPainelAdmin();
 
   configurarFiltros();
@@ -3043,8 +3099,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
   await verificarSessao();
-  if (utilizadorAtual) abrirPagina("area-produtos");
-  else abrirPagina("area-autenticacao");
+  if (utilizadorAtual) {
+    const lojaPartilhada = new URLSearchParams(window.location.search).get("loja");
+    if (lojaPartilhada) { abrirPagina("area-diretorio-lojas"); await abrirDetalheLoja(lojaPartilhada); }
+    else abrirPagina("area-produtos");
+  } else abrirPagina("area-autenticacao");
   atualizarAreasSociais();
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 

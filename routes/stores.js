@@ -59,9 +59,44 @@ async function storeSummary(storeId) {
   (SELECT COUNT(*) FROM store_views WHERE store_id=?) AS views,
   (SELECT COUNT(*) FROM store_follows WHERE store_id=?) AS followers,
   (SELECT COUNT(*) FROM store_contacts WHERE store_id=?) AS contacts,
-  (SELECT COUNT(*) FROM products p JOIN stores s ON s.user_id=p.user_id WHERE s.id=?) AS products
+  (SELECT COUNT(*) FROM products p JOIN stores s ON s.user_id=p.user_id WHERE s.id=? AND p.is_blocked=0) AS products
  `).get(storeId,storeId,storeId,storeId);
 }
+
+
+// Diretório de lojas: os dados e as contagens são calculados a partir do PostgreSQL.
+// O diretório mantém a regra do Bisno de exigir sessão para consultar o marketplace.
+router.get('/directory', async (req,res) => {
+ try {
+  const q=clean(req.query.q,100), city=clean(req.query.city,100), category=clean(req.query.category,80);
+  const page=Math.max(1,Math.min(10000,Number.parseInt(req.query.page,10)||1));
+  const limit=Math.max(1,Math.min(30,Number.parseInt(req.query.limit,10)||12));
+  const conditions=['s.is_active=1'];
+  const params=[];
+  if(q){conditions.push("(s.name ILIKE ? OR s.description ILIKE ? OR s.city ILIKE ? OR u.name ILIKE ?)"); const term='%'+q+'%'; params.push(term,term,term,term);}
+  if(city){conditions.push("s.city ILIKE ?");params.push('%'+city+'%');}
+  if(category){conditions.push("EXISTS (SELECT 1 FROM products pc WHERE pc.user_id=s.user_id AND pc.is_blocked=0 AND pc.category ILIKE ?)");params.push(category);}
+  const where=conditions.join(' AND ');
+  const sort=({recent:'s.created_at DESC, s.id DESC',products:'product_count DESC, s.created_at DESC',name:'s.name ASC, s.id DESC'})[req.query.sort]||'s.created_at DESC, s.id DESC';
+  const totalRow=await db.prepare(`SELECT COUNT(*) AS total FROM stores s JOIN users u ON u.id=s.user_id WHERE ${where}`).get(...params);
+  const stores=await db.prepare(`SELECT s.id,s.user_id,s.name,s.description,s.city,s.avatar,s.cover,s.created_at,
+    u.name AS owner_name,
+    (SELECT COUNT(*) FROM products p WHERE p.user_id=s.user_id AND p.is_blocked=0) AS product_count,
+    (SELECT COUNT(*) FROM store_follows f WHERE f.store_id=s.id) AS followers
+    FROM stores s JOIN users u ON u.id=s.user_id WHERE ${where}
+    ORDER BY ${sort} LIMIT ? OFFSET ?`).all(...params,limit,(page-1)*limit);
+  res.json({stores,page,limit,total:Number(totalRow?.total||0),pages:Math.ceil(Number(totalRow?.total||0)/limit)});
+ } catch(error){ console.error('Erro no diretório de lojas:',error.message);res.status(500).json({erro:'Não foi possível carregar as lojas.'}); }
+});
+router.get('/categories', async (_req,res) => {
+ try {
+  const categories=await db.prepare(`SELECT p.category AS name, COUNT(*) AS products
+    FROM products p JOIN stores s ON s.user_id=p.user_id
+    WHERE s.is_active=1 AND p.is_blocked=0 AND TRIM(p.category)<>''
+    GROUP BY p.category ORDER BY LOWER(p.category) ASC`).all();
+  res.json({categories});
+ } catch(error){ console.error('Erro nas categorias das lojas:',error.message);res.status(500).json({erro:'Não foi possível carregar as categorias.'}); }
+});
 
 router.get('/mine', exigirLogin, async (req,res) => {
  const store=await getStore.get(req.session.userId);
@@ -104,7 +139,7 @@ router.get('/:id', async (req,res) => {
  const id=validId(req.params.id); if(!id) return res.status(400).json({erro:'Loja inválida.'});
  const store=await db.prepare(`SELECT s.id,s.user_id,s.name,s.description,s.city,s.avatar,s.cover,s.created_at,u.name AS owner_name,u.avatar AS owner_avatar FROM stores s JOIN users u ON u.id=s.user_id WHERE s.id=? AND s.is_active=1`).get(id);
  if(!store) return res.status(404).json({erro:'Loja não encontrada.'});
- const products=await db.prepare(`SELECT id,user_id,name,description,price,condition,category,city,neighborhood,image,created_at FROM products WHERE user_id=? ORDER BY id DESC LIMIT 100`).all(store.user_id);
+ const products=await db.prepare(`SELECT id,user_id,name,description,price,condition,category,city,neighborhood,image,whatsapp,created_at FROM products WHERE user_id=? AND is_blocked=0 ORDER BY id DESC LIMIT 100`).all(store.user_id);
  const followed=req.session.userId ? !!await db.prepare('SELECT 1 FROM store_follows WHERE store_id=? AND follower_user_id=?').get(id,req.session.userId) : false;
  res.json({store,products,followed,stats:{followers:(await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id)).total}});
 });
