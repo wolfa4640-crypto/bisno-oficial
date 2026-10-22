@@ -27,7 +27,7 @@
 
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/bisno-pro.css?v=20261022-store-directory-v2">
-  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261022-store-search-v1">
+  <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261023-buyer-publish-v1">
   <style>
 
     .bisno-store-search-toolbar{display:flex;justify-content:flex-end;align-items:center;width:100%;max-width:100%;min-width:0;margin:0 0 14px;box-sizing:border-box}
@@ -161,7 +161,7 @@
     .admin-acoes-compact{display:flex;gap:6px;flex-shrink:0}.admin-acoes-compact button{min-width:38px;min-height:38px;padding:6px}
     #form-pedido-procura button[type="submit"]:disabled{opacity:.65;cursor:wait}
   </style>
-  <script src="/script.js?v=20261022-store-search-v1" defer></script>
+  <script src="/script.js?v=20261023-buyer-publish-v1" defer></script>
   <script src="/pwa-register.js" defer></script>
 
   <style id="bisno-nav-publish-emphasis-v1">
@@ -754,17 +754,20 @@
       <section id="area-pedidos-procura" class="painel-secundario" hidden aria-labelledby="titulo-pedidos-procura">
         <h2 id="titulo-pedidos-procura">Pedidos de procura</h2>
         <p>Publica o que precisas de comprar. Os vendedores podem contactar-te diretamente pelo WhatsApp.</p>
-        <form id="form-pedido-procura">
-          <label for="pedido-procura-produto">O que procuras?</label>
-          <input id="pedido-procura-produto" name="product_name" maxlength="120" placeholder="Ex.: computador portátil" required>
-          <label for="pedido-procura-descricao">Detalhes</label>
-          <textarea id="pedido-procura-descricao" name="description" maxlength="2000" rows="3" placeholder="Indica características, estado ou outras preferências." required></textarea>
+        <form id="form-pedido-procura" enctype="multipart/form-data">
+          <label for="pedido-procura-produto">Nome do produto que procuras</label>
+          <input id="pedido-procura-produto" name="product_name" maxlength="120" autocomplete="off" placeholder="Ex.: computador portátil HP" required>
+          <label for="pedido-procura-descricao">Descrição e características</label>
+          <textarea id="pedido-procura-descricao" name="description" maxlength="2000" rows="4" placeholder="Indica marca, estado, características e outros detalhes importantes." required></textarea>
           <label for="pedido-procura-orcamento">Orçamento máximo (Kz, opcional)</label>
-          <input id="pedido-procura-orcamento" name="budget" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 150000">
-          <label for="pedido-procura-imagem">Imagem (opcional)</label><input id="pedido-procura-imagem" name="image" type="file" accept="image/jpeg,image/png,image/webp">
-          <label for="pedido-procura-cidade">Cidade ou província</label>
-          <input id="pedido-procura-cidade" name="city" maxlength="100" placeholder="Ex.: N'dalatando" required>
-          <button type="submit" aria-label="Publicar pedido de procura">＋ Publicar pedido</button>
+          <input id="pedido-procura-orcamento" name="budget" type="number" min="0" max="1000000000000" step="1" inputmode="numeric" placeholder="Ex.: 150000">
+          <label for="pedido-procura-cidade">Província ou cidade</label>
+          <input id="pedido-procura-cidade" name="city" maxlength="100" autocomplete="address-level2" placeholder="Ex.: N'dalatando" required>
+          <label for="pedido-procura-imagem">Fotografia de referência (opcional)</label>
+          <input id="pedido-procura-imagem" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="pedido-procura-imagem-ajuda">
+          <small id="pedido-procura-imagem-ajuda">Podes publicar sem fotografia. Se adicionares uma, deve ser JPG, PNG ou WEBP e ter no máximo 5 MB.</small>
+          <div id="pedido-procura-preview" hidden aria-live="polite"></div>
+          <button type="submit" id="botao-publicar-pedido" aria-label="Publicar pedido de procura">＋ Publicar pedido</button>
         </form>
         <button type="button" id="botao-atualizar-pedidos" class="botao-secundario" aria-label="Atualizar pedidos">↻</button>
         <div id="lista-pedidos-procura" class="lista-produtos" aria-live="polite"><p>Carrega os pedidos para ver o que as pessoas procuram.</p></div>
