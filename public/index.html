@@ -30,7 +30,12 @@
   <link rel="stylesheet" href="/bisno-design-refresh.css?v=20261022-store-search-v1">
   <style>
 
-    .bisno-store-search-toolbar{display:flex;justify-content:flex-end;margin:0 0 14px}
+    .bisno-store-search-toolbar{display:flex;justify-content:flex-end;align-items:center;width:100%;max-width:100%;min-width:0;margin:0 0 14px;box-sizing:border-box}
+    .bisno-store-search-toolbar .botao-abrir-pesquisa{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;max-width:100%;min-width:0;padding:10px 14px;border:1px solid #d7e3db;border-radius:14px;background:#fff;color:#176b45;font-weight:750;box-shadow:0 3px 12px rgba(18,65,42,.08);white-space:nowrap;box-sizing:border-box}
+    .bisno-store-search-toolbar .botao-abrir-pesquisa span{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis}
+    .bisno-store-search-toolbar .nav-svg-icon{width:21px;height:21px;flex:0 0 21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    @media(max-width:420px){.bisno-store-search-toolbar{justify-content:flex-start}.bisno-store-search-toolbar .botao-abrir-pesquisa{gap:7px;min-height:42px;padding:9px 12px;font-size:14px}.bisno-store-search-toolbar .nav-svg-icon{width:20px;height:20px;flex-basis:20px}}
+
     .bisno-store-search-toolbar .botao-abrir-pesquisa{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;border:1px solid #d7e3db;border-radius:14px;background:#fff;color:#176b45;font-weight:750;box-shadow:0 3px 12px rgba(18,65,42,.08)}
     .bisno-store-search-toolbar .nav-svg-icon{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
     .bisno-store-search-panel{margin:0 0 16px;padding:14px;border:1px solid #dce7df;border-radius:16px;background:var(--fundo-cartao,#fff);box-shadow:0 8px 26px rgba(20,50,35,.10)}
