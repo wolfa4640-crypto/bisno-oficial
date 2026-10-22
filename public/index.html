@@ -424,6 +424,9 @@
           <input id="loja-nome" name="name" type="text" maxlength="80" placeholder="Ex.: Roger Tech" required>
           <label for="loja-descricao">Descrição</label>
           <textarea id="loja-descricao" name="description" rows="3" maxlength="500" placeholder="O que vendes? O que torna a tua loja especial?"></textarea>
+          <label for="loja-imagem-marca">Imagem da marca / logótipo (URL HTTPS)</label>
+          <input id="loja-imagem-marca" name="brand_image" type="url" maxlength="1000" placeholder="https://...">
+          <p>Usa um link HTTPS direto para a imagem do logótipo.</p>
           <label for="loja-cidade">Cidade ou província</label>
           <input id="loja-cidade" name="city" type="text" maxlength="100" placeholder="Ex.: N'dalatando">
           <button type="submit" id="botao-guardar-loja">Ativar a minha loja</button>
@@ -484,6 +487,9 @@
             required
           >
 
+          <label for="anuncio-stock">Quantidade em stock</label>
+          <input id="anuncio-stock" name="stock" type="number" min="0" max="1000000" step="1" value="1" required>
+
           <label for="anuncio-estado">Estado do produto</label>
           <select id="anuncio-estado" name="condition" required>
             <option value="">Seleciona o estado</option>
@@ -531,7 +537,7 @@
             required
           >
 
-          <label for="anuncio-imagem">Fotografia do produto</label>
+          <label for="anuncio-imagem">📷 Fotografia do produto</label>
           <input
             id="anuncio-imagem"
             name="image"
@@ -539,7 +545,7 @@
             accept="image/jpeg,image/png,image/webp"
           >
 
-          <button type="submit">Publicar anúncio</button>
+          <button type="submit" aria-label="Publicar anúncio">＋</button>
         </form>
       </section>
 
