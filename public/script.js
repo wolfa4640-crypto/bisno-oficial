@@ -612,14 +612,13 @@ function atualizarPerfil() {
 
   const foto = $("#foto-perfil");
   const semFoto = $("#perfil-sem-foto");
-  // Perfil por iniciais: não exige upload nem armazenamento de fotografias.
-  if (foto) { foto.hidden = true; foto.removeAttribute("src"); }
-  if (semFoto) {
-    const nome = String(nomeUtilizadorAtual() || utilizadorAtual.name || "").trim();
-    semFoto.textContent = nome ? Array.from(nome)[0].toLocaleUpperCase("pt-AO") : "?";
-    semFoto.hidden = false;
-    semFoto.setAttribute("aria-label", nome ? "Inicial do nome " + nome : "Inicial do utilizador");
+  if (foto && utilizadorAtual.avatar) { foto.src = obterImagem(utilizadorAtual.avatar); foto.hidden = false; if (semFoto) semFoto.hidden = true; }
+  else {
+    if (foto) { foto.hidden = true; foto.removeAttribute("src"); }
+    if (semFoto) { const nome = String(nomeUtilizadorAtual() || utilizadorAtual.name || "").trim(); semFoto.textContent = nome ? Array.from(nome)[0].toLocaleUpperCase("pt-AO") : "?"; semFoto.hidden = false; }
   }
+  const cover = $("#perfil-capa-preview");
+  if (cover) { cover.style.backgroundImage = utilizadorAtual.cover ? 'url("' + obterImagem(utilizadorAtual.cover).replace(/"/g, "%22") + '")' : ""; cover.classList.toggle("tem-capa", Boolean(utilizadorAtual.cover)); }
 
   definirTexto("#perfil-nome", nomeUtilizadorAtual());
 
@@ -2958,12 +2957,20 @@ function configurarLoja() {
   $("#form-loja")?.addEventListener("submit", async evento => {
     evento.preventDefault();
     const form = evento.currentTarget, existente = $("#estado-loja")?.classList.contains("ativa");
-    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim(), brand_image: form.elements.brand_image?.value.trim() || "" };
+    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim() };
     const botao = $("#botao-guardar-loja");
     if (botao) { botao.disabled = true; botao.textContent = "A guardar…"; }
     try {
       const data = await pedidoLoja(existente ? "/api/stores/mine" : "/api/stores/activate", { method: existente ? "PATCH" : "POST", body: JSON.stringify(payload) });
       preencherPainelLoja(data);
+      const logoFile = $("#loja-imagem-marca")?.files?.[0], coverFile = $("#loja-imagem-capa")?.files?.[0];
+      if (logoFile || coverFile) {
+        if ([logoFile, coverFile].filter(Boolean).some(file => file.size > LIMITE_IMAGEM)) throw new Error("Cada imagem deve ter no máximo 5 MB.");
+        const images = new FormData(); if (logoFile) images.append("logo", logoFile); if (coverFile) images.append("cover", coverFile);
+        const updated = await pedidoAPI("/api/stores/media", { method: "POST", body: images });
+        preencherPainelLoja(updated);
+        form.reset();
+      }
       mostrarMensagem(existente ? "A tua loja foi atualizada." : "A tua loja foi ativada com sucesso.", "sucesso");
     } catch (erro) { mostrarMensagem(erro.message || "Não foi possível guardar a loja.", "erro"); }
     finally { if (botao) { botao.disabled = false; botao.textContent = existente ? "Guardar alterações" : "Ativar a minha loja"; } }
