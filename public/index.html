@@ -253,7 +253,6 @@
     <div class="bisno-nav-inner">
       <a href="#area-produtos" data-bisno-page="home" class="is-active"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></a>
       
-      <button type="button" data-abrir-publicacao class="nav-publish" aria-label="Escolher tipo de anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></button>
       <button type="button" class="nav-social" data-menu-acao="notifications" aria-label="Notificações" title="Notificações"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
       <button type="button" class="nav-social nav-messages" data-menu-acao="messages" aria-label="Mensagens" title="Mensagens"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg><span class="nav-social-label">Mensagens</span><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
@@ -277,7 +276,6 @@
   <div id="menu-publicar-overlay" class="bisno-menu-overlay bisno-plus-overlay" hidden>
     <button type="button" class="bisno-fechar-overlay" data-fechar-overlay aria-label="Fechar publicação">×</button>
     <h2>O que queres publicar?</h2>
-    <button type="button" data-publicar-tipo="vendedor">🛍️ Anúncio de vendedor <small>Publicar um produto para venda</small></button>
     <button type="button" data-publicar-tipo="comprador">🔎 Anúncio de comprador <small>Publicar texto ou imagem do que procuras</small></button>
   </div>
 
@@ -563,107 +561,7 @@
 
       <hr>
 
-      <!-- PUBLICAR ANÚNCIO -->
-      <section id="area-publicar" class="painel-secundario">
-        <h2>Publicar um anúncio</h2>
-        <p>
-          Apresenta o teu produto e permite que compradores
-          entrem em contacto contigo.
-        </p>
-
-        <form id="form-anuncio" enctype="multipart/form-data">
-          <label for="anuncio-nome">Nome do produto</label>
-          <input
-            id="anuncio-nome"
-            name="name"
-            type="text"
-            placeholder="Ex.: Samsung Galaxy A14"
-            required
-          >
-
-          <label for="anuncio-descricao">Descrição</label>
-          <textarea
-            id="anuncio-descricao"
-            name="description"
-            rows="4"
-            placeholder="Descreve o estado e as características do produto."
-            required
-          ></textarea>
-
-          <label for="anuncio-preco">Preço em Kz</label>
-          <input
-            id="anuncio-preco"
-            name="price"
-            type="number"
-            min="0"
-            step="1"
-            max="1000000000000"
-            inputmode="numeric"
-            placeholder="Ex.: 85000"
-            required
-          >
-
-          <label for="anuncio-stock">Quantidade em stock</label>
-          <input id="anuncio-stock" name="stock" type="number" min="0" max="1000000" step="1" value="1" required>
-
-          <label for="anuncio-estado">Estado do produto</label>
-          <select id="anuncio-estado" name="condition" required>
-            <option value="">Seleciona o estado</option>
-            <option value="Novo">Novo</option>
-            <option value="Usado">Usado</option>
-          </select>
-
-          <label for="anuncio-categoria">Categoria</label>
-          <select id="anuncio-categoria" name="category" required>
-            <option value="">Seleciona a categoria</option>
-            <option value="Telemóveis">Telemóveis</option>
-            <option value="Informática">Informática</option>
-            <option value="Electrodomésticos">Electrodomésticos</option>
-            <option value="Moda">Moda</option>
-            <option value="Veículos">Veículos</option>
-            <option value="Casa e Jardim">Casa e Jardim</option>
-            <option value="Desporto">Desporto</option>
-            <option value="Outros">Outros</option>
-          </select>
-
-          <label for="anuncio-cidade">Província ou cidade</label>
-          <input
-            id="anuncio-cidade"
-            name="city"
-            type="text"
-            placeholder="Ex.: Luanda"
-            required
-          >
-
-          <label for="anuncio-bairro">Bairro</label>
-          <input
-            id="anuncio-bairro"
-            name="neighborhood"
-            type="text"
-            placeholder="Ex.: Maianga"
-            required
-          >
-
-          <label for="anuncio-whatsapp">Número de WhatsApp</label>
-          <input
-            id="anuncio-whatsapp"
-            name="whatsapp"
-            type="tel"
-            placeholder="Ex.: 923000000"
-            required
-          >
-
-          <label for="anuncio-imagem">📷 Fotografia do produto</label>
-          <input
-            id="anuncio-imagem"
-            name="image"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-          >
-
-          <button type="submit" aria-label="Publicar anúncio">＋ Publicar anúncio</button>
-        </form>
-      </section>
+      <!-- Publicação de anúncios de vendedores removida. -->
 
       <button type="button" id="botao-sair">
         Terminar sessão
@@ -678,7 +576,7 @@
         <div class="bisno-banner-texto" aria-live="polite" aria-atomic="true">
           <span class="bisno-banner-etiqueta" id="bisno-banner-etiqueta">O teu mercado, num só lugar</span>
           <h2 id="bisno-banner-titulo">Encontra. Compara. Compra.</h2>
-          <p id="bisno-banner-descricao">Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto.</p>
+          <p id="bisno-banner-descricao">Descobre anúncios recentes de vários vendedores em Angola e encontra o que procuras.</p>
           <div class="bisno-banner-indicadores" role="group" aria-label="Escolher destaque">
             <button type="button" class="is-active" data-banner-slide="0" aria-label="Destaque 1" aria-pressed="true"></button>
             <button type="button" data-banner-slide="1" aria-label="Destaque 2" aria-pressed="false"></button>
@@ -686,7 +584,6 @@
             <button type="button" data-banner-slide="3" aria-label="Destaque 4" aria-pressed="false"></button>
           </div>
         </div>
-        <a href="#area-publicar" data-bisno-page="publish" class="bisno-banner-botao">＋ Publicar anúncio</a>
       </aside>
       <section class="bisno-categorias-rapidas" aria-labelledby="titulo-categorias-rapidas">
         <div class="bisno-categorias-cabecalho">
