@@ -137,6 +137,8 @@ test("PostgreSQL mantém registo, login, sessão, anúncio, consulta e eliminaç
   await db.prepare("INSERT INTO site_settings(key,value,updated_at) VALUES(?,?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=CURRENT_TIMESTAMP").run("test_phrases", JSON.stringify(phrases));
   const savedSettings = await db.prepare("SELECT value FROM site_settings WHERE key=?").get("test_phrases");
   assert.deepEqual(savedSettings.value, phrases, "definições sem coluna id devem poder ser guardadas e consultadas");
+  const groupedDate = await db.prepare("SELECT CAST(created_at AS DATE) AS day, COUNT(*) AS count FROM users GROUP BY CAST(created_at AS DATE)").all();
+  assert.ok(Array.isArray(groupedDate), "consulta de datas usada nas estatísticas administrativas deve funcionar no PostgreSQL");
 });
 
 test.after(async () => {

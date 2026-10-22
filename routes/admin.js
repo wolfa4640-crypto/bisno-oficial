@@ -40,8 +40,8 @@ router.get("/stats",async (req,res)=>{
   users30d:await n("SELECT COUNT(*) n FROM users WHERE datetime(created_at)>=datetime('now','-30 days')"),
   blockedUsers:await n("SELECT COUNT(*) n FROM users WHERE is_blocked=1"),products:await n("SELECT COUNT(*) n FROM products"),
   activeProducts:await n("SELECT COUNT(*) n FROM products WHERE is_blocked=0"),blockedProducts:await n("SELECT COUNT(*) n FROM products WHERE is_blocked=1")},
-  registrations:await db.prepare("SELECT date(created_at) day,COUNT(*) count FROM users WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all(),
-  publications:await db.prepare("SELECT date(created_at) day,COUNT(*) count FROM products WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY date(created_at) ORDER BY day").all()});
+  registrations:await db.prepare("SELECT CAST(created_at AS DATE) day,COUNT(*) count FROM users WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY CAST(created_at AS DATE) ORDER BY day").all(),
+  publications:await db.prepare("SELECT CAST(created_at AS DATE) day,COUNT(*) count FROM products WHERE datetime(created_at)>=datetime('now','-29 days') GROUP BY CAST(created_at AS DATE) ORDER BY day").all()});
 });
 router.get("/users",async (req,res)=>{
  const page=pageOf(req.query.page),limit=Math.min(pageOf(req.query.limit||20),100),search=String(req.query.search||"").trim().slice(0,120),status=String(req.query.status||"");
