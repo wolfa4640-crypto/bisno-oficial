@@ -1605,6 +1605,7 @@ async function abrirPerfilPublico(id) {
     area.innerHTML = `
 
       <button type="button" id="voltar-perfil-publico">← Voltar aos produtos</button>
+      <div class="bisno-perfil-capa bisno-perfil-capa-publica" style="${vendedorPublicoAtual?.cover ? 'background-image:url(' + escaparHTML(obterImagem(vendedorPublicoAtual.cover)) + ')' : '' }"><span>Perfil no Bisno</span></div>
       <div class="cabecalho-perfil-publico">
         <img
           class="avatar-perfil-publico"
