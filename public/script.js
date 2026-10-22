@@ -452,8 +452,9 @@ function abrirPagina(id) {
   if (notifications) notifications.hidden = id !== "area-notificacoes";
   if (store) store.hidden = id !== "area-loja";
   if (storeDirectory) storeDirectory.hidden = id !== "area-diretorio-lojas";
-  if (wanted) wanted.hidden = id !== "area-pedidos-procura";
+  if (wanted) wanted.hidden = !["area-pedidos-procura", "area-produtos"].includes(id);
   if (footer) footer.hidden = id !== "area-produtos";
+  if (id === "area-produtos") { window.bisnoCarregarPedidosProcura?.(); }
 
   // Dentro do contentor da conta, mostrar somente a secção escolhida.
   if (account) {
@@ -656,6 +657,14 @@ async function verificarSessao() {
     const dados = await pedidoAPI("/api/auth/me");
     utilizadorAtual = dados.utilizador ?? dados.usuario ?? dados.user ?? (dados.id ? dados : null);
     document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
+  const feedCompradores = document.getElementById("area-pedidos-procura");
+  const feedVendedores = document.getElementById("area-produtos");
+  if (feedCompradores && feedVendedores && !feedCompradores.dataset.feedIntegrado) {
+    feedCompradores.dataset.feedIntegrado = "true";
+    feedVendedores.appendChild(feedCompradores);
+    feedCompradores.hidden = false;
+    feedCompradores.classList.add("bisno-feed-compradores");
+  }
     document.body.classList.toggle("bisno-sem-sessao", !utilizadorAtual);
     mostrarConta();
     return utilizadorAtual;
@@ -2590,8 +2599,17 @@ async function verificarMensagensNovas() {
   } catch (_) { /* tentará novamente no próximo ciclo */ }
 }
 
+function atualizarCapaPerfilProprio() {
+  const capa = document.querySelector("#perfil-vendedor .bisno-perfil-capa");
+  if (!capa) return;
+  const cover = utilizadorAtual?.cover;
+  capa.style.backgroundImage = cover ? 'linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.3)),url("' + obterImagem(cover).replace(/"/g,"%22") + '")' : "linear-gradient(135deg,#dce7df,#a9c8b6)";
+  capa.classList.toggle("tem-capa", Boolean(cover));
+}
+
 function atualizarAreasSociais() {
   if (!utilizadorAtual) return;
+  atualizarCapaPerfilProprio();
   atualizarNotificacoes().catch(console.error);
   atualizarConversas().catch(console.error);
   verificarMensagensNovas().catch(console.error);
