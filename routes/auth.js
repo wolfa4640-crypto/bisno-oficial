@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const verificarImagem = require("../middleware/validar-imagem");
 const db = require("../data/database");
 const nodemailer = require("nodemailer");
+const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
 
 function criarTransportadorEmail() {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
@@ -183,6 +184,40 @@ router.post("/login", async (req, res, next) => {
     });
   });
 });
+
+router.put("/profile", uploadAvatar.single("avatar"), async (req, res) => {
+  if (!req.session?.userId) return res.status(401).json({ erro: "Inicia sessão primeiro." });
+  const name = String(req.body?.name || "").trim();
+  const phone = String(req.body?.phone || "").trim();
+  if (name.length < 2 || name.length > 100) return res.status(400).json({ erro: "O nome deve ter entre 2 e 100 caracteres." });
+  if (phone.length < 7 || phone.length > 30) return res.status(400).json({ erro: "Introduz um telefone válido." });
+  try {
+    const current = await db.prepare("SELECT avatar FROM users WHERE id=?").get(req.session.userId);
+    let avatar = current?.avatar || null;
+    if (req.file) {
+      const stored = await guardarImagem({ prefixo: "profiles", nome: "user-" + req.session.userId, buffer: req.file.buffer, contentType: req.file.mimetype });
+      avatar = stored.url;
+    }
+    await db.prepare("UPDATE users SET name=?, phone=?, avatar=? WHERE id=?").run(name, phone, avatar, req.session.userId);
+    if (current?.avatar && avatar !== current.avatar) await eliminarImagemPorUrl(current.avatar).catch(() => {});
+    const user = await db.prepare("SELECT id,name,email,phone,avatar,created_at,is_blocked FROM users WHERE id=?").get(req.session.userId);
+    res.json({ mensagem: "Perfil atualizado.", utilizador: { ...user, isAdmin: Boolean(process.env.ADMIN_EMAIL) && user.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase() } });
+  } catch (error) {
+    console.error("Erro ao atualizar perfil:", error.message);
+    res.status(503).json({ erro: "Não foi possível guardar a fotografia. Confirma a configuração do armazenamento de imagens." });
+  }
+});
+router.post("/change-password", async (req, res) => {
+  if (!req.session?.userId) return res.status(401).json({ erro: "Inicia sessão primeiro." });
+  const currentPassword = String(req.body?.current_password || "");
+  const newPassword = String(req.body?.new_password || "");
+  if (newPassword.length < 8 || Buffer.byteLength(newPassword, "utf8") > 72) return res.status(400).json({ erro: "A nova palavra-passe deve ter pelo menos 8 caracteres." });
+  const user = await db.prepare("SELECT password FROM users WHERE id=?").get(req.session.userId);
+  if (!user || !bcrypt.compareSync(currentPassword, user.password)) return res.status(400).json({ erro: "A palavra-passe atual está incorreta." });
+  await db.prepare("UPDATE users SET password=? WHERE id=?").run(bcrypt.hashSync(newPassword, 12), req.session.userId);
+  res.json({ mensagem: "Palavra-passe alterada com sucesso." });
+});
+
 router.get("/me", async (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ erro: "Inicia sessão primeiro." });
   const user = await db.prepare("SELECT id,name,email,phone,avatar,created_at,is_blocked FROM users WHERE id=?").get(req.session.userId);
