@@ -879,68 +879,39 @@ async function terminarSessao() {
 
 
 async function publicarAnuncio(evento) {
+  evento.preventDefault();
+  if (!exigirLogin()) return;
 
-  evento.preventDefault();
+  const formulario = evento.currentTarget;
+  if (formulario.dataset.enviando === "true") return;
+  if (!formulario.reportValidity()) return;
 
-  if (!exigirLogin()) return;
+  const botao = formulario.querySelector('button[type="submit"]');
+  const textoOriginal = botao?.textContent || "＋ Publicar anúncio";
+  const dados = new FormData(formulario);
+  const imagem = dados.get("image");
 
+  if (imagem instanceof File && imagem.size > LIMITE_IMAGEM) {
+    mostrarMensagem("A imagem do produto não pode ultrapassar 5 MB.", "erro");
+    return;
+  }
 
-
-  const formulario = evento.currentTarget;
-
-  const dados = new FormData(formulario);
-
-  const imagem = $("#anuncio-imagem")?.files?.[0];
-
-
-
-  if (imagem && imagem.size > LIMITE_IMAGEM) {
-
-    mostrarMensagem("A imagem do produto não pode ultrapassar 5 MB.", "erro");
-
-    return;
-
-  }
-
-
-
-  try {
-
-    await pedidoAPI("/api/products", {
-
-      method: "POST",
-
-      body: dados
-
-    });
-
-
-
-    formulario.reset();
-
-
-
-    mostrarMensagem("Anúncio publicado com sucesso!", "sucesso");
-
-
-
-    await carregarProdutos();
-
-    await carregarMeusAnuncios();
-
-
-
-    abrirPagina("area-produtos");
-
-  } catch (erro) {
-
-    mostrarMensagem(erro.message || "Não foi possível publicar o anúncio.", "erro");
-
-  }
-
+  formulario.dataset.enviando = "true";
+  if (botao) { botao.disabled = true; botao.textContent = "A publicar…"; }
+  try {
+    const resposta = await pedidoAPI("/api/products", { method: "POST", body: dados });
+    formulario.reset();
+    mostrarMensagem(resposta.mensagem || "Anúncio publicado com sucesso!", "sucesso");
+    await carregarProdutos();
+    await carregarMeusAnuncios();
+    abrirPagina("area-produtos");
+  } catch (erro) {
+    mostrarMensagem(erro.message || "Não foi possível publicar o anúncio. Confirma os campos e tenta novamente.", "erro");
+  } finally {
+    delete formulario.dataset.enviando;
+    if (botao) { botao.disabled = false; botao.textContent = textoOriginal; }
+  }
 }
-
-
 
 async function carregarMeusAnuncios() {
 
@@ -3270,8 +3241,11 @@ function configurarPedidosProcura() {
         secaoPedidos.classList.add("feed-integrado-home");
         const cardsCompradores = Array.from(lista.querySelectorAll(".bisno-pedido-procura"));
         window.bisnoPedidosCompradoresCache = cardsCompradores.map(card => card.cloneNode(true));
+        // Remove pedidos da renderização anterior antes de anexar os dados atualizados.
+        // Sem esta limpeza, cada atualização/recarregamento acrescentava outra cópia ao feed.
+        feedPrincipal.querySelectorAll(".bisno-pedido-procura").forEach(card => card.remove());
         cardsCompradores.forEach(card => feedPrincipal.appendChild(card));
-      ordenarFeedPorPublicacao(feedPrincipal);
+        ordenarFeedPorPublicacao(feedPrincipal);
         lista.innerHTML = "";
       }
     } catch (error) {
