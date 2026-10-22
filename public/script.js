@@ -435,6 +435,7 @@ function abrirPagina(id) {
   const notifications = document.getElementById("area-notificacoes");
   const store = document.getElementById("area-loja");
   const storeDirectory = document.getElementById("area-diretorio-lojas");
+  const wanted = document.getElementById("area-pedidos-procura");
   const footer = document.querySelector("body > footer");
 
   const destinosConta = ["area-conta", "area-meus-anuncios", "area-publicar", "area-mensagens", "area-notificacoes", "area-loja"];
@@ -451,6 +452,7 @@ function abrirPagina(id) {
   if (notifications) notifications.hidden = id !== "area-notificacoes";
   if (store) store.hidden = id !== "area-loja";
   if (storeDirectory) storeDirectory.hidden = id !== "area-diretorio-lojas";
+  if (wanted) wanted.hidden = id !== "area-pedidos-procura";
   if (footer) footer.hidden = id !== "area-produtos";
 
   // Dentro do contentor da conta, mostrar somente a secção escolhida.
@@ -509,6 +511,10 @@ function configurarNavegacao() {
       if (page === "home") abrirPagina("area-produtos");
       else if (page === "stores") {
         if (utilizadorAtual) { abrirPagina("area-diretorio-lojas"); carregarDiretorioLojas(); }
+        else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
+      }
+      else if (page === "wanted") {
+        if (utilizadorAtual) { abrirPagina("area-pedidos-procura"); window.bisnoCarregarPedidosProcura?.(); }
         else { mostrarAba("login"); abrirPagina("area-autenticacao"); }
       }
       else if (page === "messages") {
