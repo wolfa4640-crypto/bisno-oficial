@@ -3359,7 +3359,7 @@ function configurarMenuPublicacao() {
   document.querySelectorAll("[data-publicar-tipo]").forEach(button => button.addEventListener("click", () => {
     if (!utilizadorAtual) { fechar(); mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
     const type = button.dataset.publicarTipo; fechar();
-    if (type === "vendedor") abrirPagina("area-publicar"); else { abrirPagina("area-pedidos-procura"); window.bisnoCarregarPedidosProcura?.(); }
+    if (type === "vendedor") { abrirPagina("area-publicar"); } else { const secao = document.getElementById("area-pedidos-procura"); const home = document.getElementById("area-produtos"); if (home) abrirPagina("area-produtos"); if (secao) { secao.hidden = false; secao.style.display = ""; secao.scrollIntoView({ behavior: "smooth", block: "start" }); } window.bisnoCarregarPedidosProcura?.(); }
   }));
   document.querySelectorAll("[data-menu-acao]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.menuAcao; fechar();
