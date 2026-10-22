@@ -736,7 +736,9 @@ async function entrarUtilizador(evento) {
     document.body.classList.add("bisno-autenticado");
     document.body.classList.remove("bisno-sem-sessao");
     mostrarConta();
-    abrirPagina("area-produtos");
+    const lojaPartilhada = new URLSearchParams(window.location.search).get("loja");
+    if (lojaPartilhada) { abrirPagina("area-diretorio-lojas"); await abrirDetalheLoja(lojaPartilhada); }
+    else abrirPagina("area-produtos");
     mostrarMensagem("Sessão iniciada com sucesso!", "sucesso");
     // Limpar apenas depois de confirmar sessão no servidor.
     formulario.reset();
