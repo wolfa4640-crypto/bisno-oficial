@@ -290,7 +290,8 @@ async function pedidoAPI(url, opcoes = {}) {
 
 
 
-  const resposta = await fetch(url, configuracao);
+  configuracao.cache = "no-store";
+  const resposta = await fetch(url, configuracao);
 
 
 
@@ -955,7 +956,7 @@ async function carregarMeusAnuncios() {
 
   try {
 
-    const dados = await pedidoAPI("/api/products/mine");
+    const dados = await pedidoAPI("/api/products/mine", { cache: "no-store" });
 
     const produtos = dados.produtos ?? dados.products ?? [];
 
@@ -1268,16 +1269,16 @@ function aplicarFiltros() {
       : `${produtos.length} anúncios encontrados`;
   }
 
+  const pedidosCompradores = Array.isArray(window.bisnoPedidosCompradoresCache) ? window.bisnoPedidosCompradoresCache.map(card => card.cloneNode(true)) : [];
+
   if (!produtos.length) {
-    lista.innerHTML = `<div class="estado-vazio-catalogo">
-      <p class="estado-vazio-titulo">Não encontrámos anúncios com estes filtros.</p>
-      <p>Tenta pesquisar por outras palavras, escolher outra categoria ou limpar os filtros.</p>
-      <button type="button" class="botao-limpar-filtros" data-limpar-filtros>Limpar filtros</button>
-    </div>`;
+    lista.innerHTML = `<div class="estado-vazio-catalogo"><p class="estado-vazio-titulo">Não encontrámos anúncios com estes filtros.</p><p>Tenta pesquisar por outras palavras, escolher outra categoria ou limpar os filtros.</p><button type="button" class="botao-limpar-filtros" data-limpar-filtros>Limpar filtros</button></div>`;
+    pedidosCompradores.forEach(card => lista.appendChild(card));
     return;
   }
 
   lista.innerHTML = produtos.map(cartaoProduto).join("");
+  pedidosCompradores.forEach(card => lista.appendChild(card));
 }
 
 function prepararAreaDetalhes() {
@@ -3095,14 +3096,14 @@ async function carregarPainelAdmin() {
       ["Utilizadores", st.users], ["Contas bloqueadas", st.blockedUsers],
       ["Anúncios", st.products], ["Anúncios ativos", st.activeProducts], ["Anúncios bloqueados", st.blockedProducts]
     ].map(([label, value]) => '<article><span>' + escaparHTML(label) + '</span><strong>' + numero(value) + '</strong></article>').join("");
-    usersEl.innerHTML = (data.users || []).map(u => '<article class="admin-item"><div><strong>' + escaparHTML(u.name) + '</strong><p>E-mail: ' + escaparHTML(u.email) + ' · Telefone: ' + escaparHTML(u.phone || 'Não indicado') + '</p><p>ID ' + u.id + ' · Registado: ' + escaparHTML(u.created_at || 'Data indisponível') + ' · Estado: ' + (u.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-user-block="' + u.id + '" data-blocked="' + (u.is_blocked ? 'false' : 'true') + '">' + (u.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-user-delete="' + u.id + '">Eliminar</button></div></article>').join("") || "<p>Sem utilizadores.</p>";
+    usersEl.innerHTML = (data.users || []).map(u => '<article class="admin-item admin-item-compact"><div><strong>' + escaparHTML(u.name) + '</strong><div class="admin-metadados"><span title="E-mail">✉ ' + escaparHTML(u.email) + '</span><span title="Telefone">☎ ' + escaparHTML(u.phone || "—") + '</span><span title="Identificador">🆔 ' + u.id + '</span><span class="admin-estado ' + (u.is_blocked ? 'is-bloqueado' : 'is-ativo') + '">' + (u.is_blocked ? '⛔ Bloqueado' : '● Ativo') + '</span></div></div><div class="admin-acoes admin-acoes-compact"><button type="button" title="' + (u.is_blocked ? 'Desbloquear' : 'Bloquear') + '" aria-label="' + (u.is_blocked ? 'Desbloquear' : 'Bloquear') + '" data-admin-user-block="' + u.id + '" data-blocked="' + (u.is_blocked ? 'false' : 'true') + '">' + (u.is_blocked ? '🔓' : '🔒') + '</button><button type="button" title="Eliminar utilizador" aria-label="Eliminar utilizador" data-admin-user-delete="' + u.id + '">🗑️</button></div></article>').join("") || "<p>Sem utilizadores.</p>";
     productsEl.innerHTML = (data.products || []).map(p => '<article class="admin-item"><div><strong>' + escaparHTML(p.name) + '</strong><p>ID ' + p.id + ' · ' + escaparHTML(p.seller_name || p.seller_email || 'Vendedor') + ' · ' + escaparHTML(p.city || '') + ' · ' + (p.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-product-block="' + p.id + '" data-blocked="' + (p.is_blocked ? 'false' : 'true') + '">' + (p.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-product-delete="' + p.id + '">Eliminar</button></div></article>').join("") || "<p>Sem anúncios.</p>";
     if (storesEl) {
       try {
         const storeData = await pedidoAPI("/api/admin/stores");
         storesEl.innerHTML = (storeData.stores || []).map(store => {
           const active = Boolean(Number(store.is_active));
-          return '<article class="admin-item"><div><strong>' + escaparHTML(store.name) + '</strong><p>Proprietário: ' + escaparHTML(store.owner_name || "Utilizador") + ' · ' + escaparHTML(store.owner_email || "") + '</p><p>Localização: ' + escaparHTML(store.city || "Angola") + ' · Produtos: ' + numero(store.product_count) + ' · Seguidores: ' + numero(store.followers) + ' · Visitas: ' + numero(store.views) + ' · Contactos: ' + numero(store.contacts) + '</p><p>Estado: ' + (active ? 'Ativa' : 'Suspensa') + ' · Criada: ' + escaparHTML(String(store.created_at || "").slice(0,10)) + '</p></div><div class="admin-acoes"><button type="button" data-admin-store-status="' + store.id + '" data-active="' + String(!active) + '">' + (active ? 'Suspender loja' : 'Reativar loja') + '</button></div></article>';
+          return '<article class="admin-item admin-item-compact"><div><strong>' + escaparHTML(store.name) + '</strong><div class="admin-metadados"><span title="Proprietário">👤 ' + escaparHTML(store.owner_name || "Utilizador") + '</span><span title="Localização">📍 ' + escaparHTML(store.city || "Angola") + '</span><span title="Produtos">📦 ' + numero(store.product_count) + '</span><span title="Seguidores">👥 ' + numero(store.followers) + '</span><span title="Visitas">👁️ ' + numero(store.views) + '</span><span title="Contactos">☎ ' + numero(store.contacts) + '</span><span class="admin-estado ' + (active ? 'is-ativo' : 'is-bloqueado') + '">' + (active ? '● Ativa' : '⛔ Suspensa') + '</span></div></div><div class="admin-acoes admin-acoes-compact"><button type="button" title="' + (active ? 'Suspender loja' : 'Reativar loja') + '" aria-label="' + (active ? 'Suspender loja' : 'Reativar loja') + '" data-admin-store-status="' + store.id + '" data-active="' + String(!active) + '">' + (active ? '⏸️' : '▶️') + '</button></div></article>';
         }).join("") || "<p>Ainda não existem lojas registadas.</p>";
       } catch (e) { storesEl.textContent = e.message || "Não foi possível carregar as lojas."; }
     }
@@ -3244,7 +3245,7 @@ function configurarPedidosProcura() {
   async function carregar() {
     lista.innerHTML = "<p>A carregar pedidos...</p>";
     try {
-      const dados = await pedidoAPI("/api/wanted");
+      const dados = await pedidoAPI("/api/wanted", { cache: "no-store" });
       if (!dados.ads || !dados.ads.length) {
         lista.innerHTML = "<p>Ainda não existem pedidos de procura. Sê o primeiro a publicar!</p>";
         return;
@@ -3268,6 +3269,7 @@ function configurarPedidosProcura() {
       if (feedPrincipal && secaoPedidos && document.getElementById("area-produtos")?.contains(secaoPedidos)) {
         secaoPedidos.classList.add("feed-integrado-home");
         const cardsCompradores = Array.from(lista.querySelectorAll(".bisno-pedido-procura"));
+        window.bisnoPedidosCompradoresCache = cardsCompradores.map(card => card.cloneNode(true));
         cardsCompradores.forEach(card => feedPrincipal.appendChild(card));
       ordenarFeedPorPublicacao(feedPrincipal);
         lista.innerHTML = "";
@@ -3279,7 +3281,6 @@ function configurarPedidosProcura() {
   form.addEventListener("submit", async event => {
     event.preventDefault();
     if (!exigirLogin()) return;
-    const data = new FormData(form);
     const body = new FormData(form);
     const wantedImage = body.get("image");
     if (wantedImage instanceof File && wantedImage.size > LIMITE_IMAGEM) { mostrarMensagem("A imagem do pedido não pode ultrapassar 5 MB.", "erro"); return; }

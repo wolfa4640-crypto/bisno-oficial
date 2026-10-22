@@ -141,8 +141,15 @@
     #admin-frases-iniciais fieldset{display:grid;gap:8px;margin:12px 0}
     #admin-frases-iniciais label{display:grid;gap:5px}
     #admin-frases-iniciais input,#admin-frases-iniciais textarea{width:100%;padding:10px;border:1px solid #cbd5ce;border-radius:8px;background:var(--painel,#fff);color:var(--texto,#17251e)}
-</style>
-  <script src="/script.js?v=20261022-buyer-phrases-order-v1" defer></script>
+
+    .admin-item-compact{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-radius:12px}
+    .admin-metadados{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+    .admin-metadados span{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:7px;background:var(--fundo,#f2f5f3);font-size:.82rem;overflow-wrap:anywhere}
+    .admin-metadados .admin-estado.is-ativo{color:#176b45}.admin-metadados .admin-estado.is-bloqueado{color:#a32626}
+    .admin-acoes-compact{display:flex;gap:6px;flex-shrink:0}.admin-acoes-compact button{min-width:38px;min-height:38px;padding:6px}
+    #form-pedido-procura button[type="submit"]:disabled{opacity:.65;cursor:wait}
+  </style>
+  <script src="/script.js?v=20261022-fix-pedidos-cache-icons-v2" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
