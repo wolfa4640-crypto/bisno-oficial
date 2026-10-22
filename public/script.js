@@ -2969,7 +2969,6 @@ function configurarLoja() {
         const images = new FormData(); if (logoFile) images.append("logo", logoFile); if (coverFile) images.append("cover", coverFile);
         const updated = await pedidoAPI("/api/stores/media", { method: "POST", body: images });
         preencherPainelLoja(updated);
-        form.reset();
       }
       mostrarMensagem(existente ? "A tua loja foi atualizada." : "A tua loja foi ativada com sucesso.", "sucesso");
     } catch (erro) { mostrarMensagem(erro.message || "Não foi possível guardar a loja.", "erro"); }
@@ -3170,6 +3169,7 @@ function configurarPedidosProcura() {
           <h3>${escaparHTML(ad.product_name)}</h3>
           <p>${escaparHTML(ad.description)}</p>
           <p><strong>Local:</strong> ${escaparHTML(ad.city)} · <strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
+          ${ad.image ? '<img class="bisno-pedido-imagem" src="' + escaparHTML(obterImagem(ad.image)) + '" alt="Imagem do pedido" loading="lazy">' : ""}
           <p><small>Publicado por ${escaparHTML(ad.buyer_name)}</small></p>
           ${contacto ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer" aria-label="Contactar ${escaparHTML(ad.buyer_name)} pelo WhatsApp">☏ Contactar pelo WhatsApp</a>` : "<p>O comprador ainda não tem um contacto válido.</p>"}
           ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
