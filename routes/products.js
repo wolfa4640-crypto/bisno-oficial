@@ -112,6 +112,7 @@ router.get("/", async (req, res) => {
         products.neighborhood,
         products.whatsapp,
         products.image,
+        products.stock,
         products.created_at,
         users.name AS seller_name,
         users.avatar AS seller_avatar
@@ -153,6 +154,7 @@ router.get("/mine", exigirLogin, async (req, res) => {
         neighborhood,
         whatsapp,
         image,
+        stock,
         created_at
       FROM products
       WHERE user_id = ?
@@ -210,6 +212,7 @@ router.get("/seller/:id", async (req, res) => {
         neighborhood,
         whatsapp,
         image,
+        stock,
         created_at
       FROM products
       WHERE user_id = ? AND is_blocked = 0
@@ -290,6 +293,7 @@ router.post(
         neighborhood,
         whatsapp
       } = req.body;
+      const stock = req.body.stock === undefined || req.body.stock === "" ? 1 : Number(req.body.stock);
 
       imagem = null;
 
@@ -308,7 +312,7 @@ router.post(
         !validarTexto(category, 60) ||
         !validarTexto(city, 100) ||
         !validarTexto(neighborhood, 100) ||
-        !validarTexto(whatsapp, 30)
+        !validarTexto(whatsapp, 30) || !Number.isSafeInteger(stock) || stock < 0 || stock > 1000000
       ) {
         apagarFicheiroEnviado(req.file);
 
@@ -368,9 +372,10 @@ router.post(
           city,
           neighborhood,
           whatsapp,
-          image
+          image,
+          stock
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         req.session.userId,
         name.trim(),
@@ -381,7 +386,8 @@ router.post(
         city.trim(),
         neighborhood.trim(),
         numeroWhatsApp,
-        imagem
+        imagem,
+        stock
       );
 
       return res.status(201).json({
@@ -399,7 +405,8 @@ router.post(
           city: city.trim(),
           neighborhood: neighborhood.trim(),
           whatsapp: numeroWhatsApp,
-          image: imagem
+          image: imagem,
+          stock
         }
       });
     } catch (erro) {
@@ -470,6 +477,22 @@ router.delete("/:id", exigirLogin, async (req, res) => {
     return res.status(500).json({
       erro: "Não foi possível eliminar o anúncio."
     });
+  }
+});
+
+
+router.patch("/:id/stock", exigirLogin, async (req, res) => {
+  const id = validarId(req.params.id);
+  const stock = Number(req.body.stock);
+  if (!id || !Number.isSafeInteger(stock) || stock < 0 || stock > 1000000)
+    return res.status(400).json({ erro: "Indica uma quantidade de stock inteira entre 0 e 1.000.000." });
+  try {
+    const result = await db.prepare("UPDATE products SET stock=? WHERE id=? AND user_id=?").run(stock, id, req.session.userId);
+    if (!result.changes) return res.status(404).json({ erro: "Anúncio não encontrado na tua conta." });
+    return res.json({ mensagem: "Stock atualizado.", id, stock });
+  } catch (error) {
+    console.error("Erro ao atualizar stock:", error);
+    return res.status(500).json({ erro: "Não foi possível atualizar o stock." });
   }
 });
 

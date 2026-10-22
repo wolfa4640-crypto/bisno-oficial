@@ -424,6 +424,9 @@
           <input id="loja-nome" name="name" type="text" maxlength="80" placeholder="Ex.: Roger Tech" required>
           <label for="loja-descricao">Descrição</label>
           <textarea id="loja-descricao" name="description" rows="3" maxlength="500" placeholder="O que vendes? O que torna a tua loja especial?"></textarea>
+          <label for="loja-imagem-marca">Imagem da marca / logótipo (URL HTTPS)</label>
+          <input id="loja-imagem-marca" name="brand_image" type="url" maxlength="1000" placeholder="https://...">
+          <p>Usa um link HTTPS direto para a imagem do logótipo.</p>
           <label for="loja-cidade">Cidade ou província</label>
           <input id="loja-cidade" name="city" type="text" maxlength="100" placeholder="Ex.: N'dalatando">
           <button type="submit" id="botao-guardar-loja">Ativar a minha loja</button>
@@ -484,6 +487,9 @@
             required
           >
 
+          <label for="anuncio-stock">Quantidade em stock</label>
+          <input id="anuncio-stock" name="stock" type="number" min="0" max="1000000" step="1" value="1" required>
+
           <label for="anuncio-estado">Estado do produto</label>
           <select id="anuncio-estado" name="condition" required>
             <option value="">Seleciona o estado</option>
@@ -531,7 +537,7 @@
             required
           >
 
-          <label for="anuncio-imagem">Fotografia do produto</label>
+          <label for="anuncio-imagem">📷 Fotografia do produto</label>
           <input
             id="anuncio-imagem"
             name="image"
@@ -539,7 +545,7 @@
             accept="image/jpeg,image/png,image/webp"
           >
 
-          <button type="submit">Publicar anúncio</button>
+          <button type="submit" aria-label="Publicar anúncio">＋</button>
         </form>
       </section>
 
@@ -620,6 +626,24 @@
       <div id="paginacao-lojas" class="bisno-directory-pagination" hidden><button type="button" id="lojas-pagina-anterior" class="botao-secundario">← Anterior</button><span id="lojas-pagina-info" aria-live="polite"></span><button type="button" id="lojas-pagina-seguinte" class="botao-secundario">Seguinte →</button></div>
       <section id="detalhe-diretorio-loja" class="bisno-directory-detail" hidden aria-live="polite"></section>
     </section>
+
+      <section id="area-pedidos-procura" class="painel-secundario" aria-labelledby="titulo-pedidos-procura">
+        <h2 id="titulo-pedidos-procura">🔎 Pedidos de procura</h2>
+        <p>Publica o que precisas de comprar. Os vendedores podem contactar-te diretamente pelo WhatsApp.</p>
+        <form id="form-pedido-procura">
+          <label for="pedido-procura-produto">O que procuras?</label>
+          <input id="pedido-procura-produto" name="product_name" maxlength="120" placeholder="Ex.: computador portátil" required>
+          <label for="pedido-procura-descricao">Detalhes</label>
+          <textarea id="pedido-procura-descricao" name="description" maxlength="2000" rows="3" placeholder="Indica características, estado ou outras preferências." required></textarea>
+          <label for="pedido-procura-orcamento">Orçamento máximo (Kz, opcional)</label>
+          <input id="pedido-procura-orcamento" name="budget" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 150000">
+          <label for="pedido-procura-cidade">Cidade ou província</label>
+          <input id="pedido-procura-cidade" name="city" maxlength="100" placeholder="Ex.: N'dalatando" required>
+          <button type="submit" aria-label="Publicar pedido de procura">＋ Publicar pedido</button>
+        </form>
+        <button type="button" id="botao-atualizar-pedidos" class="botao-secundario" aria-label="Atualizar pedidos">↻</button>
+        <div id="lista-pedidos-procura" class="lista-produtos" aria-live="polite"><p>Carrega os pedidos para ver o que as pessoas procuram.</p></div>
+      </section>
   </main>
 
   <!-- RODAPÉ -->
@@ -631,6 +655,7 @@
       <p id="estado-download-aplicativo" class="bisno-download-app-estado" role="status" aria-live="polite">Instala o Bisno no teu dispositivo para aceder mais facilmente.</p>
     </div>
     <p class="credito-criador">Criado por <strong>Adam Wolf</strong> (Alpha Wolf)</p>
+    <p class="credito-criador"><a href="https://www.facebook.com/profile.php?id=61595803947715" target="_blank" rel="noopener noreferrer" aria-label="Contactar o criador do Bisno no Facebook">ⓕ Contactar no Facebook</a></p>
   </footer>
 </body>
 </html>

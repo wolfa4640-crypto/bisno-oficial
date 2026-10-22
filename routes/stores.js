@@ -79,7 +79,7 @@ router.get('/directory', async (req,res) => {
   const where=conditions.join(' AND ');
   const sort=({recent:'s.created_at DESC, s.id DESC',products:'product_count DESC, s.created_at DESC',name:'s.name ASC, s.id DESC'})[req.query.sort]||'s.created_at DESC, s.id DESC';
   const totalRow=await db.prepare(`SELECT COUNT(*) AS total FROM stores s JOIN users u ON u.id=s.user_id WHERE ${where}`).get(...params);
-  const stores=await db.prepare(`SELECT s.id,s.user_id,s.name,s.description,s.city,s.avatar,s.cover,s.created_at,
+  const stores=await db.prepare(`SELECT s.id,s.user_id,s.name,s.description,s.city,s.avatar,s.cover,s.brand_image,s.created_at,
     u.name AS owner_name,
     (SELECT COUNT(*) FROM products p WHERE p.user_id=s.user_id AND p.is_blocked=0) AS product_count,
     (SELECT COUNT(*) FROM store_follows f WHERE f.store_id=s.id) AS followers
@@ -110,9 +110,11 @@ router.post('/activate', exigirLogin, async (req,res) => {
  if (name.length < 2) return res.status(400).json({erro:'O nome da loja deve ter pelo menos 2 caracteres.'});
  const description=clean(req.body.description,500);
  const city=clean(req.body.city,100);
- await db.prepare(`INSERT INTO stores(user_id,name,description,city,avatar) VALUES(?,?,?,?,?)
- ON CONFLICT(user_id) DO UPDATE SET name=excluded.name, description=excluded.description, city=excluded.city, avatar=excluded.avatar, is_active=1, updated_at=CURRENT_TIMESTAMP`)
- .run(user.id,name,description,city,user.avatar||null);
+ const brandImage=clean(req.body.brand_image,1000)||null;
+ if(brandImage && !brandImage.startsWith("https://")) return res.status(400).json({erro:"A imagem da marca deve usar um endereço HTTPS válido."});
+ await db.prepare(`INSERT INTO stores(user_id,name,description,city,avatar,brand_image) VALUES(?,?,?,?,?,?)
+ ON CONFLICT(user_id) DO UPDATE SET name=excluded.name, description=excluded.description, city=excluded.city, avatar=excluded.avatar, brand_image=excluded.brand_image, is_active=1, updated_at=CURRENT_TIMESTAMP`)
+ .run(user.id,name,description,city,user.avatar||null,brandImage);
  const store=await getStore.get(user.id);
  res.status(201).json({store,stats:await storeSummary(store.id)});
 });
@@ -123,7 +125,9 @@ router.patch('/mine', exigirLogin, async (req,res) => {
  if (name.length < 2) return res.status(400).json({erro:'O nome da loja deve ter pelo menos 2 caracteres.'});
  const description=clean(req.body.description,500);
  const city=typeof req.body.city === 'string' ? clean(req.body.city,100) : store.city;
- await db.prepare('UPDATE stores SET name=?,description=?,city=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(name,description,city,store.id,req.session.userId);
+ const brandImage=typeof req.body.brand_image==='string'?clean(req.body.brand_image,1000):store.brand_image;
+ if(brandImage && !brandImage.startsWith("https://")) return res.status(400).json({erro:"A imagem da marca deve usar um endereço HTTPS válido."});
+ await db.prepare('UPDATE stores SET name=?,description=?,city=?,brand_image=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(name,description,city,brandImage||null,store.id,req.session.userId);
  res.json({store:await getStore.get(req.session.userId),stats:await storeSummary(store.id)});
 });
 router.post('/by-user/:userId/view', async (req,res) => {
@@ -139,7 +143,7 @@ router.get('/:id', async (req,res) => {
  const id=validId(req.params.id); if(!id) return res.status(400).json({erro:'Loja inválida.'});
  const store=await db.prepare(`SELECT s.id,s.user_id,s.name,s.description,s.city,s.avatar,s.cover,s.created_at,u.name AS owner_name,u.avatar AS owner_avatar FROM stores s JOIN users u ON u.id=s.user_id WHERE s.id=? AND s.is_active=1`).get(id);
  if(!store) return res.status(404).json({erro:'Loja não encontrada.'});
- const products=await db.prepare(`SELECT id,user_id,name,description,price,condition,category,city,neighborhood,image,whatsapp,created_at FROM products WHERE user_id=? AND is_blocked=0 ORDER BY id DESC LIMIT 100`).all(store.user_id);
+ const products=await db.prepare(`SELECT id,user_id,name,description,price,condition,category,city,neighborhood,image,whatsapp,stock,created_at FROM products WHERE user_id=? AND is_blocked=0 ORDER BY id DESC LIMIT 100`).all(store.user_id);
  const followed=req.session.userId ? !!await db.prepare('SELECT 1 FROM store_follows WHERE store_id=? AND follower_user_id=?').get(id,req.session.userId) : false;
  res.json({store,products,followed,stats:{followers:(await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id)).total}});
 });

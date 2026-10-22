@@ -973,8 +973,10 @@ async function carregarMeusAnuncios() {
           <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
 
           <p>${escaparHTML(produto.city ?? "")}</p>
-
-          <button type="button" data-apagar-anuncio="${escaparHTML(produto.id)}">
+          <label for="stock-produto-${escaparHTML(produto.id)}">Stock</label>
+          <input id="stock-produto-${escaparHTML(produto.id)}" type="number" min="0" max="1000000" step="1" value="${Number.isSafeInteger(Number(produto.stock)) ? Number(produto.stock) : 1}" data-stock-valor="${escaparHTML(produto.id)}" aria-label="Quantidade em stock de ${escaparHTML(produto.name)}">
+          <button type="button" data-guardar-stock="${escaparHTML(produto.id)}" aria-label="Guardar stock">✓</button>
+          <button type="button" data-apagar-anuncio="${escaparHTML(produto.id)}">
 
             Apagar anúncio
 
@@ -995,6 +997,25 @@ async function carregarMeusAnuncios() {
 }
 
 
+
+document.getElementById("lista-meus-anuncios")?.addEventListener("click", async evento => {
+  const botao = evento.target.closest("[data-guardar-stock]");
+  if (!botao) return;
+  const id = botao.dataset.guardarStock;
+  const campo = document.querySelector('[data-stock-valor="' + CSS.escape(id) + '"]');
+  const stock = Number(campo?.value);
+  if (!Number.isSafeInteger(stock) || stock < 0 || stock > 1000000) {
+    mostrarMensagem("O stock deve ser um número inteiro entre 0 e 1.000.000.", "erro");
+    return;
+  }
+  botao.disabled = true;
+  try {
+    await pedidoAPI("/api/products/" + encodeURIComponent(id) + "/stock", { method: "PATCH", body: { stock } });
+    mostrarMensagem("Stock atualizado.", "sucesso");
+    await carregarProdutos();
+  } catch (erro) { mostrarMensagem(erro.message || "Não foi possível atualizar o stock.", "erro"); }
+  finally { botao.disabled = false; }
+});
 
 async function apagarAnuncio(id) {
 
@@ -1061,6 +1082,7 @@ function cartaoProduto(produto) {
   const imagem = obterImagem(produto.image);
   const visualizacoes = Number(produto.views ?? produto.view_count ?? produto.visualizacoes ?? 0);
   const condicao = produto.condition ?? "";
+  const stock = Number.isSafeInteger(Number(produto.stock)) ? Number(produto.stock) : 1;
   const categoria = produto.category ?? "";
   const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" · ");
   const whatsapp = produto.whatsapp
@@ -1092,6 +1114,7 @@ function cartaoProduto(produto) {
         ${categoria ? `<p class="bisno-product-category">${escaparHTML(categoria)}</p>` : ""}
         <h3 title="${escaparHTML(produto.name)}">${escaparHTML(produto.name)}</h3>
         <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
+        <p class="bisno-stock-indicator" aria-label="${stock === 0 ? "Produto esgotado" : "Stock disponível: " + stock}">${stock === 0 ? "Esgotado" : "📦 Stock: " + stock}</p>
         ${localizacao ? `<p class="bisno-product-location"><span aria-hidden="true">⌖</span> ${escaparHTML(localizacao)}</p>` : ""}
         <div class="bisno-card-actions">
           ${!eProdutoDoUtilizador(produto) ? `<button type="button" class="botao-mensagem" data-iniciar-conversa="${escaparHTML(id)}">Enviar mensagem</button>` : ""}
@@ -2907,18 +2930,19 @@ function preencherPainelLoja(data = {}) {
     if ($("#titulo-form-loja")) $("#titulo-form-loja").textContent = "Ativa a tua loja gratuitamente";
     if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Ativar a minha loja";
     if (preview) preview.hidden = true;
-    if (form) { form.elements.name.value = ""; form.elements.description.value = ""; form.elements.city.value = ""; }
+    if (form) { form.elements.name.value = ""; form.elements.description.value = ""; form.elements.city.value = ""; if (form.elements.brand_image) form.elements.brand_image.value = ""; }
     return;
   }
   if (status) { status.textContent = "Loja ativa"; status.classList.add("ativa"); }
   if ($("#titulo-form-loja")) $("#titulo-form-loja").textContent = "Personaliza a tua loja";
   if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Guardar alterações";
-  if (form) { form.elements.name.value = store.name || ""; form.elements.description.value = store.description || ""; form.elements.city.value = store.city || ""; }
+  if (form) { form.elements.name.value = store.name || ""; form.elements.description.value = store.description || ""; form.elements.city.value = store.city || ""; if (form.elements.brand_image) form.elements.brand_image.value = store.brand_image || ""; }
   if (preview) preview.hidden = false;
   definirTexto("#loja-nome-preview", store.name || "A tua loja");
   definirTexto("#loja-descricao-preview", store.description || "Adiciona uma descrição para apresentar a tua loja.");
   definirTexto("#loja-cidade-preview", store.city || "Angola");
-  definirTexto("#loja-avatar", (store.name || "B").trim().charAt(0).toUpperCase());
+  const marca = $("#loja-avatar");
+  if (marca) marca.innerHTML = store.brand_image && /^https:\/\//i.test(store.brand_image) ? '<img src="' + escaparHTML(store.brand_image) + '" alt="Logótipo de ' + escaparHTML(store.name || "loja") + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">': escaparHTML((store.name || "B").trim().charAt(0).toUpperCase());
 }
 async function carregarMinhaLoja() {
   try { preencherPainelLoja(await pedidoLoja("/api/stores/mine")); }
@@ -2928,7 +2952,7 @@ function configurarLoja() {
   $("#form-loja")?.addEventListener("submit", async evento => {
     evento.preventDefault();
     const form = evento.currentTarget, existente = $("#estado-loja")?.classList.contains("ativa");
-    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim() };
+    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim(), brand_image: form.elements.brand_image?.value.trim() || "" };
     const botao = $("#botao-guardar-loja");
     if (botao) { botao.disabled = true; botao.textContent = "A guardar…"; }
     try {
@@ -2962,7 +2986,7 @@ async function carregarDiretorioLojas(page=1) {
   count.textContent=data.total?data.total+(data.total===1?" loja encontrada":" lojas encontradas"):"Ainda não existem lojas que correspondam à pesquisa.";
   list.innerHTML=stores.length?stores.map(store=>{
    const initial=(store.name||"B").trim().charAt(0).toUpperCase();
-   const avatar=store.avatar?'<img src="'+escaparHTML(obterImagem(store.avatar))+'" alt="" loading="lazy">':'<span aria-hidden="true">'+escaparHTML(initial)+'</span>';
+   const avatar=store.brand_image?'<img src="'+escaparHTML(store.brand_image)+'" alt="Logótipo de '+escaparHTML(store.name)+'" loading="lazy">':store.avatar?'<img src="'+escaparHTML(obterImagem(store.avatar))+'" alt="" loading="lazy">':'<span aria-hidden="true">'+escaparHTML(initial)+'</span>';
    const cover=store.cover?'<img class="bisno-directory-cover" src="'+escaparHTML(obterImagem(store.cover))+'" alt="" loading="lazy">':'<div class="bisno-directory-cover bisno-directory-cover-empty" aria-hidden="true"></div>';
    return '<article class="bisno-directory-card">'+cover+'<div class="bisno-directory-card-body"><div class="bisno-directory-avatar">'+avatar+'</div><h2>'+escaparHTML(store.name)+'</h2><p class="bisno-directory-location">⌖ '+escaparHTML(store.city||"Angola")+'</p><p class="bisno-directory-description">'+escaparHTML(store.description||"Descobre os produtos desta loja.")+'</p><div class="bisno-directory-meta"><span>'+numero(store.product_count).toLocaleString("pt-AO")+' produtos</span><span>'+numero(store.followers).toLocaleString("pt-AO")+' seguidores</span></div><button type="button" data-visitar-loja="'+escaparHTML(store.id)+'">Visitar loja →</button></div></article>';
   }).join(""):'<div class="bisno-directory-empty"><strong>Nenhuma loja encontrada</strong><p>Experimenta alterar a pesquisa ou limpar os filtros.</p></div>';
@@ -2973,7 +2997,7 @@ async function abrirDetalheLoja(id) {
  const list=$("#lista-diretorio-lojas"),detail=$("#detalhe-diretorio-loja");if(!detail)return;detail.hidden=false;detail.innerHTML="<p>A carregar a loja…</p>";if(list)list.hidden=true;if($("#paginacao-lojas"))$("#paginacao-lojas").hidden=true;
  try{
   const data=await pedidoLoja("/api/stores/"+encodeURIComponent(id)),store=data.store;if(!store)throw new Error("Loja não encontrada.");detalheLojaAtual=store;
-  const products=data.products||[],avatar=store.avatar?'<img src="'+escaparHTML(obterImagem(store.avatar))+'" alt="">':'<span aria-hidden="true">'+escaparHTML((store.name||"B").charAt(0).toUpperCase())+'</span>';
+  const products=data.products||[],avatar=store.brand_image?'<img src="'+escaparHTML(store.brand_image)+'" alt="Logótipo de '+escaparHTML(store.name)+'">':store.avatar?'<img src="'+escaparHTML(obterImagem(store.avatar))+'" alt="">':'<span aria-hidden="true">'+escaparHTML((store.name||"B").charAt(0).toUpperCase())+'</span>';
   detail.innerHTML='<button type="button" class="botao-secundario" id="voltar-diretorio-lojas">← Voltar às lojas</button><div class="bisno-store-profile-hero">'+(store.cover?'<img class="bisno-store-profile-cover" src="'+escaparHTML(obterImagem(store.cover))+'" alt="" loading="lazy">':'<div class="bisno-store-profile-cover bisno-directory-cover-empty"></div>')+'<div class="bisno-store-profile-heading"><div class="bisno-directory-avatar bisno-directory-avatar-large">'+avatar+'</div><div><span class="bisno-secao-kicker">Loja no Bisno</span><h2>'+escaparHTML(store.name)+'</h2><p>'+escaparHTML(store.description||"Bem-vindo à nossa loja.")+'</p><small>⌖ '+escaparHTML(store.city||"Angola")+' · Desde '+escaparHTML(String(store.created_at||"").slice(0,10)||"—")+'</small></div></div></div><div class="bisno-store-profile-actions"><button type="button" id="seguir-diretorio-loja" aria-pressed="'+String(Boolean(data.followed))+'">'+(data.followed?"✓ A seguir":"＋ Seguir loja")+'</button><button type="button" id="partilhar-diretorio-loja" class="botao-secundario">↗ Partilhar loja</button><span id="seguidores-diretorio-loja">'+numero(data.stats?.followers).toLocaleString("pt-AO")+' seguidores</span></div><div class="bisno-store-products-heading"><h3>Produtos desta loja</h3><span>'+products.length+' produtos apresentados</span></div><div class="bisno-directory-products">'+(products.length?products.map(p=>'<article class="bisno-directory-product">'+(p.image?'<img src="'+escaparHTML(obterImagem(p.image))+'" alt="" loading="lazy">':'<div class="bisno-directory-product-placeholder">Bisno</div>')+'<div><h4>'+escaparHTML(p.name)+'</h4><strong>'+formatarPreco(p.price)+'</strong><p>'+escaparHTML(p.category||"Sem categoria")+' · '+escaparHTML(p.condition||"")+'</p><p>'+escaparHTML(p.city||store.city||"Angola")+'</p>'+(p.whatsapp?'<a class="bisno-directory-contact" href="https://wa.me/'+escaparHTML(String(p.whatsapp).replace(/\D/g,""))+'" target="_blank" rel="noopener noreferrer" data-store-contact="'+escaparHTML(p.id)+'">Contactar vendedor</a>':'')+'</div></article>').join(""):'<p class="bisno-directory-empty">Esta loja ainda não tem produtos disponíveis.</p>')+'</div>';
  }catch(error){detail.innerHTML='<button type="button" class="botao-secundario" id="voltar-diretorio-lojas">← Voltar às lojas</button><p class="bisno-directory-error">'+escaparHTML(error.message||"Não foi possível abrir esta loja.")+'</p>';}
 }
@@ -3110,6 +3134,73 @@ function configurarBannerDestaque() {
   agendarProximo();
 }
 
+
+function configurarPedidosProcura() {
+  const form = document.getElementById("form-pedido-procura");
+  const lista = document.getElementById("lista-pedidos-procura");
+  const atualizar = document.getElementById("botao-atualizar-pedidos");
+  if (!form || !lista || form.dataset.configurado === "true") return;
+  form.dataset.configurado = "true";
+
+  async function carregar() {
+    lista.innerHTML = "<p>A carregar pedidos...</p>";
+    try {
+      const dados = await pedidoAPI("/api/wanted");
+      if (!dados.ads || !dados.ads.length) {
+        lista.innerHTML = "<p>Ainda não existem pedidos de procura. Sê o primeiro a publicar!</p>";
+        return;
+      }
+      lista.innerHTML = dados.ads.map(ad => {
+        const contacto = /^https:\/\/wa\.me\/[0-9]+\?/.test(ad.contact_url || "") ? ad.contact_url : "";
+        const meuPedido = Number(ad.user_id) === Number(obterIdUtilizador());
+        return `<article class="cartao-produto bisno-pedido-procura">
+          <h3>${escaparHTML(ad.product_name)}</h3>
+          <p>${escaparHTML(ad.description)}</p>
+          <p><strong>Local:</strong> ${escaparHTML(ad.city)} · <strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
+          <p><small>Publicado por ${escaparHTML(ad.buyer_name)}</small></p>
+          ${contacto ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer" aria-label="Contactar ${escaparHTML(ad.buyer_name)} pelo WhatsApp">☏ Contactar pelo WhatsApp</a>` : "<p>O comprador ainda não tem um contacto válido.</p>"}
+          ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
+        </article>`;
+      }).join("");
+    } catch (error) {
+      lista.innerHTML = "<p>Não foi possível carregar os pedidos. Tenta novamente.</p>";
+    }
+  }
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!exigirLogin()) return;
+    const data = new FormData(form);
+    const body = {
+      product_name: data.get("product_name"),
+      description: data.get("description"),
+      budget: data.get("budget") || null,
+      city: data.get("city")
+    };
+    const submit = form.querySelector('button[type="submit"]');
+    if (submit) submit.disabled = true;
+    try {
+      await pedidoAPI("/api/wanted", { method: "POST", body });
+      form.reset();
+      mostrarMensagem("Pedido de procura publicado!", "sucesso");
+      await carregar();
+    } catch (error) {
+      mostrarMensagem(error.message || "Não foi possível publicar o pedido.", "erro");
+    } finally { if (submit) submit.disabled = false; }
+  });
+  lista.addEventListener("click", async event => {
+    const button = event.target.closest("[data-encerrar-pedido]");
+    if (!button) return;
+    if (!confirm("Queres encerrar este pedido de procura?")) return;
+    try {
+      await pedidoAPI("/api/wanted/" + button.dataset.encerrarPedido, { method: "DELETE" });
+      mostrarMensagem("Pedido encerrado.", "sucesso");
+      await carregar();
+    } catch (error) { mostrarMensagem(error.message || "Não foi possível encerrar o pedido.", "erro"); }
+  });
+  atualizar?.addEventListener("click", carregar);
+  window.bisnoCarregarPedidosProcura = carregar;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
 
   // Mantém o conteúdo protegido enquanto a sessão é verificada.
@@ -3122,6 +3213,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   configurarFormularios();
 
   configurarLoja();
+  configurarPedidosProcura();
   configurarDiretorioLojas();
   configurarPainelAdmin();
 
