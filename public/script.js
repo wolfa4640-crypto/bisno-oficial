@@ -612,14 +612,13 @@ function atualizarPerfil() {
 
   const foto = $("#foto-perfil");
   const semFoto = $("#perfil-sem-foto");
-  // Perfil por iniciais: não exige upload nem armazenamento de fotografias.
-  if (foto) { foto.hidden = true; foto.removeAttribute("src"); }
-  if (semFoto) {
-    const nome = String(nomeUtilizadorAtual() || utilizadorAtual.name || "").trim();
-    semFoto.textContent = nome ? Array.from(nome)[0].toLocaleUpperCase("pt-AO") : "?";
-    semFoto.hidden = false;
-    semFoto.setAttribute("aria-label", nome ? "Inicial do nome " + nome : "Inicial do utilizador");
+  if (foto && utilizadorAtual.avatar) { foto.src = obterImagem(utilizadorAtual.avatar); foto.hidden = false; if (semFoto) semFoto.hidden = true; }
+  else {
+    if (foto) { foto.hidden = true; foto.removeAttribute("src"); }
+    if (semFoto) { const nome = String(nomeUtilizadorAtual() || utilizadorAtual.name || "").trim(); semFoto.textContent = nome ? Array.from(nome)[0].toLocaleUpperCase("pt-AO") : "?"; semFoto.hidden = false; }
   }
+  const cover = $("#perfil-capa-preview");
+  if (cover) { cover.style.backgroundImage = utilizadorAtual.cover ? 'url("' + obterImagem(utilizadorAtual.cover).replace(/"/g, "%22") + '")' : ""; cover.classList.toggle("tem-capa", Boolean(utilizadorAtual.cover)); }
 
   definirTexto("#perfil-nome", nomeUtilizadorAtual());
 
@@ -780,13 +779,13 @@ async function guardarPerfil(evento) {
 
   const dados = new FormData(formulario);
 
-  const ficheiro = $("#perfil-foto-input")?.files?.[0];
+  const ficheiros = [$("#perfil-foto-input")?.files?.[0], $("#perfil-capa-input")?.files?.[0]].filter(Boolean);
 
 
 
-  if (ficheiro && ficheiro.size > LIMITE_IMAGEM) {
+  if (ficheiros.some(ficheiro => ficheiro.size > LIMITE_IMAGEM)) {
 
-    mostrarMensagem("A fotografia do perfil não pode ultrapassar 5 MB.", "erro");
+    mostrarMensagem("Cada imagem do perfil deve ter no máximo 5 MB.", "erro");
 
     return;
 
@@ -1606,6 +1605,7 @@ async function abrirPerfilPublico(id) {
     area.innerHTML = `
 
       <button type="button" id="voltar-perfil-publico">← Voltar aos produtos</button>
+      <div class="bisno-perfil-capa bisno-perfil-capa-publica" style="${vendedorPublicoAtual?.cover ? 'background-image:url(' + escaparHTML(obterImagem(vendedorPublicoAtual.cover)) + ')' : '' }"><span>Perfil no Bisno</span></div>
       <div class="cabecalho-perfil-publico">
         <img
           class="avatar-perfil-publico"
@@ -2947,6 +2947,8 @@ function preencherPainelLoja(data = {}) {
   definirTexto("#loja-nome-preview", store.name || "A tua loja");
   definirTexto("#loja-descricao-preview", store.description || "Adiciona uma descrição para apresentar a tua loja.");
   definirTexto("#loja-cidade-preview", store.city || "Angola");
+  const capaLoja = $("#loja-capa-preview");
+  if (capaLoja) capaLoja.style.backgroundImage = store.cover ? 'url("' + obterImagem(store.cover).replace(/"/g, "%22") + '")' : "";
   const marca = $("#loja-avatar");
   if (marca) marca.innerHTML = store.brand_image && /^https:\/\//i.test(store.brand_image) ? '<img src="' + escaparHTML(store.brand_image) + '" alt="Logótipo de ' + escaparHTML(store.name || "loja") + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">': escaparHTML((store.name || "B").trim().charAt(0).toUpperCase());
 }
@@ -2958,12 +2960,19 @@ function configurarLoja() {
   $("#form-loja")?.addEventListener("submit", async evento => {
     evento.preventDefault();
     const form = evento.currentTarget, existente = $("#estado-loja")?.classList.contains("ativa");
-    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim(), brand_image: form.elements.brand_image?.value.trim() || "" };
+    const payload = { name: form.elements.name.value.trim(), description: form.elements.description.value.trim(), city: form.elements.city.value.trim() };
     const botao = $("#botao-guardar-loja");
     if (botao) { botao.disabled = true; botao.textContent = "A guardar…"; }
     try {
       const data = await pedidoLoja(existente ? "/api/stores/mine" : "/api/stores/activate", { method: existente ? "PATCH" : "POST", body: JSON.stringify(payload) });
       preencherPainelLoja(data);
+      const logoFile = $("#loja-imagem-marca")?.files?.[0], coverFile = $("#loja-imagem-capa")?.files?.[0];
+      if (logoFile || coverFile) {
+        if ([logoFile, coverFile].filter(Boolean).some(file => file.size > LIMITE_IMAGEM)) throw new Error("Cada imagem deve ter no máximo 5 MB.");
+        const images = new FormData(); if (logoFile) images.append("logo", logoFile); if (coverFile) images.append("cover", coverFile);
+        const updated = await pedidoAPI("/api/stores/media", { method: "POST", body: images });
+        preencherPainelLoja(updated);
+      }
       mostrarMensagem(existente ? "A tua loja foi atualizada." : "A tua loja foi ativada com sucesso.", "sucesso");
     } catch (erro) { mostrarMensagem(erro.message || "Não foi possível guardar a loja.", "erro"); }
     finally { if (botao) { botao.disabled = false; botao.textContent = existente ? "Guardar alterações" : "Ativar a minha loja"; } }
@@ -3163,6 +3172,7 @@ function configurarPedidosProcura() {
           <h3>${escaparHTML(ad.product_name)}</h3>
           <p>${escaparHTML(ad.description)}</p>
           <p><strong>Local:</strong> ${escaparHTML(ad.city)} · <strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
+          ${ad.image ? '<img class="bisno-pedido-imagem" src="' + escaparHTML(obterImagem(ad.image)) + '" alt="Imagem do pedido" loading="lazy">' : ""}
           <p><small>Publicado por ${escaparHTML(ad.buyer_name)}</small></p>
           ${contacto ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer" aria-label="Contactar ${escaparHTML(ad.buyer_name)} pelo WhatsApp">☏ Contactar pelo WhatsApp</a>` : "<p>O comprador ainda não tem um contacto válido.</p>"}
           ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
@@ -3176,12 +3186,9 @@ function configurarPedidosProcura() {
     event.preventDefault();
     if (!exigirLogin()) return;
     const data = new FormData(form);
-    const body = {
-      product_name: data.get("product_name"),
-      description: data.get("description"),
-      budget: data.get("budget") || null,
-      city: data.get("city")
-    };
+    const body = new FormData(form);
+    const wantedImage = body.get("image");
+    if (wantedImage instanceof File && wantedImage.size > LIMITE_IMAGEM) { mostrarMensagem("A imagem do pedido não pode ultrapassar 5 MB.", "erro"); return; }
     const submit = form.querySelector('button[type="submit"]');
     if (submit) submit.disabled = true;
     try {
@@ -3207,12 +3214,49 @@ function configurarPedidosProcura() {
   window.bisnoCarregarPedidosProcura = carregar;
 }
 
+function configurarMenuPublicacao() {
+  const menu = document.getElementById("menu-superior");
+  const publicar = document.getElementById("menu-publicar-overlay");
+  const toggle = (element, show) => { if (element) element.hidden = !show; };
+  const fechar = () => { toggle(menu, false); toggle(publicar, false); $("#botao-abrir-menu")?.setAttribute("aria-expanded", "false"); };
+  $("#botao-abrir-menu")?.addEventListener("click", () => { const show = menu?.hidden !== false; toggle(menu, show); toggle(publicar, false); $("#botao-abrir-menu")?.setAttribute("aria-expanded", String(show)); });
+  document.querySelectorAll("[data-abrir-publicacao]").forEach(button => button.addEventListener("click", () => {
+    if (!utilizadorAtual) { mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
+    toggle(menu, false); toggle(publicar, true); $("#botao-abrir-menu")?.setAttribute("aria-expanded", "false");
+  }));
+  document.querySelectorAll("[data-fechar-overlay]").forEach(button => button.addEventListener("click", fechar));
+  document.querySelectorAll("[data-publicar-tipo]").forEach(button => button.addEventListener("click", () => {
+    if (!utilizadorAtual) { fechar(); mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
+    const type = button.dataset.publicarTipo; fechar();
+    if (type === "vendedor") abrirPagina("area-publicar"); else { abrirPagina("area-pedidos-procura"); window.bisnoCarregarPedidosProcura?.(); }
+  }));
+  document.querySelectorAll("[data-menu-acao]").forEach(button => button.addEventListener("click", () => {
+    const action = button.dataset.menuAcao; fechar();
+    if (action === "support") { window.open("https://www.facebook.com/profile.php?id=61595803947715", "_blank", "noopener,noreferrer"); return; }
+    if (action === "accessibility") { document.body.classList.toggle("bisno-acessibilidade-grande"); mostrarMensagem(document.body.classList.contains("bisno-acessibilidade-grande") ? "Texto ampliado ativado." : "Texto ampliado desativado.", "info"); return; }
+    if (!utilizadorAtual) { mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
+    if (action === "notifications") { abrirPagina("area-notificacoes"); abrirNotificacoesEMarcarLidas(); }
+    else if (action === "messages") { abrirPagina("area-mensagens"); atualizarConversas(); }
+    else if (action === "stores") { abrirPagina("area-diretorio-lojas"); carregarDiretorioLojas(); }
+    else if (action === "wanted") { abrirPagina("area-pedidos-procura"); window.bisnoCarregarPedidosProcura?.(); }
+    else if (action === "store") { abrirPagina("area-loja"); carregarMinhaLoja(); }
+    else if (action === "listings") { abrirPagina("area-meus-anuncios"); carregarMeusAnuncios(); }
+    else if (action === "profile") abrirPagina("area-conta");
+  }));
+  $("#form-alterar-password")?.addEventListener("submit", async event => {
+    event.preventDefault(); const form = event.currentTarget; const data = new FormData(form);
+    try { const result = await pedidoAPI("/api/auth/change-password", { method: "POST", body: { current_password: data.get("current_password"), new_password: data.get("new_password") } }); form.reset(); mostrarMensagem(result.mensagem || "Palavra-passe alterada.", "sucesso"); }
+    catch (error) { mostrarMensagem(error.message || "Não foi possível alterar a palavra-passe.", "erro"); }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
 
   // Mantém o conteúdo protegido enquanto a sessão é verificada.
   document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
   configurarBannerDestaque();
   configurarPainelPesquisa();
+  configurarMenuPublicacao();
 
   configurarNavegacao();
 

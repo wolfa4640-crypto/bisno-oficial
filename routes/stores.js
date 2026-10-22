@@ -1,5 +1,8 @@
 "use strict";
 const express = require("express");
+const multer = require("multer");
+const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
+const uploadMedia = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_req,file,cb) => cb(null, ["image/jpeg","image/png","image/webp"].includes(file.mimetype)) });
 const db = require("../data/database");
 const exigirLogin = require("../middleware/auth");
 const router = express.Router();
@@ -110,10 +113,9 @@ router.post('/activate', exigirLogin, async (req,res) => {
  if (name.length < 2) return res.status(400).json({erro:'O nome da loja deve ter pelo menos 2 caracteres.'});
  const description=clean(req.body.description,500);
  const city=clean(req.body.city,100);
- const brandImage=clean(req.body.brand_image,1000)||null;
- if(brandImage && !brandImage.startsWith("https://")) return res.status(400).json({erro:"A imagem da marca deve usar um endereço HTTPS válido."});
+ const brandImage=null;
  await db.prepare(`INSERT INTO stores(user_id,name,description,city,avatar,brand_image) VALUES(?,?,?,?,?,?)
- ON CONFLICT(user_id) DO UPDATE SET name=excluded.name, description=excluded.description, city=excluded.city, avatar=excluded.avatar, brand_image=excluded.brand_image, is_active=1, updated_at=CURRENT_TIMESTAMP`)
+ ON CONFLICT(user_id) DO UPDATE SET name=excluded.name, description=excluded.description, city=excluded.city, avatar=excluded.avatar, is_active=1, updated_at=CURRENT_TIMESTAMP`)
  .run(user.id,name,description,city,user.avatar||null,brandImage);
  const store=await getStore.get(user.id);
  res.status(201).json({store,stats:await storeSummary(store.id)});
@@ -125,10 +127,25 @@ router.patch('/mine', exigirLogin, async (req,res) => {
  if (name.length < 2) return res.status(400).json({erro:'O nome da loja deve ter pelo menos 2 caracteres.'});
  const description=clean(req.body.description,500);
  const city=typeof req.body.city === 'string' ? clean(req.body.city,100) : store.city;
- const brandImage=typeof req.body.brand_image==='string'?clean(req.body.brand_image,1000):store.brand_image;
- if(brandImage && !brandImage.startsWith("https://")) return res.status(400).json({erro:"A imagem da marca deve usar um endereço HTTPS válido."});
- await db.prepare('UPDATE stores SET name=?,description=?,city=?,brand_image=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(name,description,city,brandImage||null,store.id,req.session.userId);
+ await db.prepare('UPDATE stores SET name=?,description=?,city=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(name,description,city,store.id,req.session.userId);
  res.json({store:await getStore.get(req.session.userId),stats:await storeSummary(store.id)});
+});
+
+router.post('/media', uploadMedia.fields([{name:'logo',maxCount:1},{name:'cover',maxCount:1}]), async (req,res) => {
+ const userId=req.session.userId;
+ const store=await getStore.get(userId);
+ if(!store) return res.status(400).json({erro:'Ativa primeiro a tua loja e depois adiciona as imagens.'});
+ const logo=req.files?.logo?.[0], cover=req.files?.cover?.[0];
+ if(!logo && !cover) return res.status(400).json({erro:'Seleciona um logótipo ou uma imagem de capa.'});
+ try {
+  let brandImage=store.brand_image||null, coverImage=store.cover||null;
+  if(logo){brandImage=(await guardarImagem({prefixo:'store-logos',nome:'store-'+store.id,buffer:logo.buffer,contentType:logo.mimetype})).url;}
+  if(cover){coverImage=(await guardarImagem({prefixo:'store-covers',nome:'store-'+store.id,buffer:cover.buffer,contentType:cover.mimetype})).url;}
+  await db.prepare('UPDATE stores SET brand_image=?,cover=?,avatar=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(brandImage,coverImage,brandImage,store.id,userId);
+  if(logo && store.brand_image && store.brand_image!==brandImage) await eliminarImagemPorUrl(store.brand_image).catch(()=>{});
+  if(cover && store.cover && store.cover!==coverImage) await eliminarImagemPorUrl(store.cover).catch(()=>{});
+  res.json({store:await getStore.get(userId),stats:await storeSummary(store.id)});
+ } catch(error){console.error('Erro ao guardar imagens da loja:',error.message);res.status(503).json({erro:'Não foi possível guardar as imagens. Confirma o armazenamento de imagens do servidor.'});}
 });
 router.post('/by-user/:userId/view', async (req,res) => {
  const userId=validId(req.params.userId); if(!userId) return res.status(400).json({erro:'Utilizador inválido.'});

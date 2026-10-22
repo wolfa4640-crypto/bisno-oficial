@@ -187,7 +187,7 @@ router.get("/seller/:id", async (req, res) => {
     }
 
     const vendedor = await db.prepare(`
-      SELECT id, name, avatar
+      SELECT id, name, avatar, cover
       FROM users
       WHERE id = ?
     `).get(vendedorId);
