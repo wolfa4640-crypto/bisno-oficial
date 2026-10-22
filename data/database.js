@@ -52,7 +52,7 @@ function statement(sql) {
       query = query.replace(/^INSERT\s+OR\s+IGNORE\s+INTO\b/i, "INSERT INTO");
       if (ignoreConflict && !/\bON\s+CONFLICT\b/i.test(query)) query += " ON CONFLICT DO NOTHING";
       // RETURNING * also supports tables whose primary key is not named id (e.g. site_settings).
-      if (/^INSERT\\b/i.test(query) && !/\\bRETURNING\\b/i.test(query)) query += " RETURNING *";
+      if (query.toUpperCase().startsWith("INSERT ") && !/RETURNING/i.test(query)) query += " RETURNING *";
       const result = await currentQuery(query, params);
       return {
         changes: result.rowCount || 0,
