@@ -973,8 +973,10 @@ async function carregarMeusAnuncios() {
           <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
 
           <p>${escaparHTML(produto.city ?? "")}</p>
-
-          <button type="button" data-apagar-anuncio="${escaparHTML(produto.id)}">
+          <label for="stock-produto-${escaparHTML(produto.id)}">Stock</label>
+          <input id="stock-produto-${escaparHTML(produto.id)}" type="number" min="0" max="1000000" step="1" value="${Number.isSafeInteger(Number(produto.stock)) ? Number(produto.stock) : 1}" data-stock-valor="${escaparHTML(produto.id)}" aria-label="Quantidade em stock de ${escaparHTML(produto.name)}">
+          <button type="button" data-guardar-stock="${escaparHTML(produto.id)}" aria-label="Guardar stock">✓</button>
+          <button type="button" data-apagar-anuncio="${escaparHTML(produto.id)}">
 
             Apagar anúncio
 
