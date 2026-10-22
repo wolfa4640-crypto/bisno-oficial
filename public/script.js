@@ -1269,16 +1269,16 @@ function aplicarFiltros() {
       : `${produtos.length} anúncios encontrados`;
   }
 
+  const pedidosCompradores = Array.isArray(window.bisnoPedidosCompradoresCache) ? window.bisnoPedidosCompradoresCache.map(card => card.cloneNode(true)) : [];
+
   if (!produtos.length) {
-    lista.innerHTML = `<div class="estado-vazio-catalogo">
-      <p class="estado-vazio-titulo">Não encontrámos anúncios com estes filtros.</p>
-      <p>Tenta pesquisar por outras palavras, escolher outra categoria ou limpar os filtros.</p>
-      <button type="button" class="botao-limpar-filtros" data-limpar-filtros>Limpar filtros</button>
-    </div>`;
+    lista.innerHTML = `<div class="estado-vazio-catalogo"><p class="estado-vazio-titulo">Não encontrámos anúncios com estes filtros.</p><p>Tenta pesquisar por outras palavras, escolher outra categoria ou limpar os filtros.</p><button type="button" class="botao-limpar-filtros" data-limpar-filtros>Limpar filtros</button></div>`;
+    pedidosCompradores.forEach(card => lista.appendChild(card));
     return;
   }
 
   lista.innerHTML = produtos.map(cartaoProduto).join("");
+  pedidosCompradores.forEach(card => lista.appendChild(card));
 }
 
 function prepararAreaDetalhes() {
@@ -3269,6 +3269,7 @@ function configurarPedidosProcura() {
       if (feedPrincipal && secaoPedidos && document.getElementById("area-produtos")?.contains(secaoPedidos)) {
         secaoPedidos.classList.add("feed-integrado-home");
         const cardsCompradores = Array.from(lista.querySelectorAll(".bisno-pedido-procura"));
+        window.bisnoPedidosCompradoresCache = cardsCompradores.map(card => card.cloneNode(true));
         cardsCompradores.forEach(card => feedPrincipal.appendChild(card));
       ordenarFeedPorPublicacao(feedPrincipal);
         lista.innerHTML = "";
