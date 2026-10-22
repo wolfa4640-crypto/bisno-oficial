@@ -1,7 +1,7 @@
 "use strict";
 const express = require("express");
 const multer = require("multer");
-const { guardarImagem } = require("../storage/object-storage");
+const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
 const uploadImage = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_req,file,cb) => cb(null, ["image/jpeg","image/png","image/webp"].includes(file.mimetype)) });
 const db = require("../data/database");
 const exigirLogin = require("../middleware/auth");
@@ -42,6 +42,7 @@ router.get("/", exigirLogin, async (req, res) => {
 });
 
 router.post("/", exigirLogin, uploadImage.single("image"), async (req, res) => {
+  let image = null;
   try {
     const product_name = texto(req.body.product_name, 120);
     const description = texto(req.body.description, 2000);
@@ -52,12 +53,12 @@ router.post("/", exigirLogin, uploadImage.single("image"), async (req, res) => {
       return res.status(400).json({ erro: "Indica o produto, descreve o que procuras e informa a cidade." });
     if (budget !== null && (!Number.isSafeInteger(budget) || budget < 0 || budget > 1000000000000))
       return res.status(400).json({ erro: "O orçamento deve ser um valor inteiro válido em Kz." });
-    let image = null;
     if (req.file) image = (await guardarImagem({ prefixo: "wanted-ads", nome: "user-" + req.session.userId + "-" + Date.now(), buffer: req.file.buffer, contentType: req.file.mimetype })).url;
     const result = await db.prepare("INSERT INTO wanted_ads(user_id,product_name,description,budget,city,image) VALUES(?,?,?,?,?,?)")
       .run(req.session.userId, product_name, description, budget, city, image);
     res.status(201).json({ mensagem: "Pedido publicado com sucesso.", id: result.lastInsertRowid });
   } catch (error) {
+    if (image) await eliminarImagemPorUrl(image).catch(cleanupError => console.error("Falha ao limpar imagem órfã do pedido:", cleanupError.message));
     console.error("Erro ao publicar pedido de procura:", error);
     res.status(500).json({ erro: "Não foi possível publicar o pedido." });
   }
@@ -67,10 +68,12 @@ router.delete("/:id", exigirLogin, async (req, res) => {
   try {
     const wantedId = id(req.params.id);
     if (!wantedId) return res.status(400).json({ erro: "Pedido inválido." });
-    const result = await db.prepare("UPDATE wanted_ads SET status='closed' WHERE id=? AND user_id=? AND status='active'")
-      .run(wantedId, req.session.userId);
-    if (!result.changes) return res.status(404).json({ erro: "Pedido não encontrado ou não pertence à tua conta." });
-    res.json({ mensagem: "Pedido encerrado." });
+    const wanted = await db.prepare("SELECT id, image FROM wanted_ads WHERE id=? AND user_id=?").get(wantedId, req.session.userId);
+    if (!wanted) return res.status(404).json({ erro: "Pedido não encontrado ou não pertence à tua conta." });
+    const result = await db.prepare("DELETE FROM wanted_ads WHERE id=? AND user_id=?").run(wantedId, req.session.userId);
+    if (!result.changes) return res.status(404).json({ erro: "O pedido já não existe." });
+    if (wanted.image) await eliminarImagemPorUrl(wanted.image).catch(e => console.error("Pedido eliminado, mas a imagem não pôde ser removida:", e.message));
+    res.json({ mensagem: "Pedido e imagem eliminados definitivamente.", id: wantedId });
   } catch (error) {
     console.error("Erro ao encerrar pedido:", error);
     res.status(500).json({ erro: "Não foi possível encerrar o pedido." });
