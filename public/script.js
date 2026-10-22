@@ -3257,22 +3257,79 @@ function configurarPedidosProcura() {
       lista.innerHTML = "<p>Não foi possível carregar os pedidos. Tenta novamente.</p>";
     }
   }
+  const campoImagem = form.querySelector('input[name="image"]');
+  const preview = document.getElementById("pedido-procura-preview");
+  let urlPreview = null;
+  function limparPreview() {
+    if (urlPreview) URL.revokeObjectURL(urlPreview);
+    urlPreview = null;
+    if (preview) { preview.hidden = true; preview.replaceChildren(); }
+  }
+  campoImagem?.addEventListener("change", () => {
+    limparPreview();
+    const file = campoImagem.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      campoImagem.value = "";
+      mostrarMensagem("Escolhe uma imagem JPG, PNG ou WEBP.", "erro");
+      return;
+    }
+    if (file.size > LIMITE_IMAGEM) {
+      campoImagem.value = "";
+      mostrarMensagem("A imagem do pedido não pode ultrapassar 5 MB.", "erro");
+      return;
+    }
+    if (preview) {
+      urlPreview = URL.createObjectURL(file);
+      const img = document.createElement("img");
+      img.src = urlPreview;
+      img.alt = "Pré-visualização da imagem do pedido";
+      img.className = "bisno-pedido-imagem";
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "botao-secundario";
+      remove.textContent = "Remover imagem";
+      remove.addEventListener("click", () => { campoImagem.value = ""; limparPreview(); });
+      preview.replaceChildren(img, remove);
+      preview.hidden = false;
+    }
+  });
   form.addEventListener("submit", async event => {
     event.preventDefault();
     if (!exigirLogin()) return;
+    const produto = form.elements.namedItem("product_name")?.value.trim() || "";
+    const descricao = form.elements.namedItem("description")?.value.trim() || "";
+    const cidade = form.elements.namedItem("city")?.value.trim() || "";
+    const orcamento = form.elements.namedItem("budget")?.value.trim() || "";
+    if (produto.length < 2 || descricao.length < 5 || cidade.length < 2) {
+      mostrarMensagem("Preenche o produto, uma descrição com pelo menos 5 caracteres e a cidade/província.", "erro");
+      return;
+    }
+    if (orcamento && (!Number.isSafeInteger(Number(orcamento)) || Number(orcamento) < 0 || Number(orcamento) > 1000000000000)) {
+      mostrarMensagem("O orçamento deve ser um número inteiro válido em Kz.", "erro");
+      return;
+    }
     const body = new FormData(form);
     const wantedImage = body.get("image");
-    if (wantedImage instanceof File && wantedImage.size > LIMITE_IMAGEM) { mostrarMensagem("A imagem do pedido não pode ultrapassar 5 MB.", "erro"); return; }
+    // Alguns navegadores incluem um File vazio quando o campo opcional não foi preenchido.
+    if (!(wantedImage instanceof File) || wantedImage.size === 0) body.delete("image");
+    else if (wantedImage.size > LIMITE_IMAGEM || !["image/jpeg", "image/png", "image/webp"].includes(wantedImage.type)) {
+      mostrarMensagem("A imagem deve ser JPG, PNG ou WEBP e não pode ultrapassar 5 MB.", "erro");
+      return;
+    }
     const submit = form.querySelector('button[type="submit"]');
-    if (submit) submit.disabled = true;
+    if (submit) { submit.disabled = true; submit.textContent = "A publicar…"; }
     try {
-      await pedidoAPI("/api/wanted", { method: "POST", body });
+      const resultado = await pedidoAPI("/api/wanted", { method: "POST", body });
       form.reset();
-      mostrarMensagem("Pedido de procura publicado!", "sucesso");
+      limparPreview();
+      mostrarMensagem(resultado.mensagem || "Pedido publicado com sucesso!", "sucesso");
       await carregar();
     } catch (error) {
-      mostrarMensagem(error.message || "Não foi possível publicar o pedido.", "erro");
-    } finally { if (submit) submit.disabled = false; }
+      mostrarMensagem(error.message || "Não foi possível publicar o pedido. Confirma a ligação e tenta novamente.", "erro");
+    } finally {
+      if (submit) { submit.disabled = false; submit.textContent = "＋ Publicar pedido"; }
+    }
   });
   lista.addEventListener("click", async event => {
     const button = event.target.closest("[data-encerrar-pedido]");
@@ -3360,11 +3417,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
   await verificarSessao();
-  if (utilizadorAtual) {
-    const lojaPartilhada = new URLSearchParams(window.location.search).get("loja");
-    if (lojaPartilhada) { abrirPagina("area-diretorio-lojas"); await abrirDetalheLoja(lojaPartilhada); }
-    else abrirPagina("area-produtos");
-  } else abrirPagina("area-autenticacao");
+  // Ao abrir ou atualizar o site, começa sempre no menu inicial.
+  // Ligações diretas a páginas internas não alteram o destino inicial.
+  if (utilizadorAtual) abrirPagina("area-produtos");
+  else abrirPagina("area-autenticacao");
   atualizarAreasSociais();
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 
