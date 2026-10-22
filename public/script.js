@@ -3299,11 +3299,15 @@ function configurarPedidosProcura() {
   });
   form.addEventListener("submit", async event => {
     event.preventDefault();
+    event.stopPropagation();
+    if (form.dataset.publicando === "true") return;
     if (!exigirLogin()) return;
-    const produto = form.elements.namedItem("product_name")?.value.trim() || "";
-    const descricao = form.elements.namedItem("description")?.value.trim() || "";
-    const cidade = form.elements.namedItem("city")?.value.trim() || "";
-    const orcamento = form.elements.namedItem("budget")?.value.trim() || "";
+
+    const campo = nome => form.elements.namedItem(nome);
+    const produto = String(campo("product_name")?.value || "").trim();
+    const descricao = String(campo("description")?.value || "").trim();
+    const cidade = String(campo("city")?.value || "").trim();
+    const orcamento = String(campo("budget")?.value || "").trim();
     if (produto.length < 2 || descricao.length < 5 || cidade.length < 2) {
       mostrarMensagem("Preenche o produto, uma descrição com pelo menos 5 caracteres e a cidade/província.", "erro");
       return;
@@ -3312,15 +3316,19 @@ function configurarPedidosProcura() {
       mostrarMensagem("O orçamento deve ser um número inteiro válido em Kz.", "erro");
       return;
     }
+
     const body = new FormData(form);
     const wantedImage = body.get("image");
-    // Alguns navegadores incluem um File vazio quando o campo opcional não foi preenchido.
+    // A imagem é opcional: remover ficheiros vazios que alguns navegadores enviam.
     if (!(wantedImage instanceof File) || wantedImage.size === 0) body.delete("image");
     else if (wantedImage.size > LIMITE_IMAGEM || !["image/jpeg", "image/png", "image/webp"].includes(wantedImage.type)) {
       mostrarMensagem("A imagem deve ser JPG, PNG ou WEBP e não pode ultrapassar 5 MB.", "erro");
       return;
     }
+
     const submit = form.querySelector('button[type="submit"]');
+    const textoOriginal = submit?.textContent || "＋ Publicar pedido";
+    form.dataset.publicando = "true";
     if (submit) { submit.disabled = true; submit.textContent = "A publicar…"; }
     try {
       const resultado = await pedidoAPI("/api/wanted", { method: "POST", body });
@@ -3331,7 +3339,8 @@ function configurarPedidosProcura() {
     } catch (error) {
       mostrarMensagem(error.message || "Não foi possível publicar o pedido. Confirma a ligação e tenta novamente.", "erro");
     } finally {
-      if (submit) { submit.disabled = false; submit.textContent = "＋ Publicar pedido"; }
+      delete form.dataset.publicando;
+      if (submit) { submit.disabled = false; submit.textContent = textoOriginal; }
     }
   });
   document.addEventListener("click", async event => {
