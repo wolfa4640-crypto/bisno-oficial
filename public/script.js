@@ -2980,6 +2980,7 @@ function preencherPainelLoja(data = {}) {
     if ($("#titulo-form-loja")) $("#titulo-form-loja").textContent = "Ativa a tua loja gratuitamente";
     if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Ativar a minha loja";
     if (preview) preview.hidden = true;
+    if (form) form.hidden = false;
     if (form) { form.elements.name.value = ""; form.elements.description.value = ""; form.elements.city.value = ""; if (form.elements.brand_image) form.elements.brand_image.value = ""; }
     return;
   }
@@ -2988,6 +2989,7 @@ function preencherPainelLoja(data = {}) {
   if ($("#botao-guardar-loja")) $("#botao-guardar-loja").textContent = "Guardar alterações";
   if (form) { form.elements.name.value = store.name || ""; form.elements.description.value = store.description || ""; form.elements.city.value = store.city || ""; if (form.elements.brand_image) form.elements.brand_image.value = store.brand_image || ""; }
   if (preview) preview.hidden = false;
+  if (form) form.hidden = true;
   definirTexto("#loja-nome-preview", store.name || "A tua loja");
   definirTexto("#loja-descricao-preview", store.description || "Adiciona uma descrição para apresentar a tua loja.");
   definirTexto("#loja-cidade-preview", store.city || "Angola");
@@ -3021,6 +3023,13 @@ function configurarLoja() {
     } catch (erro) { mostrarMensagem(erro.message || "Não foi possível guardar a loja.", "erro"); }
     finally { if (botao) { botao.disabled = false; botao.textContent = existente ? "Guardar alterações" : "Ativar a minha loja"; } }
   });
+  $("#acao-editar-loja")?.addEventListener("click", () => { const form=$("#form-loja"); if(form){form.hidden=!form.hidden; if(!form.hidden) form.scrollIntoView({behavior:"smooth",block:"nearest"});} });
+  const logoInput=$("#loja-imagem-marca"), coverInput=$("#loja-imagem-capa");
+  $("#loja-avatar")?.addEventListener("click",()=>logoInput?.click());
+  $("#loja-avatar")?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();logoInput?.click();}});
+  $("#loja-capa-preview")?.addEventListener("click",()=>coverInput?.click());
+  $("#loja-capa-preview")?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();coverInput?.click();}});
+  [logoInput,coverInput].forEach(input=>input?.addEventListener("change",()=>{if(input.files?.length){const form=$("#form-loja");if(form){form.hidden=false;form.requestSubmit();}}}));
   $("#botao-atualizar-loja")?.addEventListener("click", carregarMinhaLoja);
 }
 

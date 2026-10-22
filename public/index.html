@@ -131,8 +131,13 @@
     .bisno-feed-compradores.feed-integrado-home{border:0;padding:0;margin:0}
     .bisno-feed-compradores.feed-integrado-home>h2,.bisno-feed-compradores.feed-integrado-home>p,.bisno-feed-compradores.feed-integrado-home>#form-pedido-procura{display:none!important}
 
+
+    .bisno-store-form-actions{display:flex;justify-content:flex-end;margin:8px 0}
+    .bisno-store-image-click{cursor:pointer;position:relative}
+    .bisno-store-image-click:after{content:"✎";position:absolute;right:5px;bottom:5px;background:#176b45;color:#fff;border:2px solid #fff;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;font-weight:800}
+    #form-loja[hidden]{display:none!important}
 </style>
-  <script src="/script.js?v=20261022-profile-icons-buyer-focus-v2" defer></script>
+  <script src="/script.js?v=20261022-store-icon-controls-v1" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -217,7 +222,7 @@
       <button type="button" class="nav-social" data-menu-acao="notifications" aria-label="Notificações" title="Notificações"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
       <button type="button" class="nav-social" data-menu-acao="messages" aria-label="Mensagens" title="Mensagens"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
-      <a href="#area-diretorio-lojas" data-bisno-page="stores" aria-label="Explorar lojas"><span class="nav-icon" aria-hidden="true">▦</span><span>Lojas</span></a>
+      <a href="#area-diretorio-lojas" data-bisno-page="stores" aria-label="Explorar lojas"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg><span>Lojas</span></a>
       
     </div>
   </nav>
@@ -226,9 +231,9 @@
     <h2>Menu</h2>
     <button type="button" data-menu-acao="notifications"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg> Notificações</button>
     <button type="button" data-menu-acao="messages"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg> Mensagens</button>
-    <button type="button" data-menu-acao="stores">▦ Explorar lojas</button>
+    <button type="button" data-menu-acao="stores"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg> Explorar lojas</button>
     <button type="button" data-menu-acao="wanted">🔎 Publicações dos compradores</button>
-    <button type="button" data-menu-acao="store">▣ A minha loja</button>
+    <button type="button" data-menu-acao="store"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg> A minha loja</button>
     <button type="button" data-menu-acao="listings">▤ Os meus anúncios</button>
     <button type="button" data-menu-acao="profile">♙ Perfil e definições</button>
     <button type="button" data-menu-acao="accessibility">♿ Acessibilidade</button>
@@ -473,7 +478,7 @@
         <div class="bisno-store-heading">
           <div>
             <span class="bisno-secao-kicker">O teu espaço comercial</span>
-            <h2>▣ A minha loja</h2>
+            <h2><svg class="nav-svg-icon" style="display:inline-block;vertical-align:middle" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg> A minha loja</h2>
             <p>Cria a tua montra, acompanha o interesse dos clientes e gere os teus anúncios num só lugar.</p>
           </div>
           <span class="bisno-store-status" id="estado-loja">Ainda não ativada</span>
@@ -487,21 +492,22 @@
         </div>
 
         <div class="bisno-store-preview" id="previsualizacao-loja" hidden>
-          <div class="bisno-store-cover-preview" id="loja-capa-preview"></div>
-          <div class="bisno-store-avatar" id="loja-avatar">B</div>
+          <div class="bisno-store-cover-preview bisno-store-image-click" id="loja-capa-preview" role="button" tabindex="0" aria-label="Alterar foto de capa da loja" title="Toca para alterar a capa"></div>
+          <div class="bisno-store-avatar bisno-store-image-click" id="loja-avatar" role="button" tabindex="0" aria-label="Alterar logótipo da loja" title="Toca para alterar o logótipo">B</div>
           <div><h3 id="loja-nome-preview">A tua loja</h3><p id="loja-descricao-preview"></p><small id="loja-cidade-preview"></small></div>
         </div>
 
+        <div class="bisno-store-form-actions"><button type="button" id="acao-editar-loja" class="bisno-profile-icon" aria-label="Editar dados da loja" title="Editar dados da loja"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button></div>
         <form id="form-loja" class="bisno-store-form">
           <h3 id="titulo-form-loja">Ativa a tua loja gratuitamente</h3>
-          <p>Qualquer utilizador com conta pode criar uma loja. Manténs os teus anúncios e falas diretamente com os compradores.</p>
+          <p>Cria a tua montra e contacta compradores diretamente.</p>
           <label for="loja-nome">Nome da loja</label>
           <input id="loja-nome" name="name" type="text" maxlength="80" placeholder="Ex.: Roger Tech" required>
           <label for="loja-descricao">Descrição</label>
           <textarea id="loja-descricao" name="description" rows="3" maxlength="500" placeholder="O que vendes? O que torna a tua loja especial?"></textarea>
-          <label for="loja-imagem-marca">Logótipo da loja</label><input id="loja-imagem-marca" type="file" accept="image/jpeg,image/png,image/webp">
-          <label for="loja-imagem-capa">Foto de capa da loja</label><input id="loja-imagem-capa" type="file" accept="image/jpeg,image/png,image/webp">
-          <p>As imagens ficam visíveis para quem visitar a tua loja.</p>
+          <input id="loja-imagem-marca" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Escolher logótipo da loja">
+          <input id="loja-imagem-capa" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Escolher foto de capa da loja">
+          
           <label for="loja-cidade">Cidade ou província</label>
           <input id="loja-cidade" name="city" type="text" maxlength="100" placeholder="Ex.: N'dalatando">
           <button type="submit" id="botao-guardar-loja">Ativar a minha loja</button>
