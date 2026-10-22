@@ -89,8 +89,14 @@
     body.bisno-acessibilidade-grande button,body.bisno-acessibilidade-grande input,body.bisno-acessibilidade-grande textarea,body.bisno-acessibilidade-grande select{font-size:1.08em}
     @media(max-width:600px){.topo-conteudo{gap:8px}.topo-slogan-secundario{display:none}.bisno-nav-inner{justify-content:space-around}.bisno-nav-inner>a,.bisno-nav-inner>.nav-publish{min-width:0;padding-left:8px;padding-right:8px}}
 
-  </style>
-  <script src="/script.js?v=20261022-wanted-stock-v1" defer></script>
+  .bisno-perfil-capa{height:145px;width:100%;border-radius:14px;background:#dfe5eb center/cover no-repeat;display:flex;align-items:flex-end;padding:12px;color:#fff;box-sizing:border-box;margin:8px 0}
+.bisno-perfil-capa-publica{height:180px;background-size:cover;background-position:center}
+.bisno-store-cover-preview{width:100%;height:90px;border-radius:10px;background:#e6e8eb center/cover no-repeat;margin-bottom:10px}
+.bisno-store-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.bisno-avatar-fallback#foto-perfil{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.bisno-menu-overlay{backdrop-filter:blur(14px)}
+</style>
+  <script src="/script.js?v=20261022-menu-profiles-v1" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -458,6 +464,7 @@
         </div>
 
         <div class="bisno-store-preview" id="previsualizacao-loja" hidden>
+          <div class="bisno-store-cover-preview" id="loja-capa-preview"></div>
           <div class="bisno-store-avatar" id="loja-avatar">B</div>
           <div><h3 id="loja-nome-preview">A tua loja</h3><p id="loja-descricao-preview"></p><small id="loja-cidade-preview"></small></div>
         </div>
