@@ -60,6 +60,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/social", require("./routes/social"));
 app.use("/api/stores", require("./routes/stores"));
+app.use("/api/wanted", require("./routes/wanted"));
 const exigirLogin = require("./middleware/auth");
 app.use("/uploads", exigirLogin, express.static(uploadsDir, { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
 const publicDir = path.join(__dirname, "public");
