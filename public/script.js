@@ -790,8 +790,11 @@ async function guardarPerfil(evento) {
   const formulario = evento.currentTarget;
 
   const dados = new FormData(formulario);
-
-  const ficheiros = [$("#perfil-foto-input")?.files?.[0], $("#perfil-capa-input")?.files?.[0]].filter(Boolean);
+  const fotoSelecionada = $("#perfil-foto-input")?.files?.[0];
+  const capaSelecionada = $("#perfil-capa-input")?.files?.[0];
+  if (fotoSelecionada) dados.append("avatar", fotoSelecionada);
+  if (capaSelecionada) dados.append("cover", capaSelecionada);
+  const ficheiros = [fotoSelecionada, capaSelecionada].filter(Boolean);
 
 
 
@@ -2884,6 +2887,23 @@ function configurarFormularios() {
   });
   $("#perfil-capa-clicavel")?.addEventListener("click", () => $("#perfil-capa-input")?.click());
   $("#perfil-avatar-clicavel")?.addEventListener("click", () => $("#perfil-foto-input")?.click());
+  $("#perfil-capa-input")?.addEventListener("change", evento => {
+    const file = evento.currentTarget.files?.[0];
+    if (!file) return;
+    if (file.size > LIMITE_IMAGEM) { mostrarMensagem("A foto de capa não pode ultrapassar 5 MB.", "erro"); evento.currentTarget.value = ""; return; }
+    const url = URL.createObjectURL(file);
+    const capa = $("#perfil-capa-clicavel");
+    if (capa) capa.style.backgroundImage = 'url("' + url + '")';
+  });
+  $("#perfil-foto-input")?.addEventListener("change", evento => {
+    const file = evento.currentTarget.files?.[0];
+    if (!file) return;
+    if (file.size > LIMITE_IMAGEM) { mostrarMensagem("A fotografia do perfil não pode ultrapassar 5 MB.", "erro"); evento.currentTarget.value = ""; return; }
+    const foto = $("#foto-perfil"), fallback = $("#perfil-sem-foto");
+    if (foto) { foto.src = URL.createObjectURL(file); foto.hidden = false; }
+    if (fallback) fallback.hidden = true;
+  });
+
   $("#acao-editar-dados-perfil")?.addEventListener("click", () => { const f = $("#form-perfil"); if (f) f.hidden = !f.hidden; });
   $("#form-perfil")?.addEventListener("submit", guardarPerfil);
 
