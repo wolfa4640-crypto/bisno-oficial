@@ -163,6 +163,17 @@
   </style>
   <script src="/script.js?v=20261022-store-search-v1" defer></script>
   <script src="/pwa-register.js" defer></script>
+
+  <style id="bisno-nav-publish-emphasis-v1">
+    .bisno-nav-inner{position:relative;display:flex;align-items:stretch;}
+    .bisno-nav-inner .nav-publish{position:relative;align-self:center;flex:0 0 auto;min-width:58px;min-height:56px;margin:-9px 2px 0;padding:5px 9px!important;border-radius:13px!important;background:#e1f4e8!important;color:#176b45!important;box-shadow:0 3px 10px rgba(23,107,69,.18);}
+    .bisno-nav-inner .nav-publish .nav-icon{display:flex;align-items:center;justify-content:center;width:31px;height:29px;border-radius:8px;background:#c6ead3;color:#145b3a;font-size:27px;line-height:1;font-weight:700;}
+    .bisno-nav-inner .nav-publish>span:last-child{font-size:11px;font-weight:700;line-height:1.15;}
+    .bisno-nav-inner .nav-social.nav-messages{flex-direction:column;gap:2px;min-width:52px;min-height:48px;padding:3px 4px;font:inherit;}
+    .bisno-nav-inner .nav-social.nav-messages .nav-social-label{display:block!important;font-size:10px;line-height:1.15;font-weight:600;white-space:nowrap;}
+    .bisno-nav-inner .nav-social.nav-messages .nav-svg-icon{width:22px;height:22px;}
+    @media(max-width:600px){.bisno-nav-inner{justify-content:space-around;gap:2px}.bisno-nav-inner>a,.bisno-nav-inner>.nav-publish,.bisno-nav-inner>.nav-social{min-width:0;padding-left:5px;padding-right:5px}.bisno-nav-inner .nav-publish{margin-top:-7px;min-width:52px;min-height:53px}.bisno-nav-inner .nav-social.nav-messages{min-width:48px}}
+  </style>
 </head>
 
 <body class="bisno-requer-login">
@@ -244,7 +255,7 @@
       
       <button type="button" data-abrir-publicacao class="nav-publish" aria-label="Escolher tipo de anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></button>
       <button type="button" class="nav-social" data-menu-acao="notifications" aria-label="Notificações" title="Notificações"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
-      <button type="button" class="nav-social" data-menu-acao="messages" aria-label="Mensagens" title="Mensagens"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
+      <button type="button" class="nav-social nav-messages" data-menu-acao="messages" aria-label="Mensagens" title="Mensagens"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg><span class="nav-social-label">Mensagens</span><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
       <a href="#area-loja" data-bisno-page="store" aria-label="A minha loja"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5-6h-15L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6"/><path d="M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg><span>A minha loja</span></a>
       
