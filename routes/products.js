@@ -153,6 +153,7 @@ router.get("/mine", exigirLogin, async (req, res) => {
         neighborhood,
         whatsapp,
         image,
+        stock,
         created_at
       FROM products
       WHERE user_id = ?
