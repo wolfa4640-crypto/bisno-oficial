@@ -94,6 +94,7 @@
 
       <span class="topo-slogan topo-slogan-secundario">O teu mercado, num só lugar</span>
       <button type="button" id="botao-abrir-pesquisa" class="botao-abrir-pesquisa" aria-label="Abrir pesquisa e filtros" aria-expanded="false" aria-controls="painel-pesquisa" title="Pesquisar"><span aria-hidden="true">⌕</span></button>
+      <button type="button" id="botao-abrir-menu" class="botao-menu-superior" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu-superior">☰</button>
     </div>
   </header>
 
@@ -151,16 +152,32 @@
   <nav class="bisno-nav" aria-label="Navegação principal">
     <div class="bisno-nav-inner">
       <a href="#area-produtos" data-bisno-page="home" class="is-active"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></a>
-      <a href="#area-notificacoes" data-bisno-page="notifications"><span class="nav-icon" aria-hidden="true">♧</span><span>Notificações</span><span class="nav-badge" id="badge-notificacoes" hidden>0</span></a>
-      <a href="#area-mensagens" data-bisno-page="messages"><span class="nav-icon" aria-hidden="true">✉</span><span>Mensagens</span><span class="nav-badge" id="badge-mensagens" hidden>0</span></a>
-      <a href="#area-publicar" data-bisno-page="publish" class="nav-publish" aria-label="Publicar anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></a>
+      
+      <button type="button" data-abrir-publicacao class="nav-publish" aria-label="Escolher tipo de anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></button>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
       <a href="#area-diretorio-lojas" data-bisno-page="stores" aria-label="Explorar lojas"><span class="nav-icon" aria-hidden="true">▦</span><span>Lojas</span></a>
-      <a href="#area-pedidos-procura" data-bisno-page="wanted" aria-label="Pedidos de procura"><span class="nav-icon" aria-hidden="true">⌕</span><span>Procura</span></a>
-      <a href="#area-loja" data-bisno-page="store" aria-label="A minha loja"><span class="nav-icon" aria-hidden="true">▣</span><span>Loja</span></a>
-      <a href="#area-meus-anuncios" data-bisno-page="listings" aria-label="Os meus anúncios"><span class="nav-icon" aria-hidden="true">▤</span><span>Os meus</span></a>
+      
     </div>
   </nav>
+  <div id="menu-superior" class="bisno-menu-overlay" hidden>
+    <button type="button" class="bisno-fechar-overlay" data-fechar-overlay aria-label="Fechar menu">×</button>
+    <h2>Menu</h2>
+    <button type="button" data-menu-acao="notifications">♧ Notificações</button>
+    <button type="button" data-menu-acao="messages">✉ Mensagens</button>
+    <button type="button" data-menu-acao="stores">▦ Explorar lojas</button>
+    <button type="button" data-menu-acao="wanted">⌕ Pedidos de compradores</button>
+    <button type="button" data-menu-acao="store">▣ A minha loja</button>
+    <button type="button" data-menu-acao="listings">▤ Os meus anúncios</button>
+    <button type="button" data-menu-acao="profile">♙ Perfil e definições</button>
+    <button type="button" data-menu-acao="accessibility">♿ Acessibilidade</button>
+    <button type="button" data-menu-acao="support">🛟 Suporte técnico</button>
+  </div>
+  <div id="menu-publicar-overlay" class="bisno-menu-overlay bisno-plus-overlay" hidden>
+    <button type="button" class="bisno-fechar-overlay" data-fechar-overlay aria-label="Fechar publicação">×</button>
+    <h2>O que queres publicar?</h2>
+    <button type="button" data-publicar-tipo="vendedor">🛍️ Anúncio de vendedor <small>Publicar um produto para venda</small></button>
+    <button type="button" data-publicar-tipo="comprador">🔎 Anúncio de comprador <small>Publicar texto ou imagem do que procuras</small></button>
+  </div>
 
   <main class="container">
     <!-- MENSAGENS DA APLICAÇÃO -->
@@ -361,7 +378,10 @@
         <form id="form-perfil" class="bisno-perfil-form" enctype="multipart/form-data">
           <h3>Editar perfil</h3>
           <div class="bisno-perfil-campo">
-            <label for="perfil-nome-input">Nome de apresentação</label>
+            <div class="bisno-cover-preview" id="perfil-capa-preview" aria-label="Capa do perfil"></div>
+          <label for="perfil-capa-input">Foto de capa</label><input id="perfil-capa-input" name="cover" type="file" accept="image/jpeg,image/png,image/webp">
+          <label for="perfil-foto-input">Foto de perfil</label><input id="perfil-foto-input" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
+          <label for="perfil-nome-input">Nome de apresentação</label>
             <input id="perfil-nome-input" name="name" type="text" maxlength="80" autocomplete="name" required>
           </div>
           <div class="bisno-perfil-campo">
@@ -370,6 +390,12 @@
           </div>
           
           <button type="submit" class="bisno-guardar-perfil">Guardar alterações</button>
+        </form>
+        <form id="form-alterar-password" class="bisno-perfil-form">
+          <h3>Alterar palavra-passe</h3>
+          <label for="password-atual">Palavra-passe atual</label><input id="password-atual" name="current_password" type="password" autocomplete="current-password" required>
+          <label for="password-nova">Nova palavra-passe</label><input id="password-nova" name="new_password" type="password" minlength="8" autocomplete="new-password" required>
+          <button type="submit" class="bisno-guardar-perfil">Guardar palavra-passe</button>
         </form>
       </section>
 
@@ -425,9 +451,9 @@
           <input id="loja-nome" name="name" type="text" maxlength="80" placeholder="Ex.: Roger Tech" required>
           <label for="loja-descricao">Descrição</label>
           <textarea id="loja-descricao" name="description" rows="3" maxlength="500" placeholder="O que vendes? O que torna a tua loja especial?"></textarea>
-          <label for="loja-imagem-marca">Imagem da marca / logótipo (URL HTTPS)</label>
-          <input id="loja-imagem-marca" name="brand_image" type="url" maxlength="1000" placeholder="https://...">
-          <p>Usa um link HTTPS direto para a imagem do logótipo.</p>
+          <label for="loja-imagem-marca">Logótipo da loja</label><input id="loja-imagem-marca" type="file" accept="image/jpeg,image/png,image/webp">
+          <label for="loja-imagem-capa">Foto de capa da loja</label><input id="loja-imagem-capa" type="file" accept="image/jpeg,image/png,image/webp">
+          <p>As imagens ficam visíveis para quem visitar a tua loja.</p>
           <label for="loja-cidade">Cidade ou província</label>
           <input id="loja-cidade" name="city" type="text" maxlength="100" placeholder="Ex.: N'dalatando">
           <button type="submit" id="botao-guardar-loja">Ativar a minha loja</button>
@@ -638,6 +664,7 @@
           <textarea id="pedido-procura-descricao" name="description" maxlength="2000" rows="3" placeholder="Indica características, estado ou outras preferências." required></textarea>
           <label for="pedido-procura-orcamento">Orçamento máximo (Kz, opcional)</label>
           <input id="pedido-procura-orcamento" name="budget" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 150000">
+          <label for="pedido-procura-imagem">Imagem (opcional)</label><input id="pedido-procura-imagem" name="image" type="file" accept="image/jpeg,image/png,image/webp">
           <label for="pedido-procura-cidade">Cidade ou província</label>
           <input id="pedido-procura-cidade" name="city" maxlength="100" placeholder="Ex.: N'dalatando" required>
           <button type="submit" aria-label="Publicar pedido de procura">＋ Publicar pedido</button>
