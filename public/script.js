@@ -3183,12 +3183,9 @@ function configurarPedidosProcura() {
     event.preventDefault();
     if (!exigirLogin()) return;
     const data = new FormData(form);
-    const body = {
-      product_name: data.get("product_name"),
-      description: data.get("description"),
-      budget: data.get("budget") || null,
-      city: data.get("city")
-    };
+    const body = new FormData(form);
+    const wantedImage = body.get("image");
+    if (wantedImage instanceof File && wantedImage.size > LIMITE_IMAGEM) { mostrarMensagem("A imagem do pedido não pode ultrapassar 5 MB.", "erro"); return; }
     const submit = form.querySelector('button[type="submit"]');
     if (submit) submit.disabled = true;
     try {
@@ -3214,12 +3211,49 @@ function configurarPedidosProcura() {
   window.bisnoCarregarPedidosProcura = carregar;
 }
 
+function configurarMenuPublicacao() {
+  const menu = document.getElementById("menu-superior");
+  const publicar = document.getElementById("menu-publicar-overlay");
+  const toggle = (element, show) => { if (element) element.hidden = !show; };
+  const fechar = () => { toggle(menu, false); toggle(publicar, false); $("#botao-abrir-menu")?.setAttribute("aria-expanded", "false"); };
+  $("#botao-abrir-menu")?.addEventListener("click", () => { const show = menu?.hidden !== false; toggle(menu, show); toggle(publicar, false); $("#botao-abrir-menu")?.setAttribute("aria-expanded", String(show)); });
+  document.querySelectorAll("[data-abrir-publicacao]").forEach(button => button.addEventListener("click", () => {
+    if (!utilizadorAtual) { mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
+    toggle(menu, false); toggle(publicar, true); $("#botao-abrir-menu")?.setAttribute("aria-expanded", "false");
+  }));
+  document.querySelectorAll("[data-fechar-overlay]").forEach(button => button.addEventListener("click", fechar));
+  document.querySelectorAll("[data-publicar-tipo]").forEach(button => button.addEventListener("click", () => {
+    if (!utilizadorAtual) { fechar(); mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
+    const type = button.dataset.publicarTipo; fechar();
+    if (type === "vendedor") abrirPagina("area-publicar"); else { abrirPagina("area-pedidos-procura"); window.bisnoCarregarPedidosProcura?.(); }
+  }));
+  document.querySelectorAll("[data-menu-acao]").forEach(button => button.addEventListener("click", () => {
+    const action = button.dataset.menuAcao; fechar();
+    if (action === "support") { window.open("https://www.facebook.com/profile.php?id=61595803947715", "_blank", "noopener,noreferrer"); return; }
+    if (action === "accessibility") { document.body.classList.toggle("bisno-acessibilidade-grande"); mostrarMensagem(document.body.classList.contains("bisno-acessibilidade-grande") ? "Texto ampliado ativado." : "Texto ampliado desativado.", "info"); return; }
+    if (!utilizadorAtual) { mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
+    if (action === "notifications") { abrirPagina("area-notificacoes"); abrirNotificacoesEMarcarLidas(); }
+    else if (action === "messages") { abrirPagina("area-mensagens"); atualizarConversas(); }
+    else if (action === "stores") { abrirPagina("area-diretorio-lojas"); carregarDiretorioLojas(); }
+    else if (action === "wanted") { abrirPagina("area-pedidos-procura"); window.bisnoCarregarPedidosProcura?.(); }
+    else if (action === "store") { abrirPagina("area-loja"); carregarMinhaLoja(); }
+    else if (action === "listings") { abrirPagina("area-meus-anuncios"); carregarMeusAnuncios(); }
+    else if (action === "profile") abrirPagina("area-conta");
+  }));
+  $("#form-alterar-password")?.addEventListener("submit", async event => {
+    event.preventDefault(); const form = event.currentTarget; const data = new FormData(form);
+    try { const result = await pedidoAPI("/api/auth/change-password", { method: "POST", body: { current_password: data.get("current_password"), new_password: data.get("new_password") } }); form.reset(); mostrarMensagem(result.mensagem || "Palavra-passe alterada.", "sucesso"); }
+    catch (error) { mostrarMensagem(error.message || "Não foi possível alterar a palavra-passe.", "erro"); }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
 
   // Mantém o conteúdo protegido enquanto a sessão é verificada.
   document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
   configurarBannerDestaque();
   configurarPainelPesquisa();
+  configurarMenuPublicacao();
 
   configurarNavegacao();
 
