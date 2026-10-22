@@ -2968,7 +2968,7 @@ function configurarDiretorioLojas(){
 }
 
 async function carregarPainelAdmin() {
-  const statsEl = $("#admin-estatisticas"), usersEl = $("#admin-utilizadores"), productsEl = $("#admin-anuncios"), recoveriesEl = $("#admin-recuperacoes");
+  const statsEl = $("#admin-estatisticas"), usersEl = $("#admin-utilizadores"), productsEl = $("#admin-anuncios"), recoveriesEl = $("#admin-recuperacoes"), storesEl = $("#admin-lojas");
   if (!statsEl || !usersEl || !productsEl) return;
   statsEl.textContent = "A carregar estatísticas…";
   try {
@@ -2980,6 +2980,15 @@ async function carregarPainelAdmin() {
     ].map(([label, value]) => '<article><span>' + escaparHTML(label) + '</span><strong>' + numero(value) + '</strong></article>').join("");
     usersEl.innerHTML = (data.users || []).map(u => '<article class="admin-item"><div><strong>' + escaparHTML(u.name) + '</strong><p>E-mail: ' + escaparHTML(u.email) + ' · Telefone: ' + escaparHTML(u.phone || 'Não indicado') + '</p><p>ID ' + u.id + ' · Registado: ' + escaparHTML(u.created_at || 'Data indisponível') + ' · Estado: ' + (u.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-user-block="' + u.id + '" data-blocked="' + (u.is_blocked ? 'false' : 'true') + '">' + (u.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-user-delete="' + u.id + '">Eliminar</button></div></article>').join("") || "<p>Sem utilizadores.</p>";
     productsEl.innerHTML = (data.products || []).map(p => '<article class="admin-item"><div><strong>' + escaparHTML(p.name) + '</strong><p>ID ' + p.id + ' · ' + escaparHTML(p.seller_name || p.seller_email || 'Vendedor') + ' · ' + escaparHTML(p.city || '') + ' · ' + (p.is_blocked ? 'Bloqueado' : 'Ativo') + '</p></div><div class="admin-acoes"><button type="button" data-admin-product-block="' + p.id + '" data-blocked="' + (p.is_blocked ? 'false' : 'true') + '">' + (p.is_blocked ? 'Desbloquear' : 'Bloquear') + '</button><button type="button" data-admin-product-delete="' + p.id + '">Eliminar</button></div></article>').join("") || "<p>Sem anúncios.</p>";
+    if (storesEl) {
+      try {
+        const storeData = await pedidoAPI("/api/admin/stores");
+        storesEl.innerHTML = (storeData.stores || []).map(store => {
+          const active = Boolean(Number(store.is_active));
+          return '<article class="admin-item"><div><strong>' + escaparHTML(store.name) + '</strong><p>Proprietário: ' + escaparHTML(store.owner_name || "Utilizador") + ' · ' + escaparHTML(store.owner_email || "") + '</p><p>Localização: ' + escaparHTML(store.city || "Angola") + ' · Produtos: ' + numero(store.product_count) + ' · Seguidores: ' + numero(store.followers) + ' · Visitas: ' + numero(store.views) + ' · Contactos: ' + numero(store.contacts) + '</p><p>Estado: ' + (active ? 'Ativa' : 'Suspensa') + ' · Criada: ' + escaparHTML(String(store.created_at || "").slice(0,10)) + '</p></div><div class="admin-acoes"><button type="button" data-admin-store-status="' + store.id + '" data-active="' + String(!active) + '">' + (active ? 'Suspender loja' : 'Reativar loja') + '</button></div></article>';
+        }).join("") || "<p>Ainda não existem lojas registadas.</p>";
+      } catch (e) { storesEl.textContent = e.message || "Não foi possível carregar as lojas."; }
+    }
     if (recoveriesEl) {
       try {
         const pending = await pedidoAPI("/api/admin/password-recovery-requests");
@@ -3017,6 +3026,10 @@ function configurarPainelAdmin() {
       } else if (b.dataset.adminProductDelete) {
         if (!confirm("Eliminar definitivamente este anúncio?")) return;
         await pedidoAPI("/api/admin/products/" + b.dataset.adminProductDelete, { method: "DELETE" });
+      } else if (b.dataset.adminStoreStatus) {
+        const active = b.dataset.active === "true";
+        if (!confirm((active ? "Reativar" : "Suspender") + " esta loja?")) return;
+        await pedidoAPI("/api/admin/stores/" + b.dataset.adminStoreStatus + "/status", { method: "PATCH", body: { active } });
       } else return;
       mostrarMensagem("Ação administrativa concluída.", "sucesso");
       await carregarPainelAdmin();
