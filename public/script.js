@@ -290,7 +290,8 @@ async function pedidoAPI(url, opcoes = {}) {
 
 
 
-  const resposta = await fetch(url, configuracao);
+  configuracao.cache = "no-store";
+  const resposta = await fetch(url, configuracao);
 
 
 
@@ -955,7 +956,7 @@ async function carregarMeusAnuncios() {
 
   try {
 
-    const dados = await pedidoAPI("/api/products/mine");
+    const dados = await pedidoAPI("/api/products/mine", { cache: "no-store" });
 
     const produtos = dados.produtos ?? dados.products ?? [];
 
@@ -3244,7 +3245,7 @@ function configurarPedidosProcura() {
   async function carregar() {
     lista.innerHTML = "<p>A carregar pedidos...</p>";
     try {
-      const dados = await pedidoAPI("/api/wanted");
+      const dados = await pedidoAPI("/api/wanted", { cache: "no-store" });
       if (!dados.ads || !dados.ads.length) {
         lista.innerHTML = "<p>Ainda não existem pedidos de procura. Sê o primeiro a publicar!</p>";
         return;
@@ -3279,7 +3280,6 @@ function configurarPedidosProcura() {
   form.addEventListener("submit", async event => {
     event.preventDefault();
     if (!exigirLogin()) return;
-    const data = new FormData(form);
     const body = new FormData(form);
     const wantedImage = body.get("image");
     if (wantedImage instanceof File && wantedImage.size > LIMITE_IMAGEM) { mostrarMensagem("A imagem do pedido não pode ultrapassar 5 MB.", "erro"); return; }
