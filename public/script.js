@@ -1082,6 +1082,7 @@ function cartaoProduto(produto) {
   const imagem = obterImagem(produto.image);
   const visualizacoes = Number(produto.views ?? produto.view_count ?? produto.visualizacoes ?? 0);
   const condicao = produto.condition ?? "";
+  const stock = Number.isSafeInteger(Number(produto.stock)) ? Number(produto.stock) : 1;
   const categoria = produto.category ?? "";
   const localizacao = [produto.city, produto.neighborhood].filter(Boolean).join(" · ");
   const whatsapp = produto.whatsapp
@@ -1113,6 +1114,7 @@ function cartaoProduto(produto) {
         ${categoria ? `<p class="bisno-product-category">${escaparHTML(categoria)}</p>` : ""}
         <h3 title="${escaparHTML(produto.name)}">${escaparHTML(produto.name)}</h3>
         <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
+        <p class="bisno-stock-indicator" aria-label="${stock === 0 ? "Produto esgotado" : "Stock disponível: " + stock}">${stock === 0 ? "Esgotado" : "📦 Stock: " + stock}</p>
         ${localizacao ? `<p class="bisno-product-location"><span aria-hidden="true">⌖</span> ${escaparHTML(localizacao)}</p>` : ""}
         <div class="bisno-card-actions">
           ${!eProdutoDoUtilizador(produto) ? `<button type="button" class="botao-mensagem" data-iniciar-conversa="${escaparHTML(id)}">Enviar mensagem</button>` : ""}
