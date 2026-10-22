@@ -779,13 +779,13 @@ async function guardarPerfil(evento) {
 
   const dados = new FormData(formulario);
 
-  const ficheiro = $("#perfil-foto-input")?.files?.[0];
+  const ficheiros = [$("#perfil-foto-input")?.files?.[0], $("#perfil-capa-input")?.files?.[0]].filter(Boolean);
 
 
 
-  if (ficheiro && ficheiro.size > LIMITE_IMAGEM) {
+  if (ficheiros.some(ficheiro => ficheiro.size > LIMITE_IMAGEM)) {
 
-    mostrarMensagem("A fotografia do perfil não pode ultrapassar 5 MB.", "erro");
+    mostrarMensagem("Cada imagem do perfil deve ter no máximo 5 MB.", "erro");
 
     return;
 
