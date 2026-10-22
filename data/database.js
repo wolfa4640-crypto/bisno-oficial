@@ -116,6 +116,7 @@ async function initializeDatabase() {
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS whatsapp TEXT",
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS stock INTEGER NOT NULL DEFAULT 1 CHECK(stock >= 0)",
     "CREATE TABLE IF NOT EXISTS wanted_ads (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, product_name TEXT NOT NULL, description TEXT NOT NULL, budget BIGINT CHECK(budget IS NULL OR budget >= 0), city TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','closed')), created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "ALTER TABLE wanted_ads ADD COLUMN IF NOT EXISTS image TEXT",
     "CREATE INDEX IF NOT EXISTS idx_wanted_ads_status_created ON wanted_ads(status,created_at DESC)",
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS is_blocked INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS blocked_reason TEXT",
