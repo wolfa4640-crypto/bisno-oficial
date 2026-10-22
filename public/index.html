@@ -117,12 +117,22 @@
     .bisno-perfil-topo-acoes{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .bisno-chave-password{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:0 0 44px;border:1px solid rgba(23,107,69,.25);border-radius:12px;background:rgba(23,107,69,.08);color:#176b45;cursor:pointer}
     .bisno-chave-password svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .bisno-profile-icon-actions{display:flex;justify-content:flex-end;margin:8px 0}
+    .bisno-profile-icon{width:42px;height:42px;border:1px solid rgba(23,107,69,.25);border-radius:12px;background:rgba(23,107,69,.08);color:#176b45;display:grid;place-items:center;cursor:pointer}
+    .bisno-profile-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .bisno-capa-clicavel,.bisno-avatar-clicavel{cursor:pointer;position:relative}
+    .bisno-capa-clicavel:after{content:"⌁ Alterar capa";position:absolute;right:12px;bottom:12px;background:rgba(0,0,0,.62);color:#fff;padding:7px 10px;border-radius:999px;font-size:.8rem}
+    .bisno-avatar-clicavel:after{content:"✎";position:absolute;right:0;bottom:0;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#176b45;color:#fff;border:3px solid var(--painel,#fff);font-weight:800}
+    .bisno-pedido-procura h3{font-size:1.2rem;line-height:1.35;margin:5px 0 10px}
+    .bisno-pedido-procura>p:nth-of-type(1){font-size:1rem;line-height:1.6;margin:8px 0 12px;color:var(--texto,#202820)}
+    .bisno-pedido-procura>p:nth-of-type(2){font-size:.8rem;opacity:.65;margin:5px 0}
+    .bisno-pedido-procura .bisno-pedido-orcamento{font-weight:700;font-size:.92rem}
     .bisno-pedido-procura .etiqueta-comprador{display:inline-flex;align-items:center;padding:4px 9px;margin-bottom:8px;border-radius:999px;background:#e8f1ff;color:#174ea6;font-size:.76rem;font-weight:800;letter-spacing:.02em}
     .bisno-feed-compradores.feed-integrado-home{border:0;padding:0;margin:0}
     .bisno-feed-compradores.feed-integrado-home>h2,.bisno-feed-compradores.feed-integrado-home>p,.bisno-feed-compradores.feed-integrado-home>#form-pedido-procura{display:none!important}
 
 </style>
-  <script src="/script.js?v=20261022-simple-profile-buyer-tags-v1" defer></script>
+  <script src="/script.js?v=20261022-profile-icons-buyer-focus-v2" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -399,11 +409,11 @@
       <section id="perfil-vendedor" class="painel-secundario">
         <div class="bisno-perfil-topo-acoes"><h3>Perfil do vendedor</h3><button type="button" id="botao-chave-password" class="bisno-chave-password" aria-label="Alterar palavra-passe" title="Alterar palavra-passe"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"></circle><path d="M11 12l8-8 2 2-2 2 2 2-3 3-2-2-3 3"></path></svg></button></div>
 
-        <div class="bisno-perfil-capa" aria-label="Capa do perfil">
+        <div class="bisno-perfil-capa bisno-capa-clicavel" id="perfil-capa-clicavel" role="button" tabindex="0" aria-label="Tocar para trocar a foto de capa" title="Toca para trocar a foto de capa">
           <span>O teu espaço no Bisno</span>
         </div>
         <div class="bisno-perfil-identidade">
-          <div class="bisno-perfil-avatar-wrap">
+          <div class="bisno-perfil-avatar-wrap bisno-avatar-clicavel" id="perfil-avatar-clicavel" role="button" tabindex="0" aria-label="Tocar para trocar a foto de perfil" title="Toca para trocar a foto de perfil">
             <img id="foto-perfil" class="bisno-avatar-fallback" alt="Fotografia de perfil" hidden><div id="perfil-sem-foto" class="bisno-avatar-fallback" aria-label="Inicial do utilizador">?</div>
           </div>
           <div class="bisno-perfil-titulos">
@@ -413,22 +423,21 @@
           </div>
         </div>
 
-        <form id="form-perfil" class="bisno-perfil-form" enctype="multipart/form-data">
-          <h3>Editar perfil</h3>
+        <div class="bisno-profile-icon-actions" aria-label="Editar perfil">
+          <button type="button" id="acao-editar-dados-perfil" class="bisno-profile-icon" aria-label="Editar nome e telefone" title="Editar nome e telefone"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+        </div>
+        <form id="form-perfil" class="bisno-perfil-form" enctype="multipart/form-data" hidden>
+          <h3>Editar nome e telefone</h3>
           <div class="bisno-perfil-campo">
-            <div class="bisno-cover-preview" id="perfil-capa-preview" aria-label="Capa do perfil"></div>
-          <label for="perfil-capa-input">Foto de capa</label><input id="perfil-capa-input" name="cover" type="file" accept="image/jpeg,image/png,image/webp">
-          <label for="perfil-foto-input">Foto de perfil</label><input id="perfil-foto-input" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
-          <label for="perfil-nome-input">Nome de apresentação</label>
+            <label for="perfil-nome-input">Nome de apresentação</label>
             <input id="perfil-nome-input" name="name" type="text" maxlength="80" autocomplete="name" required>
-          </div>
-          <div class="bisno-perfil-campo">
             <label for="perfil-telefone-input">Telefone de contacto</label>
             <input id="perfil-telefone-input" name="phone" type="tel" autocomplete="tel" required>
           </div>
-          
           <button type="submit" class="bisno-guardar-perfil">Guardar alterações</button>
         </form>
+        <input id="perfil-capa-input" name="cover" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Escolher nova foto de capa">
+        <input id="perfil-foto-input" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Escolher nova foto de perfil">
         <form id="form-alterar-password" class="bisno-perfil-form" hidden>
           <h3>Alterar palavra-passe</h3>
           <label for="password-atual">Palavra-passe atual</label><input id="password-atual" name="current_password" type="password" autocomplete="current-password" required>

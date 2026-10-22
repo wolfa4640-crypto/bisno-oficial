@@ -790,8 +790,11 @@ async function guardarPerfil(evento) {
   const formulario = evento.currentTarget;
 
   const dados = new FormData(formulario);
-
-  const ficheiros = [$("#perfil-foto-input")?.files?.[0], $("#perfil-capa-input")?.files?.[0]].filter(Boolean);
+  const fotoSelecionada = $("#perfil-foto-input")?.files?.[0];
+  const capaSelecionada = $("#perfil-capa-input")?.files?.[0];
+  if (fotoSelecionada) dados.append("avatar", fotoSelecionada);
+  if (capaSelecionada) dados.append("cover", capaSelecionada);
+  const ficheiros = [fotoSelecionada, capaSelecionada].filter(Boolean);
 
 
 
@@ -2882,6 +2885,26 @@ function configurarFormularios() {
     if (foto) { foto.src = URL.createObjectURL(ficheiro); foto.hidden = false; }
     if (fallback) fallback.hidden = true;
   });
+  $("#perfil-capa-clicavel")?.addEventListener("click", () => $("#perfil-capa-input")?.click());
+  $("#perfil-avatar-clicavel")?.addEventListener("click", () => $("#perfil-foto-input")?.click());
+  $("#perfil-capa-input")?.addEventListener("change", evento => {
+    const file = evento.currentTarget.files?.[0];
+    if (!file) return;
+    if (file.size > LIMITE_IMAGEM) { mostrarMensagem("A foto de capa não pode ultrapassar 5 MB.", "erro"); evento.currentTarget.value = ""; return; }
+    const url = URL.createObjectURL(file);
+    const capa = $("#perfil-capa-clicavel");
+    if (capa) capa.style.backgroundImage = 'url("' + url + '")';
+  });
+  $("#perfil-foto-input")?.addEventListener("change", evento => {
+    const file = evento.currentTarget.files?.[0];
+    if (!file) return;
+    if (file.size > LIMITE_IMAGEM) { mostrarMensagem("A fotografia do perfil não pode ultrapassar 5 MB.", "erro"); evento.currentTarget.value = ""; return; }
+    const foto = $("#foto-perfil"), fallback = $("#perfil-sem-foto");
+    if (foto) { foto.src = URL.createObjectURL(file); foto.hidden = false; }
+    if (fallback) fallback.hidden = true;
+  });
+
+  $("#acao-editar-dados-perfil")?.addEventListener("click", () => { const f = $("#form-perfil"); if (f) f.hidden = !f.hidden; });
   $("#form-perfil")?.addEventListener("submit", guardarPerfil);
 
   $("#form-anuncio")?.addEventListener("submit", publicarAnuncio);
@@ -3193,7 +3216,7 @@ function configurarPedidosProcura() {
           <span class="etiqueta-comprador">COMPRADOR</span>
           <h3>${escaparHTML(ad.product_name)}</h3>
           <p>${escaparHTML(ad.description)}</p>
-          <p><strong>Local:</strong> ${escaparHTML(ad.city)} · <strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
+          <p class="bisno-pedido-orcamento"><strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p><p class="bisno-pedido-local"><small>📍 ${escaparHTML(ad.city)}</small></p>
           ${ad.image ? '<img class="bisno-pedido-imagem" src="' + escaparHTML(obterImagem(ad.image)) + '" alt="Imagem do pedido" loading="lazy">' : ""}
           <p><small>Publicado por ${escaparHTML(ad.buyer_name)}</small></p>
           ${contacto ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer" aria-label="Contactar ${escaparHTML(ad.buyer_name)} pelo WhatsApp">☏ Contactar pelo WhatsApp</a>` : "<p>O comprador ainda não tem um contacto válido.</p>"}
