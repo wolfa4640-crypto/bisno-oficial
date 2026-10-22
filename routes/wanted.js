@@ -29,7 +29,7 @@ router.get("/", exigirLogin, async (req, res) => {
       id: a.id, user_id: a.user_id, product_name: a.product_name,
       description: a.description, budget: a.budget, city: a.city,
       buyer_name: a.buyer_name, created_at: a.created_at,
-      contact_url: "https://wa.me/" + String(a.buyer_phone || "").replace(/\\D/g, "") +
+      contact_url: "https://wa.me/" + (String(a.buyer_phone || "").replace(/\\D/g, "").length === 9 ? "244" + String(a.buyer_phone || "").replace(/\\D/g, "") : String(a.buyer_phone || "").replace(/\\D/g, "")) +
         "?text=" + encodeURIComponent("Olá " + a.buyer_name + ", vi o teu pedido no Bisno: " + a.product_name)
     })) });
   } catch (error) {
