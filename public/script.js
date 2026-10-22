@@ -443,7 +443,8 @@ function abrirPagina(id) {
 
   if (hero) hero.hidden = id !== "area-produtos";
   if (auth) auth.hidden = id !== "area-autenticacao";
-  if (products) products.hidden = id !== "area-produtos";
+  if (products) products.hidden = !["area-produtos", "area-pedidos-procura"].includes(id);
+  document.body.classList.toggle("bisno-pagina-pedidos", id === "area-pedidos-procura");
   if (account) account.hidden = !autenticado || !dentroDaConta;
   if (messages) messages.hidden = id !== "area-mensagens";
   if (publish) publish.hidden = id !== "area-publicar";
@@ -3122,6 +3123,23 @@ function configurarPainelAdmin() {
   abrir.hidden = !Boolean(utilizadorAtual?.isAdmin);
   abrir.addEventListener("click", () => { painel.hidden = !painel.hidden; if (!painel.hidden) carregarPainelAdmin(); });
   $("#admin-atualizar")?.addEventListener("click", carregarPainelAdmin);
+  const phrasesBox=document.getElementById("admin-frases-iniciais");
+  if(phrasesBox){
+   const defaults=[
+    {etiqueta:"O teu mercado, num só lugar",titulo:"Encontra. Compara. Compra.",descricao:"Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto."},
+    {etiqueta:"Boas oportunidades esperam por ti",titulo:"Descobre. Escolhe. Poupa.",descricao:"Compara produtos novos e usados, explora opções e encontra uma oferta que combina contigo."},
+    {etiqueta:"O teu próximo cliente está mais perto",titulo:"Publica. Conecta. Vende.",descricao:"Mostra o teu produto a pessoas de todo o país e combina diretamente com os interessados."},
+    {etiqueta:"Mil possibilidades, num só lugar",titulo:"Procura. Encontra. Aproveita.",descricao:"Explora várias categorias e descobre produtos anunciados por vendedores de Angola."}
+   ];
+   const render=items=>{phrasesBox.innerHTML=items.map((p,i)=>'<fieldset><legend>Cartão '+(i+1)+'</legend><label>Etiqueta<input maxlength="80" data-phrase="etiqueta" value="'+escaparHTML(p.etiqueta)+'"></label><label>Título<input maxlength="100" data-phrase="titulo" value="'+escaparHTML(p.titulo)+'"></label><label>Descrição<textarea maxlength="240" data-phrase="descricao">'+escaparHTML(p.descricao)+'</textarea></label></fieldset>').join("")+'<button type="button" id="admin-guardar-frases">Guardar frases</button>';};
+   pedidoAPI("/api/site-settings").then(d=>render(Array.isArray(d.phrases)&&d.phrases.length?d.phrases:defaults)).catch(()=>render(defaults));
+   phrasesBox.addEventListener("click",async e=>{
+    if(e.target.id!=="admin-guardar-frases")return;
+    const phrases=Array.from(phrasesBox.querySelectorAll("fieldset")).map(f=>Object.fromEntries(["etiqueta","titulo","descricao"].map(k=>[k,f.querySelector('[data-phrase="'+k+'"]').value.trim()])));
+    try{await pedidoAPI("/api/admin/site-phrases",{method:"PUT",body:{phrases}});mostrarMensagem("Frases dos cartões guardadas.","sucesso");}
+    catch(err){mostrarMensagem(err.message||"Não foi possível guardar as frases.","erro");}
+   });
+  }
   painel.addEventListener("click", async evento => {
     const b = evento.target.closest("button");
     if (!b) return;
@@ -3161,7 +3179,7 @@ function configurarBannerDestaque() {
   const etiqueta = document.getElementById("bisno-banner-etiqueta");
   if (!banner || !titulo || !descricao || !etiqueta || banner.dataset.rotacaoIniciada === "true") return;
   banner.dataset.rotacaoIniciada = "true";
-  const destaques = [
+  let destaques = [
     { etiqueta: "O teu mercado, num só lugar", titulo: "Encontra. Compara. Compra.", descricao: "Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto.", cor: 0 },
     { etiqueta: "Boas oportunidades esperam por ti", titulo: "Descobre. Escolhe. Poupa.", descricao: "Compara produtos novos e usados, explora opções e encontra uma oferta que combina contigo.", cor: 1 },
     { etiqueta: "O teu próximo cliente está mais perto", titulo: "Publica. Conecta. Vende.", descricao: "Mostra o teu produto a pessoas de todo o país e combina diretamente com os interessados.", cor: 2 },
@@ -3200,8 +3218,21 @@ function configurarBannerDestaque() {
   });
   mostrarDestaque(0);
   agendarProximo();
+  pedidoAPI("/api/site-settings").then(data=>{
+    if(!Array.isArray(data.phrases)||!data.phrases.length)return;
+    destaques=data.phrases.map((p,i)=>({etiqueta:p.etiqueta,titulo:p.titulo,descricao:p.descricao,cor:i%4}));
+    indicadores.forEach((button,i)=>{button.hidden=i>=destaques.length;});
+    mostrarDestaque(0); agendarProximo();
+  }).catch(()=>{});
 }
 
+
+function ordenarFeedPorPublicacao(feed) {
+ if(!feed)return;
+ const cards=Array.from(feed.querySelectorAll(".cartao-produto"));
+ cards.sort((a,b)=>(Date.parse(b.dataset.createdAt||"")||0)-(Date.parse(a.dataset.createdAt||"")||0));
+ cards.forEach(card=>feed.appendChild(card));
+}
 
 function configurarPedidosProcura() {
   const form = document.getElementById("form-pedido-procura");
@@ -3221,7 +3252,7 @@ function configurarPedidosProcura() {
       lista.innerHTML = dados.ads.map(ad => {
         const contacto = /^https:\/\/wa\.me\/[0-9]+\?/.test(ad.contact_url || "") ? ad.contact_url : "";
         const meuPedido = Number(ad.user_id) === Number(obterIdUtilizador());
-        return `<article class="cartao-produto bisno-pedido-procura">
+        return `<article class="cartao-produto bisno-pedido-procura" data-created-at="${escaparHTML(ad.created_at || "")}">
           <span class="etiqueta-comprador">COMPRADOR</span>
           <h3>${escaparHTML(ad.product_name)}</h3>
           <p>${escaparHTML(ad.description)}</p>
@@ -3238,6 +3269,7 @@ function configurarPedidosProcura() {
         secaoPedidos.classList.add("feed-integrado-home");
         const cardsCompradores = Array.from(lista.querySelectorAll(".bisno-pedido-procura"));
         cardsCompradores.forEach(card => feedPrincipal.appendChild(card));
+      ordenarFeedPorPublicacao(feedPrincipal);
         lista.innerHTML = "";
       }
     } catch (error) {
