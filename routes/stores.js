@@ -59,7 +59,7 @@ async function storeSummary(storeId) {
   (SELECT COUNT(*) FROM store_views WHERE store_id=?) AS views,
   (SELECT COUNT(*) FROM store_follows WHERE store_id=?) AS followers,
   (SELECT COUNT(*) FROM store_contacts WHERE store_id=?) AS contacts,
-  (SELECT COUNT(*) FROM products p JOIN stores s ON s.user_id=p.user_id WHERE s.id=?) AS products
+  (SELECT COUNT(*) FROM products p JOIN stores s ON s.user_id=p.user_id WHERE s.id=? AND p.is_blocked=0) AS products
  `).get(storeId,storeId,storeId,storeId);
 }
 
