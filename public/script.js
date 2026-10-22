@@ -452,7 +452,10 @@ function abrirPagina(id) {
   if (notifications) notifications.hidden = id !== "area-notificacoes";
   if (store) store.hidden = id !== "area-loja";
   if (storeDirectory) storeDirectory.hidden = id !== "area-diretorio-lojas";
-  if (wanted) wanted.hidden = !["area-pedidos-procura", "area-produtos"].includes(id);
+  if (wanted) {
+    wanted.hidden = !["area-pedidos-procura", "area-produtos"].includes(id);
+    wanted.classList.toggle("feed-integrado-home", id === "area-produtos");
+  }
   if (footer) footer.hidden = id !== "area-produtos";
   if (id === "area-produtos") { window.bisnoCarregarPedidosProcura?.(); }
 
@@ -3187,6 +3190,7 @@ function configurarPedidosProcura() {
         const contacto = /^https:\/\/wa\.me\/[0-9]+\?/.test(ad.contact_url || "") ? ad.contact_url : "";
         const meuPedido = Number(ad.user_id) === Number(obterIdUtilizador());
         return `<article class="cartao-produto bisno-pedido-procura">
+          <span class="etiqueta-comprador">COMPRADOR</span>
           <h3>${escaparHTML(ad.product_name)}</h3>
           <p>${escaparHTML(ad.description)}</p>
           <p><strong>Local:</strong> ${escaparHTML(ad.city)} · <strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
@@ -3196,6 +3200,14 @@ function configurarPedidosProcura() {
           ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
         </article>`;
       }).join("");
+      const feedPrincipal = document.getElementById("lista-produtos");
+      const secaoPedidos = document.getElementById("area-pedidos-procura");
+      if (feedPrincipal && secaoPedidos && document.getElementById("area-produtos")?.contains(secaoPedidos)) {
+        secaoPedidos.classList.add("feed-integrado-home");
+        const cardsCompradores = Array.from(lista.querySelectorAll(".bisno-pedido-procura"));
+        cardsCompradores.forEach(card => feedPrincipal.appendChild(card));
+        lista.innerHTML = "";
+      }
     } catch (error) {
       lista.innerHTML = "<p>Não foi possível carregar os pedidos. Tenta novamente.</p>";
     }
@@ -3261,6 +3273,12 @@ function configurarMenuPublicacao() {
     else if (action === "listings") { abrirPagina("area-meus-anuncios"); carregarMeusAnuncios(); }
     else if (action === "profile") abrirPagina("area-conta");
   }));
+  $("#botao-chave-password")?.addEventListener("click", () => {
+    const form = $("#form-alterar-password");
+    if (!form) return;
+    form.hidden = !form.hidden;
+    if (!form.hidden) form.querySelector('input[name="current_password"]')?.focus();
+  });
   $("#form-alterar-password")?.addEventListener("submit", async event => {
     event.preventDefault(); const form = event.currentTarget; const data = new FormData(form);
     try { const result = await pedidoAPI("/api/auth/change-password", { method: "POST", body: { current_password: data.get("current_password"), new_password: data.get("new_password") } }); form.reset(); mostrarMensagem(result.mensagem || "Palavra-passe alterada.", "sucesso"); }

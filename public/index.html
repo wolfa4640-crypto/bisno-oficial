@@ -113,8 +113,16 @@
     .bisno-feed-compradores h2{font-size:1.3rem}
     @media(max-width:600px){.bisno-perfil-capa{height:190px}.bisno-perfil-capa-publica{height:210px}.bisno-perfil-avatar-wrap,.avatar-perfil-publico{width:96px;height:96px;flex-basis:96px}.bisno-perfil-identidade{margin-top:-42px}.cabecalho-perfil-publico{margin-top:-46px}}
 
+    .bisno-conta-titulo{display:none}
+    .bisno-perfil-topo-acoes{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .bisno-chave-password{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:0 0 44px;border:1px solid rgba(23,107,69,.25);border-radius:12px;background:rgba(23,107,69,.08);color:#176b45;cursor:pointer}
+    .bisno-chave-password svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .bisno-pedido-procura .etiqueta-comprador{display:inline-flex;align-items:center;padding:4px 9px;margin-bottom:8px;border-radius:999px;background:#e8f1ff;color:#174ea6;font-size:.76rem;font-weight:800;letter-spacing:.02em}
+    .bisno-feed-compradores.feed-integrado-home{border:0;padding:0;margin:0}
+    .bisno-feed-compradores.feed-integrado-home>h2,.bisno-feed-compradores.feed-integrado-home>p,.bisno-feed-compradores.feed-integrado-home>#form-pedido-procura{display:none!important}
+
 </style>
-  <script src="/script.js?v=20261022-cover-icons-buyer-feed-v1" defer></script>
+  <script src="/script.js?v=20261022-simple-profile-buyer-tags-v1" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -326,21 +334,7 @@
 
     <!-- ÁREA DA CONTA -->
     <section id="area-conta" class="painel" hidden>
-      <h2>Minha conta</h2>
-      <p>Gere os teus dados e acompanha os teus anúncios.</p>
-
-      <div class="dados-conta">
-        <p>Nome: <strong id="nome-utilizador"></strong></p>
-        <p>E-mail: <strong id="email-utilizador"></strong></p>
-        <p>Telefone: <strong id="telefone-utilizador"></strong></p>
-      </div>
-
-            <section id="bisno-account-summary" class="painel-secundario account-summary">
-        <p class="account-summary-eyebrow">A TUA CONTA</p>
-        <h3>Gere a tua atividade no Bisno</h3>
-        <p>Atualiza os teus dados e acompanha os anúncios que publicaste. O pagamento e a entrega são combinados diretamente entre comprador e vendedor.</p>
-        <button type="button" class="botao-secundario" id="atalho-meus-anuncios">Ver os meus anúncios</button>
-      </section>
+      <h2 class="bisno-conta-titulo">Perfil</h2>
 
 <!-- NOTIFICAÇÕES DO BISNO -->
 <section id="area-notificacoes" class="painel-secundario">
@@ -403,7 +397,7 @@
 
 <!-- PERFIL DO VENDEDOR -->
       <section id="perfil-vendedor" class="painel-secundario">
-        <h3>Perfil do vendedor</h3>
+        <div class="bisno-perfil-topo-acoes"><h3>Perfil do vendedor</h3><button type="button" id="botao-chave-password" class="bisno-chave-password" aria-label="Alterar palavra-passe" title="Alterar palavra-passe"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"></circle><path d="M11 12l8-8 2 2-2 2 2 2-3 3-2-2-3 3"></path></svg></button></div>
 
         <div class="bisno-perfil-capa" aria-label="Capa do perfil">
           <span>O teu espaço no Bisno</span>
@@ -435,7 +429,7 @@
           
           <button type="submit" class="bisno-guardar-perfil">Guardar alterações</button>
         </form>
-        <form id="form-alterar-password" class="bisno-perfil-form">
+        <form id="form-alterar-password" class="bisno-perfil-form" hidden>
           <h3>Alterar palavra-passe</h3>
           <label for="password-atual">Palavra-passe atual</label><input id="password-atual" name="current_password" type="password" autocomplete="current-password" required>
           <label for="password-nova">Nova palavra-passe</label><input id="password-nova" name="new_password" type="password" minlength="8" autocomplete="new-password" required>
@@ -700,7 +694,7 @@
     </section>
 
       <section id="area-pedidos-procura" class="painel-secundario" hidden aria-labelledby="titulo-pedidos-procura">
-        <h2 id="titulo-pedidos-procura">🔎 Pedidos de procura</h2>
+        <h2 id="titulo-pedidos-procura">Pedidos de procura</h2>
         <p>Publica o que precisas de comprar. Os vendedores podem contactar-te diretamente pelo WhatsApp.</p>
         <form id="form-pedido-procura">
           <label for="pedido-procura-produto">O que procuras?</label>
