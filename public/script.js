@@ -3223,6 +3223,9 @@ function configurarPedidosProcura() {
     try {
       const dados = await pedidoAPI("/api/wanted", { cache: "no-store" });
       if (!dados.ads || !dados.ads.length) {
+        const feedPrincipal = document.getElementById("lista-produtos");
+        feedPrincipal?.querySelectorAll(".bisno-pedido-procura").forEach(card => card.remove());
+        window.bisnoPedidosCompradoresCache = [];
         lista.innerHTML = "<p>Ainda não existem pedidos de procura. Sê o primeiro a publicar!</p>";
         return;
       }
