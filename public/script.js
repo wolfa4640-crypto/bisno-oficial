@@ -2937,7 +2937,8 @@ function preencherPainelLoja(data = {}) {
   definirTexto("#loja-nome-preview", store.name || "A tua loja");
   definirTexto("#loja-descricao-preview", store.description || "Adiciona uma descrição para apresentar a tua loja.");
   definirTexto("#loja-cidade-preview", store.city || "Angola");
-  definirTexto("#loja-avatar", (store.name || "B").trim().charAt(0).toUpperCase());
+  const marca = $("#loja-avatar");
+  if (marca) marca.innerHTML = store.brand_image && /^https:\/\//i.test(store.brand_image) ? '<img src="' + escaparHTML(store.brand_image) + '" alt="Logótipo de ' + escaparHTML(store.name || "loja") + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">': escaparHTML((store.name || "B").trim().charAt(0).toUpperCase());
 }
 async function carregarMinhaLoja() {
   try { preencherPainelLoja(await pedidoLoja("/api/stores/mine")); }
