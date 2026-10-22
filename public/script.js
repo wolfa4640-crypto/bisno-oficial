@@ -2882,6 +2882,9 @@ function configurarFormularios() {
     if (foto) { foto.src = URL.createObjectURL(ficheiro); foto.hidden = false; }
     if (fallback) fallback.hidden = true;
   });
+  $("#perfil-capa-clicavel")?.addEventListener("click", () => $("#perfil-capa-input")?.click());
+  $("#perfil-avatar-clicavel")?.addEventListener("click", () => $("#perfil-foto-input")?.click());
+  $("#acao-editar-dados-perfil")?.addEventListener("click", () => { const f = $("#form-perfil"); if (f) f.hidden = !f.hidden; });
   $("#form-perfil")?.addEventListener("submit", guardarPerfil);
 
   $("#form-anuncio")?.addEventListener("submit", publicarAnuncio);
@@ -3193,7 +3196,7 @@ function configurarPedidosProcura() {
           <span class="etiqueta-comprador">COMPRADOR</span>
           <h3>${escaparHTML(ad.product_name)}</h3>
           <p>${escaparHTML(ad.description)}</p>
-          <p><strong>Local:</strong> ${escaparHTML(ad.city)} · <strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
+          <p class="bisno-pedido-orcamento"><strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p><p class="bisno-pedido-local"><small>📍 ${escaparHTML(ad.city)}</small></p>
           ${ad.image ? '<img class="bisno-pedido-imagem" src="' + escaparHTML(obterImagem(ad.image)) + '" alt="Imagem do pedido" loading="lazy">' : ""}
           <p><small>Publicado por ${escaparHTML(ad.buyer_name)}</small></p>
           ${contacto ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer" aria-label="Contactar ${escaparHTML(ad.buyer_name)} pelo WhatsApp">☏ Contactar pelo WhatsApp</a>` : "<p>O comprador ainda não tem um contacto válido.</p>"}
