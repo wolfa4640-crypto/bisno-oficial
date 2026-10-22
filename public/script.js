@@ -743,6 +743,7 @@ async function entrarUtilizador(evento) {
     // Limpar apenas depois de confirmar sessão no servidor.
     formulario.reset();
     carregarProdutos().catch(erro => console.error("Erro ao carregar anúncios:", erro));
+    carregarCategoriasProdutos().catch(() => {});
   } catch (erro) {
     // Preservar os valores para que a pessoa não tenha de os escrever novamente.
     mostrarMensagem(erro.message || "Não foi possível iniciar sessão. Tenta novamente.", "erro");
@@ -1107,6 +1108,29 @@ function cartaoProduto(produto) {
   `;
 }
 
+
+async function carregarCategoriasProdutos() {
+  try {
+    const data = await pedidoAPI("/api/products/categories");
+    const categories = data.categories || [];
+    ["#anuncio-categoria", "#filtro-categoria"].forEach(selector => {
+      const select = $(selector);
+      if (!select) return;
+      const existing = new Set(Array.from(select.options).map(option => option.value.trim().toLocaleLowerCase()));
+      categories.forEach(category => {
+        const name = String(category.name || "").trim();
+        if (!name || existing.has(name.toLocaleLowerCase())) return;
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name + " (" + numero(category.products).toLocaleString("pt-AO") + ")";
+        select.appendChild(option);
+        existing.add(name.toLocaleLowerCase());
+      });
+    });
+  } catch (error) {
+    console.warn("Não foi possível atualizar as categorias:", error.message);
+  }
+}
 
 async function carregarProdutos() {
   const lista = $("#lista-produtos");
@@ -3123,6 +3147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 
   if (utilizadorAtual) await carregarProdutos();
+  if (utilizadorAtual) await carregarCategoriasProdutos();
   else definirConteudo("#lista-produtos", "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>");
 
 });
