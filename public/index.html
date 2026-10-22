@@ -96,8 +96,25 @@
 .bisno-avatar-fallback#foto-perfil{width:100%;height:100%;object-fit:cover;border-radius:50%}
     #foto-perfil[hidden]{display:none!important}
 .bisno-menu-overlay{backdrop-filter:blur(14px)}
+
+    .bisno-nav-inner .nav-social{position:relative;display:flex;align-items:center;justify-content:center;min-width:38px;min-height:42px;padding:4px 8px;border:0;background:transparent;color:inherit;cursor:pointer}
+    .bisno-nav-inner .nav-social .nav-label{display:none!important}
+    .nav-svg-icon{width:25px;height:25px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .bisno-menu-overlay .nav-svg-icon{width:21px;height:21px}
+    .bisno-perfil-capa{height:220px;background-position:center;background-size:cover;background-repeat:no-repeat;border-radius:16px 16px 0 0;position:relative;overflow:hidden}
+    .bisno-perfil-capa>span{color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.6)}
+    .bisno-perfil-capa-publica{height:260px}
+    .bisno-perfil-identidade{position:relative;margin-top:-52px;z-index:2}
+    .bisno-perfil-avatar-wrap{width:120px;height:120px;flex:0 0 120px;border:5px solid var(--painel,#fff);border-radius:50%;background:var(--painel,#fff);overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.18)}
+    .bisno-perfil-avatar-wrap img,.bisno-perfil-avatar-wrap .bisno-avatar-fallback{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .cabecalho-perfil-publico{position:relative;margin-top:-58px;z-index:2;display:flex;align-items:flex-end;gap:14px;padding:0 14px}
+    .avatar-perfil-publico{border:5px solid var(--painel,#fff);border-radius:50%;object-fit:cover;width:120px;height:120px;box-shadow:0 3px 14px rgba(0,0,0,.18)}
+    .bisno-feed-compradores{margin-top:28px;padding-top:20px;border-top:1px solid rgba(120,120,120,.25)}
+    .bisno-feed-compradores h2{font-size:1.3rem}
+    @media(max-width:600px){.bisno-perfil-capa{height:190px}.bisno-perfil-capa-publica{height:210px}.bisno-perfil-avatar-wrap,.avatar-perfil-publico{width:96px;height:96px;flex-basis:96px}.bisno-perfil-identidade{margin-top:-42px}.cabecalho-perfil-publico{margin-top:-46px}}
+
 </style>
-  <script src="/script.js?v=20261022-menu-profiles-v1" defer></script>
+  <script src="/script.js?v=20261022-cover-icons-buyer-feed-v1" defer></script>
   <script src="/pwa-register.js" defer></script>
 </head>
 
@@ -179,8 +196,8 @@
       <a href="#area-produtos" data-bisno-page="home" class="is-active"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></a>
       
       <button type="button" data-abrir-publicacao class="nav-publish" aria-label="Escolher tipo de anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></button>
-      <button type="button" class="nav-social" data-menu-acao="notifications" aria-label="Notificações"><span class="nav-icon" aria-hidden="true">🔔</span><span class="nav-label">Notificações</span><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
-      <button type="button" class="nav-social" data-menu-acao="messages" aria-label="Mensagens"><span class="nav-icon" aria-hidden="true">💬</span><span class="nav-label">Mensagens</span><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
+      <button type="button" class="nav-social" data-menu-acao="notifications" aria-label="Notificações" title="Notificações"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
+      <button type="button" class="nav-social" data-menu-acao="messages" aria-label="Mensagens" title="Mensagens"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
       <a href="#area-diretorio-lojas" data-bisno-page="stores" aria-label="Explorar lojas"><span class="nav-icon" aria-hidden="true">▦</span><span>Lojas</span></a>
       
@@ -189,8 +206,8 @@
   <div id="menu-superior" class="bisno-menu-overlay" hidden>
     <button type="button" class="bisno-fechar-overlay" data-fechar-overlay aria-label="Fechar menu">×</button>
     <h2>Menu</h2>
-    <button type="button" data-menu-acao="notifications">🔔 Notificações</button>
-    <button type="button" data-menu-acao="messages">💬 Mensagens</button>
+    <button type="button" data-menu-acao="notifications"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg> Notificações</button>
+    <button type="button" data-menu-acao="messages"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg> Mensagens</button>
     <button type="button" data-menu-acao="stores">▦ Explorar lojas</button>
     <button type="button" data-menu-acao="wanted">🔎 Publicações dos compradores</button>
     <button type="button" data-menu-acao="store">▣ A minha loja</button>
