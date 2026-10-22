@@ -36,6 +36,10 @@ app.use(session({
 }));
 
 app.get("/api/health", (_req, res) => res.json({ estado: "ok", servico: "Bisno", versao: require("./package.json").version }));
+app.get("/api/site-settings", async (_req,res) => {
+ try { const row=await db.prepare("SELECT value FROM site_settings WHERE key=?").get("home_phrases"); res.json({phrases:row?.value||null}); }
+ catch(error){ console.error("Erro ao carregar frases iniciais:",error.message); res.status(500).json({erro:"Não foi possível carregar os cartões."}); }
+});
 
 const adminRoutes = require("./routes/admin");
 app.use("/api/admin", adminRoutes.router);

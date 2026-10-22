@@ -142,6 +142,7 @@ async function initializeDatabase() {
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_store_view_day ON store_views(store_id,visitor_key,visit_day)",
     "CREATE TABLE IF NOT EXISTS store_follows (id SERIAL PRIMARY KEY, store_id INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE, follower_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(store_id,follower_user_id))",
     "CREATE TABLE IF NOT EXISTS store_contacts (id SERIAL PRIMARY KEY, store_id INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE, customer_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL, product_id INTEGER REFERENCES products(id) ON DELETE SET NULL, channel TEXT NOT NULL CHECK(channel IN ('message','whatsapp')), contact_key TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(store_id,contact_key))",
+    "CREATE TABLE IF NOT EXISTS site_settings (key TEXT PRIMARY KEY, value JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)",
     "CREATE TABLE IF NOT EXISTS sessions (sid VARCHAR PRIMARY KEY, sess JSON NOT NULL, expire TIMESTAMP NOT NULL)",
     "CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire)"
   ];

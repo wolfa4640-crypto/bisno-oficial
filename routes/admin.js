@@ -210,4 +210,18 @@ router.patch("/stores/:id/status", async (req,res) => {
   res.json({mensagem:active?"Loja reativada.":"Loja suspensa.",active});
 });
 
+
+router.get("/site-phrases", async (_req,res) => {
+ const row=await db.prepare("SELECT value FROM site_settings WHERE key=?").get("home_phrases");
+ res.json({phrases:row?.value||null});
+});
+router.put("/site-phrases", async (req,res) => {
+ const raw=req.body?.phrases;
+ if(!Array.isArray(raw)||raw.length<1||raw.length>6)return res.status(400).json({erro:"Indica entre 1 e 6 cartões."});
+ const phrases=raw.map(p=>({etiqueta:String(p?.etiqueta||"").trim().slice(0,80),titulo:String(p?.titulo||"").trim().slice(0,100),descricao:String(p?.descricao||"").trim().slice(0,240)}));
+ if(phrases.some(p=>!p.etiqueta||!p.titulo||!p.descricao))return res.status(400).json({erro:"Preenche todos os campos."});
+ await db.prepare("INSERT INTO site_settings(key,value,updated_at) VALUES(?,?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=CURRENT_TIMESTAMP").run("home_phrases",JSON.stringify(phrases));
+ await log(req,"site.home_phrases.update","settings","home_phrases",null);
+ res.json({mensagem:"Frases atualizadas.",phrases});
+});
 module.exports={router,exigirAdmin};
