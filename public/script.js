@@ -1002,7 +1002,7 @@ function configurarPrevisualizacaoAnuncio() {
   });
 }
 
-async function eProdutoDoUtilizador(produto) {
+function eProdutoDoUtilizador(produto) {
 
   const idUtilizador = obterIdUtilizador();
 
