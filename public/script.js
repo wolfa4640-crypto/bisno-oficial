@@ -1001,6 +1001,37 @@ function configurarPrevisualizacaoAnuncio() {
   });
 }
 
+// Permite ao vendedor atualizar o stock diretamente nos cartões da sua loja.
+if (!window.__bisnoStockHandlerConfigurado) {
+  window.__bisnoStockHandlerConfigurado = true;
+  document.addEventListener("click", async evento => {
+    const botao = evento.target.closest("[data-editar-stock]");
+    if (!botao) return;
+    evento.preventDefault();
+    if (!exigirLogin()) return;
+    const id = botao.dataset.editarStock;
+    const atual = Number(botao.dataset.stockAtual || 0);
+    const resposta = window.prompt("Quantas unidades deste produto tens disponíveis? (0 = esgotado)", String(atual));
+    if (resposta === null) return;
+    const stock = Number(resposta.trim());
+    if (!Number.isSafeInteger(stock) || stock < 0 || stock > 1000000) {
+      mostrarMensagem("Introduz um número inteiro entre 0 e 1.000.000.", "erro");
+      return;
+    }
+    botao.disabled = true;
+    try {
+      await pedidoAPI("/api/products/" + encodeURIComponent(id) + "/stock", { method: "PATCH", body: { stock } });
+      mostrarMensagem(stock === 0 ? "Stock atualizado: produto marcado como esgotado." : "Quantidade em stock atualizada.", "sucesso");
+      await Promise.all([carregarProdutos(), carregarMeusAnuncios()]);
+      if (!document.getElementById("area-loja")?.hidden) await carregarMinhaLoja();
+    } catch (erro) {
+      mostrarMensagem(erro.message || "Não foi possível atualizar o stock.", "erro");
+    } finally {
+      botao.disabled = false;
+    }
+  });
+}
+
 function eProdutoDoUtilizador(produto) {
 
   const idUtilizador = obterIdUtilizador();
@@ -1053,6 +1084,7 @@ function cartaoProduto(produto) {
         <h3 title="${escaparHTML(produto.name)}">${escaparHTML(produto.name)}</h3>
         <p class="preco">${escaparHTML(formatarPreco(produto.price))}</p>
         <p class="bisno-stock-indicator" aria-label="${stock === 0 ? "Produto esgotado" : "Stock disponível: " + stock}">${stock === 0 ? "Esgotado" : "📦 Stock: " + stock}</p>
+        ${eProdutoDoUtilizador(produto) ? `<button type="button" class="botao-secundario bisno-editar-stock" data-editar-stock="${escaparHTML(id)}" data-stock-atual="${stock}">✎ Alterar quantidade</button>` : ""}
         ${localizacao ? `<p class="bisno-product-location"><span aria-hidden="true">⌖</span> ${escaparHTML(localizacao)}</p>` : ""}
         <div class="bisno-card-actions">
           ${!eProdutoDoUtilizador(produto) ? `<button type="button" class="botao-mensagem" data-iniciar-conversa="${escaparHTML(id)}">Enviar mensagem</button>` : ""}
