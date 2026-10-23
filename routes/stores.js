@@ -1,7 +1,7 @@
 "use strict";
 const express = require("express");
 const multer = require("multer");
-const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
+const { guardarImagem, eliminarImagemPorUrl, urlImagemPublica } = require("../storage/object-storage");
 const uploadMedia = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_req,file,cb) => cb(null, ["image/jpeg","image/png","image/webp"].includes(file.mimetype)) });
 const db = require("../data/database");
 const exigirLogin = require("../middleware/auth");
@@ -88,7 +88,7 @@ router.get('/directory', async (req,res) => {
     (SELECT COUNT(*) FROM store_follows f WHERE f.store_id=s.id) AS followers
     FROM stores s JOIN users u ON u.id=s.user_id WHERE ${where}
     ORDER BY ${sort} LIMIT ? OFFSET ?`).all(...params,limit,(page-1)*limit);
-  res.json({stores,page,limit,total:Number(totalRow?.total||0),pages:Math.ceil(Number(totalRow?.total||0)/limit)});
+  res.json({stores:stores.map(s=>({...s,avatar:urlImagemPublica(s.avatar),cover:urlImagemPublica(s.cover),brand_image:urlImagemPublica(s.brand_image),owner_avatar:urlImagemPublica(s.owner_avatar)})),page,limit,total:Number(totalRow?.total||0),pages:Math.ceil(Number(totalRow?.total||0)/limit)});
  } catch(error){ console.error('Erro no diretório de lojas:',error.message);res.status(500).json({erro:'Não foi possível carregar as lojas.'}); }
 });
 router.get('/categories', async (_req,res) => {
@@ -104,7 +104,7 @@ router.get('/categories', async (_req,res) => {
 router.get('/mine', exigirLogin, async (req,res) => {
  const store=await getStore.get(req.session.userId);
  if(!store) return res.json({store:null, stats:{views:0,followers:0,contacts:0,products:0}});
- res.json({store,stats:await storeSummary(store.id)});
+ res.json({store: {...store, avatar:urlImagemPublica(store.avatar), cover:urlImagemPublica(store.cover), brand_image:urlImagemPublica(store.brand_image)},stats:await storeSummary(store.id)});
 });
 router.post('/activate', exigirLogin, async (req,res) => {
  const user=await db.prepare('SELECT id,name,avatar FROM users WHERE id=?').get(req.session.userId);
@@ -128,7 +128,7 @@ router.patch('/mine', exigirLogin, async (req,res) => {
  const description=clean(req.body.description,500);
  const city=typeof req.body.city === 'string' ? clean(req.body.city,100) : store.city;
  await db.prepare('UPDATE stores SET name=?,description=?,city=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(name,description,city,store.id,req.session.userId);
- res.json({store:await getStore.get(req.session.userId),stats:await storeSummary(store.id)});
+ { const updated=await getStore.get(req.session.userId); res.json({store:{...updated,avatar:urlImagemPublica(updated.avatar),cover:urlImagemPublica(updated.cover),brand_image:urlImagemPublica(updated.brand_image)},stats:await storeSummary(store.id)}); }
 });
 
 router.post('/media', uploadMedia.fields([{name:'logo',maxCount:1},{name:'cover',maxCount:1}]), async (req,res) => {
@@ -144,7 +144,7 @@ router.post('/media', uploadMedia.fields([{name:'logo',maxCount:1},{name:'cover'
   await db.prepare('UPDATE stores SET brand_image=?,cover=?,avatar=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?').run(brandImage,coverImage,brandImage,store.id,userId);
   if(logo && store.brand_image && store.brand_image!==brandImage) await eliminarImagemPorUrl(store.brand_image).catch(()=>{});
   if(cover && store.cover && store.cover!==coverImage) await eliminarImagemPorUrl(store.cover).catch(()=>{});
-  res.json({store:await getStore.get(userId),stats:await storeSummary(store.id)});
+  { const updated=await getStore.get(userId); res.json({store:{...updated,avatar:urlImagemPublica(updated.avatar),cover:urlImagemPublica(updated.cover),brand_image:urlImagemPublica(updated.brand_image)},stats:await storeSummary(store.id)}); }
  } catch(error){console.error('Erro ao guardar imagens da loja:',error.message);res.status(503).json({erro:'Não foi possível guardar as imagens. Confirma o armazenamento de imagens do servidor.'});}
 });
 router.post('/by-user/:userId/view', async (req,res) => {
@@ -162,7 +162,7 @@ router.get('/:id', async (req,res) => {
  if(!store) return res.status(404).json({erro:'Loja não encontrada.'});
  const products=await db.prepare(`SELECT id,user_id,name,description,price,condition,category,city,neighborhood,image,whatsapp,stock,created_at FROM products WHERE user_id=? AND is_blocked=0 ORDER BY id DESC LIMIT 100`).all(store.user_id);
  const followed=req.session.userId ? !!await db.prepare('SELECT 1 FROM store_follows WHERE store_id=? AND follower_user_id=?').get(id,req.session.userId) : false;
- res.json({store,products,followed,stats:{followers:(await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id)).total}});
+ res.json({store:{...store,avatar:urlImagemPublica(store.avatar),cover:urlImagemPublica(store.cover),brand_image:urlImagemPublica(store.brand_image),owner_avatar:urlImagemPublica(store.owner_avatar)},products:products.map(p=>({...p,image:urlImagemPublica(p.image),seller_avatar:urlImagemPublica(p.seller_avatar)})),followed,stats:{followers:(await db.prepare('SELECT COUNT(*) total FROM store_follows WHERE store_id=?').get(id)).total}});
 });
 router.post('/:id/view', async (req,res) => {
  const id=validId(req.params.id); if(!id) return res.status(400).json({erro:'Loja inválida.'});
