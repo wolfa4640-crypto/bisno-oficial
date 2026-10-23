@@ -1092,7 +1092,7 @@ async function carregarPedidosProcuraInicio() {
         <p><small>📍 ${escaparHTML(ad.city || "Angola")} · Publicado por ${escaparHTML(ad.buyer_name || "Comprador")}</small></p>
         ${ad.image ? '<img class="bisno-pedido-imagem" src="' + escaparHTML(obterImagem(ad.image)) + '" alt="Imagem do pedido" loading="lazy">' : ""}
         ${contacto && !meuPedido ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer">Contactar comprador</a>` : ""}
-        ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario">Encerrar pedido</button>` : ""}
+        ${meuPedido && utilizadorAtual ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" data-proprietario-pedido="${Number(ad.user_id)}" class="botao-secundario">Encerrar pedido</button>` : ""}
       </article>`;
     }).join("");
   } catch (erro) {
@@ -3245,7 +3245,7 @@ function configurarPedidosProcura() {
           ${ad.image ? '<img class="bisno-pedido-imagem" src="' + escaparHTML(obterImagem(ad.image)) + '" alt="Imagem do pedido" loading="lazy">' : ""}
           <p><small>Publicado por ${escaparHTML(ad.buyer_name)}</small></p>
           ${contacto ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer" aria-label="Contactar ${escaparHTML(ad.buyer_name)} pelo WhatsApp">☏ Contactar pelo WhatsApp</a>` : "<p>O comprador ainda não tem um contacto válido.</p>"}
-          ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
+          ${meuPedido && utilizadorAtual ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" data-proprietario-pedido="${Number(ad.user_id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
         </article>`;
       }).join("");
     } catch (error) {
@@ -3338,6 +3338,10 @@ function configurarPedidosProcura() {
   document.addEventListener("click", async event => {
     const button = event.target.closest("[data-encerrar-pedido]");
     if (!button) return;
+    const idAtual = obterIdUtilizador();
+    if (!utilizadorAtual || idAtual == null || String(button.dataset.proprietarioPedido) !== String(idAtual)) {
+      button.remove(); mostrarMensagem("Só o comprador que publicou este pedido pode encerrá-lo.", "erro"); return;
+    }
     if (!confirm("Queres encerrar este pedido de procura?")) return;
     try {
       await pedidoAPI("/api/wanted/" + button.dataset.encerrarPedido, { method: "DELETE" });
