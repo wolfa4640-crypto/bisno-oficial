@@ -55,7 +55,35 @@ const $=s=>document.querySelector(s), msg=$('#message');
 function tab(which){$('#login').hidden=which!=='login';$('#register').hidden=which!=='register';$('#forgot').hidden=which!=='forgot';$('#forgot-confirm').hidden=which!=='confirm';$('#forgot-toggle').hidden=which!=='login';$('#tab-login').classList.toggle('active',which==='login');$('#tab-register').classList.toggle('active',which==='register');}
 $('#tab-login').addEventListener('click',()=>tab('login'));$('#tab-register').addEventListener('click',()=>tab('register'));
 async function send(url,form){const data=Object.fromEntries(new FormData(form));const response=await fetch(url,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.erro||result.mensagem||'Não foi possível concluir. Tenta novamente.');return result;}
-$('#login').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;msg.textContent='A iniciar sessão…';try{const r=await send('/api/auth/login',e.currentTarget);msg.textContent=r.mensagem||'Sessão iniciada. A abrir o Bisno…';location.replace('/');}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
+$('#login').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const form=e.currentTarget, b=form.querySelector('button[type="submit"]');
+  if(form.dataset.enviando==='true') return;
+  form.dataset.enviando='true';
+  b.disabled=true;
+  const textoOriginal=b.textContent;
+  b.textContent='A validar…';
+  msg.setAttribute('role','status');
+  msg.textContent='A validar as credenciais e a sessão…';
+  try{
+    const resultado=await send('/api/auth/login',form);
+    // Não redirecionar só porque o POST respondeu 200: confirmar que o navegador
+    // recebeu/reenviou o cookie e que o servidor reconhece a sessão criada.
+    const verificacao=await fetch('/api/auth/me',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{'Accept':'application/json'}});
+    const sessao=await verificacao.json().catch(()=>({}));
+    if(!verificacao.ok || !(sessao.utilizador||sessao.usuario||sessao.user)){
+      throw new Error('As credenciais foram aceites, mas o servidor não confirmou a sessão neste navegador. Os teus campos foram mantidos. Tenta novamente; se continuar, é necessário corrigir a sessão do servidor.');
+    }
+    msg.textContent=resultado.mensagem||'Sessão confirmada. A abrir o Bisno…';
+    b.textContent='Sessão confirmada…';
+    window.location.replace('/');
+  }catch(err){
+    msg.textContent=err.name==='AbortError'?'O pedido demorou demasiado. Verifica a ligação e tenta novamente.':(err.message||'Não foi possível iniciar sessão. Os teus dados foram mantidos.');
+    b.disabled=false;
+    b.textContent=textoOriginal;
+    delete form.dataset.enviando;
+  }
+});
 $('#register').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;msg.textContent='A criar a conta…';try{const r=await send('/api/auth/register',e.currentTarget);tab('login');$('#login-email').value=$('#reg-email').value.trim();$('#login-password').value=$('#reg-password').value;msg.textContent=r.mensagem||'Conta criada. Já podes iniciar sessão.';}catch(err){msg.textContent=err.message;}finally{b.disabled=false;}});
 $('#forgot-toggle').addEventListener('click',()=>{if($('#login-email').value)$('#forgot-email').value=$('#login-email').value;tab('forgot');});
 $('#forgot-cancel').addEventListener('click',()=>tab('login'));
