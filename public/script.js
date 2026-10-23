@@ -3344,9 +3344,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   atualizarAreasSociais();
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 
-  if (utilizadorAtual) await carregarProdutos();
-  if (utilizadorAtual) await carregarCategoriasProdutos();
-  else definirConteudo("#lista-produtos", "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>");
+  if (utilizadorAtual) {
+    await carregarProdutos();
+    await carregarCategoriasProdutos();
+    // Reaplica o destino inicial após carregar anúncios para manter o perfil oculto.
+    abrirPagina("area-produtos");
+  } else {
+    definirConteudo("#lista-produtos", "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>");
+    abrirPagina("area-autenticacao");
+  }
 
 });
 
