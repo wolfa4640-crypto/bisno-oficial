@@ -42,7 +42,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Report dependency audit findings
         run: |
           npm audit --json > /tmp/npm-audit.json || true
@@ -61,18 +61,6 @@ jobs:
                 : { title: entry.title, url: entry.url, range: entry.range })
             }));
           }
-          NODE
-      - name: Export regenerated lockfile for repository sync
-        run: |
-          npm install --package-lock-only --ignore-scripts
-          node <<'NODE'
-          const fs = require("node:fs");
-          const encoded = Buffer.from(fs.readFileSync("package-lock.json", "utf8")).toString("base64");
-          console.log("LOCKFILE_BASE64_BEGIN");
-          for (let i = 0; i < encoded.length; i += 3000) {
-            console.log("LOCKFILE_CHUNK:" + encoded.slice(i, i + 3000));
-          }
-          console.log("LOCKFILE_BASE64_END");
           NODE
       - name: Check and run PostgreSQL integration tests
         run: npm test
