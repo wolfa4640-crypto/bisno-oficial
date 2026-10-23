@@ -665,7 +665,9 @@ function mostrarConta() {
 
   document.body.classList.toggle("bisno-autenticado", autenticado);
   document.body.classList.toggle("bisno-requer-login", !autenticado);
-  if (conta) conta.hidden = !autenticado;
+  // A sessão só controla autenticação; a navegação decide qual painel fica visível.
+  // Não reabrir #area-conta automaticamente ao atualizar a página.
+  if (conta && !autenticado) conta.hidden = true;
   if (autenticacao) autenticacao.hidden = autenticado;
 
   if (autenticado) {
