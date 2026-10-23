@@ -437,6 +437,8 @@ function abrirPagina(id) {
   const store = document.getElementById("area-loja");
   const storeDirectory = document.getElementById("area-diretorio-lojas");
   const wanted = document.getElementById("area-pedidos-procura");
+  const productDetails = document.getElementById("detalhes-produto");
+  const publicProfile = document.getElementById("perfil-publico");
   const footer = document.querySelector("body > footer");
 
   const destinosConta = ["area-conta", "area-meus-anuncios", "area-publicar", "area-mensagens", "area-notificacoes", "area-loja"];
@@ -454,6 +456,8 @@ function abrirPagina(id) {
   if (store) store.hidden = id !== "area-loja";
   if (storeDirectory) storeDirectory.hidden = id !== "area-diretorio-lojas";
   if (wanted) wanted.hidden = id !== "area-pedidos-procura";
+  if (productDetails) productDetails.hidden = id !== "detalhes-produto";
+  if (publicProfile) publicProfile.hidden = id !== "perfil-publico";
   if (footer) footer.hidden = id !== "area-produtos";
 
   // Dentro do contentor da conta, mostrar somente a secção escolhida.
