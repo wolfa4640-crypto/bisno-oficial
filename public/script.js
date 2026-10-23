@@ -535,9 +535,6 @@ function mostrarAba(aba) {
 }
 
 function configurarNavegacao() {
-  $("#aba-login")?.addEventListener("click", () => mostrarAba("login"));
-  $("#aba-registo")?.addEventListener("click", () => mostrarAba("registo"));
-
   document.querySelectorAll("[data-bisno-page]").forEach(link => {
     link.addEventListener("click", evento => {
       evento.preventDefault();
@@ -2824,12 +2821,22 @@ function configurarFiltros() {
 
 
 function configurarFormularios() {
+  // A autenticação é ligada primeiro para que uma falha num componente secundário
+  // nunca deixe os formulários a fazer envio HTML tradicional e a apagar os campos.
+  const formLogin = $("#form-login");
+  const formRegisto = $("#form-registo");
+  if (formLogin && formLogin.dataset.authHandler !== "true") {
+    formLogin.addEventListener("submit", entrarUtilizador);
+    formLogin.dataset.authHandler = "true";
+  }
+  if (formRegisto && formRegisto.dataset.authHandler !== "true") {
+    formRegisto.addEventListener("submit", registarUtilizador);
+    formRegisto.dataset.authHandler = "true";
+  }
+
   $("#form-anuncio")?.addEventListener("submit", publicarAnuncio);
-  configurarPrevisualizacaoAnuncio();
-
-  $("#form-login")?.addEventListener("submit", entrarUtilizador);
-
-  $("#form-registo")?.addEventListener("submit", registarUtilizador);
+  try { configurarPrevisualizacaoAnuncio(); }
+  catch (erro) { console.error("Falha ao inicializar a pré-visualização de anúncios:", erro); }
   $("#botao-recuperar-password")?.addEventListener("click", () => { if ($("#recuperar-email") && $("#login-email")) $("#recuperar-email").value = $("#login-email").value; mostrarAba("recuperar"); });
   $("#botao-cancelar-recuperacao")?.addEventListener("click", () => mostrarAba("login"));
   $("#botao-voltar-login")?.addEventListener("click", () => mostrarAba("login"));
@@ -3386,18 +3393,37 @@ function configurarMenuPublicacao() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Inicializar os componentes primeiro, mas só escolher a página depois de confirmar a sessão.
-  configurarBannerDestaque();
-  configurarPainelPesquisa();
-  configurarMenuPublicacao();
-  configurarNavegacao();
-  configurarFormularios();
-  configurarLoja();
-  configurarPedidosProcura();
-  configurarDiretorioLojas();
-  configurarPainelAdmin();
-  configurarFiltros();
-  configurarEventosProdutos();
+  // Preparar imediatamente os controlos de autenticação, antes de qualquer módulo secundário.
+  // Assim, um erro noutro componente não provoca submissão HTML nem oculta o registo.
+  $("#aba-login")?.addEventListener("click", () => mostrarAba("login"));
+  $("#aba-registo")?.addEventListener("click", () => mostrarAba("registo"));
+  const formLoginInicial = $("#form-login");
+  const formRegistoInicial = $("#form-registo");
+  if (formLoginInicial && formLoginInicial.dataset.authHandler !== "true") {
+    formLoginInicial.addEventListener("submit", entrarUtilizador);
+    formLoginInicial.dataset.authHandler = "true";
+  }
+  if (formRegistoInicial && formRegistoInicial.dataset.authHandler !== "true") {
+    formRegistoInicial.addEventListener("submit", registarUtilizador);
+    formRegistoInicial.dataset.authHandler = "true";
+  }
+
+  // Isolar falhas de módulos não essenciais para que a autenticação continue disponível.
+  const iniciarModulo = (nome, inicializar) => {
+    try { inicializar(); }
+    catch (erro) { console.error("Falha ao inicializar " + nome + ":", erro); }
+  };
+  iniciarModulo("banner", configurarBannerDestaque);
+  iniciarModulo("pesquisa", configurarPainelPesquisa);
+  iniciarModulo("menu de publicação", configurarMenuPublicacao);
+  iniciarModulo("navegação", configurarNavegacao);
+  iniciarModulo("formulários", configurarFormularios);
+  iniciarModulo("loja", configurarLoja);
+  iniciarModulo("pedidos de compradores", configurarPedidosProcura);
+  iniciarModulo("diretório de lojas", configurarDiretorioLojas);
+  iniciarModulo("painel administrativo", configurarPainelAdmin);
+  iniciarModulo("filtros", configurarFiltros);
+  iniciarModulo("eventos de produtos", configurarEventosProdutos);
 
   const paramsRecuperacao = new URLSearchParams(window.location.search);
   if (paramsRecuperacao.get("reset") && paramsRecuperacao.get("email")) {
