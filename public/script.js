@@ -2974,6 +2974,11 @@ async function carregarMinhaLoja() {
   try {
     const data = await pedidoLoja("/api/stores/mine");
     preencherPainelLoja(data);
+    const visitarMinhaLoja = document.getElementById("botao-visitar-minha-loja");
+    if (visitarMinhaLoja) {
+      visitarMinhaLoja.hidden = !data.store || !data.store.id || !data.store.is_active;
+      visitarMinhaLoja.dataset.lojaId = data.store?.id ? String(data.store.id) : "";
+    }
     // A montra do vendedor também apresenta os anúncios publicados pela própria conta.
     const lista = document.getElementById("lista-anuncios-minha-loja");
     if (lista) {
@@ -2991,6 +2996,14 @@ async function carregarMinhaLoja() {
   } catch (erro) { mostrarMensagem(erro.message || "Erro ao carregar a loja.", "erro"); }
 }
 function configurarLoja() {
+  $("#botao-visitar-minha-loja")?.addEventListener("click", async () => {
+    const botao = $("#botao-visitar-minha-loja");
+    const id = botao?.dataset.lojaId;
+    if (!id) { mostrarMensagem("Ativa primeiro a tua loja para poderes visitá-la.", "aviso"); return; }
+    abrirPagina("area-diretorio-lojas");
+    try { await abrirDetalheLoja(id); }
+    catch (erro) { mostrarMensagem(erro.message || "Não foi possível abrir a tua loja.", "erro"); }
+  });
   $("#form-loja")?.addEventListener("submit", async evento => {
     evento.preventDefault();
     const form = evento.currentTarget, existente = $("#estado-loja")?.classList.contains("ativa");
