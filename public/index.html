@@ -160,6 +160,28 @@
     .admin-metadados .admin-estado.is-ativo{color:#176b45}.admin-metadados .admin-estado.is-bloqueado{color:#a32626}
     .admin-acoes-compact{display:flex;gap:6px;flex-shrink:0}.admin-acoes-compact button{min-width:38px;min-height:38px;padding:6px}
     #form-pedido-procura button[type="submit"]:disabled{opacity:.65;cursor:wait}
+
+    /* Correção de estabilidade da navegação: um único painel visível de cada vez. */
+    [hidden], [hidden] * { display: none !important; }
+    .painel[hidden], .painel-secundario[hidden], section[hidden],
+    form[hidden], nav[hidden], .bisno-menu-overlay[hidden],
+    .painel-pesquisa-overlay[hidden] { display: none !important; }
+    main.container { position: relative; isolation: isolate; min-width: 0; padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+    main.container > section.painel:not([hidden]) { display: block; position: relative; width: 100%; min-width: 0; clear: both; }
+    #area-conta > .painel-secundario[hidden] { display: none !important; }
+    #area-conta > .painel-secundario:not([hidden]) { display: block; position: relative; width: 100%; min-width: 0; }
+    #area-produtos, #area-publicar, #area-diretorio-lojas, #area-pedidos-procura,
+    #area-mensagens, #area-notificacoes, #area-loja, #area-meus-anuncios,
+    #area-conta, #area-autenticacao { box-sizing: border-box; min-width: 0; max-width: 100%; }
+    .bisno-nav { z-index: 9000 !important; }
+    .bisno-menu-overlay { z-index: 10050 !important; }
+    #painel-pesquisa-overlay { z-index: 10040 !important; }
+    #menu-publicar-overlay { z-index: 10060 !important; }
+    @media (max-width: 600px) {
+      main.container { padding-left: 12px; padding-right: 12px; padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
+      .painel, .painel-secundario { max-width: 100%; min-width: 0; }
+      .bisno-nav-inner { overflow: visible; }
+    }
   </style>
   <script src="/script.js?v=20261023-session-publish-v6" defer></script>
   <script src="/pwa-register.js" defer></script>
