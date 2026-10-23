@@ -98,3 +98,33 @@ img, input, select, textarea, button { max-width: 100%; }
     margin-top: -7px;
   }
 }
+
+
+/* Correção estrutural: cada destino da navegação tem o seu próprio espaço. */
+[hidden], [hidden] * { display: none !important; }
+.bisno-nav-inner { display:flex !important; align-items:stretch; justify-content:space-between; gap:clamp(4px,1vw,12px); overflow:visible; }
+.bisno-nav-inner > a,
+.bisno-nav-inner > button {
+  box-sizing:border-box; flex:1 1 0; width:0; min-width:0; max-width:none;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  gap:4px; margin:0; padding:8px 4px; border:0; border-radius:10px;
+  font:inherit; font-size:12px; line-height:1.2; text-align:center;
+  white-space:normal; overflow-wrap:anywhere;
+}
+.bisno-nav-inner > button { background:transparent; color:inherit; }
+.bisno-nav-inner > .nav-publish { flex:1.12 1 0; background:var(--verde,#14764f); color:#fff; }
+.bisno-nav-inner > * + * { border-left:1px solid rgba(100,120,108,.16); }
+.bisno-nav-inner > .nav-publish { border-left:0; }
+main.container > section[hidden],
+#area-conta > section[hidden],
+#area-conta > div[hidden] { display:none !important; }
+main.container > section:not([hidden]) { display:block; width:100%; min-width:0; }
+#area-produtos, #area-pedidos-procura { position:relative; clear:both; }
+#area-pedidos-procura { margin-top:22px; }
+@media(max-width:600px) {
+  .bisno-nav-inner { gap:2px; padding:5px 3px; }
+  .bisno-nav-inner > a, .bisno-nav-inner > button { padding:6px 2px; font-size:10px; gap:3px; }
+  .bisno-nav-inner .nav-svg-icon { width:19px; height:19px; flex:none; }
+  .bisno-nav-inner > * + * { border-left:1px solid rgba(100,120,108,.18); }
+  .bisno-nav-inner > .nav-publish { border-left:0; }
+}
