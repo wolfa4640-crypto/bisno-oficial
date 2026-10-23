@@ -161,7 +161,7 @@ router.get("/mine", exigirLogin, async (req, res) => {
       ORDER BY id DESC
     `).all(req.session.userId);
 
-    return res.json({ produtos });
+    return res.json({ produtos: produtos.map(produto => ({ ...produto, image: urlImagemPublica(produto.image) })) });
   } catch (erro) {
     console.error("Erro ao carregar os meus anúncios:", erro);
 
@@ -222,7 +222,7 @@ router.get("/seller/:id", async (req, res) => {
 
     return res.json({
       vendedor,
-      produtos
+      produtos: produtos.map(produto => ({ ...produto, image: urlImagemPublica(produto.image) }))
     });
   } catch (erro) {
     console.error("Erro ao carregar perfil do vendedor:", erro);
