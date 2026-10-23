@@ -2,7 +2,7 @@
 "use strict";
 
 const express = require("express");
-const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
+const { guardarImagem, eliminarImagemPorUrl, urlImagemPublica } = require("../storage/object-storage");
 const verificarImagem = require("../middleware/validar-imagem");
 const multer = require("multer");
 
@@ -120,7 +120,7 @@ router.get("/", async (req, res) => {
       LIMIT 100
     `).all();
 
-    return res.json({ produtos });
+    return res.json({ produtos: produtos.map(produto => ({ ...produto, image: urlImagemPublica(produto.image) })) });
   } catch (erro) {
     console.error("Erro ao listar anúncios:", erro);
 
