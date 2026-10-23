@@ -3051,6 +3051,23 @@ async function carregarMinhaLoja() {
     }
   } catch (erro) { mostrarMensagem(erro.message || "Erro ao carregar a loja.", "erro"); }
 }
+function urlPublicaMinhaLoja() {
+  const botao = $("#botao-visitar-minha-loja");
+  const id = botao?.dataset.lojaId;
+  return id ? window.location.origin + "/?loja=" + encodeURIComponent(id) : "";
+}
+async function copiarLigacaoLoja(url) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(url);
+    return;
+  }
+  const campo = document.createElement("textarea");
+  campo.value = url; campo.setAttribute("readonly", "");
+  campo.style.position = "fixed"; campo.style.opacity = "0";
+  document.body.appendChild(campo); campo.select();
+  const ok = document.execCommand("copy"); campo.remove();
+  if (!ok) throw new Error("Não foi possível copiar a ligação. Tenta partilhar pelo menu do telemóvel.");
+}
 function configurarLoja() {
   $("#botao-visitar-minha-loja")?.addEventListener("click", async () => {
     const botao = $("#botao-visitar-minha-loja");
@@ -3087,6 +3104,22 @@ function configurarLoja() {
   $("#loja-capa-preview")?.addEventListener("click",()=>coverInput?.click());
   $("#loja-capa-preview")?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();coverInput?.click();}});
   [logoInput,coverInput].forEach(input=>input?.addEventListener("change",()=>{if(input.files?.length){const form=$("#form-loja");if(form){form.hidden=false;form.requestSubmit();}}}));
+  $("#botao-partilhar-minha-loja")?.addEventListener("click", async () => {
+    const url = urlPublicaMinhaLoja();
+    if (!url) { mostrarMensagem("Ativa a tua loja primeiro para poderes partilhá-la.", "aviso"); return; }
+    try {
+      if (navigator.share) await navigator.share({ title: $("#loja-nome-preview")?.textContent || "Loja no Bisno", text: "Visita a minha loja no Bisno!", url });
+      else { await copiarLigacaoLoja(url); mostrarMensagem("Ligação da tua loja copiada. Já podes enviá-la a outras pessoas.", "sucesso"); }
+    } catch (erro) { if (erro.name !== "AbortError") mostrarMensagem(erro.message || "Não foi possível partilhar a loja.", "erro"); }
+  });
+  $("#botao-qr-minha-loja")?.addEventListener("click", () => {
+    const url = urlPublicaMinhaLoja(), painel = $("#qr-minha-loja");
+    if (!url || !painel) { mostrarMensagem("Ativa a tua loja primeiro para gerar o QR Code.", "aviso"); return; }
+    if (!painel.hidden) { painel.hidden = true; return; }
+    painel.hidden = false;
+    painel.innerHTML = '<p>QR Code da tua loja — outras pessoas podem digitalizá-lo para abrir a loja.</p><img alt="QR Code com a ligação da tua loja no Bisno" width="240" height="240" loading="lazy" style="display:block;width:min(240px,100%);height:auto;background:#fff;padding:10px;border-radius:12px" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&format=png&data=' + encodeURIComponent(url) + '"><p><button type="button" id="botao-copiar-link-qr" class="botao-secundario">Copiar ligação da loja</button></p>';
+    $("#botao-copiar-link-qr")?.addEventListener("click", async () => { try { await copiarLigacaoLoja(url); mostrarMensagem("Ligação da loja copiada.", "sucesso"); } catch (erro) { mostrarMensagem(erro.message, "erro"); } });
+  });
   $("#botao-atualizar-loja")?.addEventListener("click", carregarMinhaLoja);
 }
 
