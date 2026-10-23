@@ -445,7 +445,6 @@ function abrirPagina(id) {
   if (hero) hero.hidden = id !== "area-produtos";
   if (auth) auth.hidden = id !== "area-autenticacao";
   if (products) products.hidden = id !== "area-produtos";
-  document.body.classList.toggle("bisno-pagina-pedidos", id === "area-pedidos-procura");
   if (account) account.hidden = !autenticado || !dentroDaConta;
   if (messages) messages.hidden = id !== "area-mensagens";
   if (publish) publish.hidden = id !== "area-publicar";
@@ -3154,8 +3153,6 @@ function configurarPedidosProcura() {
     try {
       const dados = await pedidoAPI("/api/wanted", { cache: "no-store" });
       if (!dados.ads || !dados.ads.length) {
-        const feedPrincipal = document.getElementById("lista-produtos");
-        feedPrincipal?.querySelectorAll(".bisno-pedido-procura").forEach(card => card.remove());
         window.bisnoPedidosCompradoresCache = [];
         lista.innerHTML = "<p>Ainda não existem pedidos de procura. Sê o primeiro a publicar!</p>";
         return;
@@ -3303,7 +3300,7 @@ function configurarMenuPublicacao() {
     if (!utilizadorAtual) { fechar(); mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
     const type = button.dataset.publicarTipo; fechar();
     if (type === "vendedor") { abrirPagina("area-publicar"); return; }
-    if (type === "comprador") { const secao = document.getElementById("area-pedidos-procura"); const home = document.getElementById("area-produtos"); if (home) abrirPagina("area-produtos"); if (secao) { secao.hidden = false; secao.style.display = ""; secao.scrollIntoView({ behavior: "smooth", block: "start" }); } window.bisnoCarregarPedidosProcura?.(); }
+    if (type === "comprador") { abrirPagina("area-pedidos-procura"); window.bisnoCarregarPedidosProcura?.(); return; }
   }));
   document.querySelectorAll("[data-menu-acao]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.menuAcao; fechar();
