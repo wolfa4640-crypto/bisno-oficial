@@ -221,10 +221,10 @@ router.post("/change-password", async (req, res) => {
 
 router.get("/me", async (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ erro: "Inicia sessão primeiro." });
-  const user = await db.prepare("SELECT id,name,email,phone,avatar,created_at,is_blocked FROM users WHERE id=?").get(req.session.userId);
+  const user = await db.prepare("SELECT id,name,email,phone,avatar,cover,created_at,is_blocked FROM users WHERE id=?").get(req.session.userId);
   if (!user || user.is_blocked) return req.session.destroy(() => res.status(401).json({ erro: "A sessão expirou ou a conta está bloqueada." }));
   const isAdmin = Boolean(process.env.ADMIN_EMAIL) && user.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase();
-  res.json({ utilizador: { ...user, isAdmin } });
+  res.json({ utilizador: { ...user, avatar: urlImagemPublica(user.avatar), cover: urlImagemPublica(user.cover), isAdmin } });
 });
 router.post("/logout", async (req, res) => {
   if (!req.session) return res.json({ mensagem: "Sessão terminada." });
