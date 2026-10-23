@@ -1578,7 +1578,16 @@ async function abrirPerfilPublico(id) {
 
 
 
-    area.innerHTML = `
+    // Só mostrar a ação se o vendedor tiver uma loja ativa.
+    let lojaVendedor = null;
+    try {
+      const respostaLoja = await pedidoAPI(`/api/stores/by-user/${encodeURIComponent(id)}`);
+      lojaVendedor = respostaLoja.store || null;
+    } catch (erroLoja) {
+      console.warn("Não foi possível verificar a loja deste vendedor:", erroLoja.message);
+    }
+
+    area.innerHTML = `
 
       <button type="button" id="voltar-perfil-publico">← Voltar aos produtos</button>
       <div class="bisno-perfil-capa bisno-perfil-capa-publica" style="${vendedorPublicoAtual?.cover ? 'background-image:url(' + escaparHTML(obterImagem(vendedorPublicoAtual.cover)) + ')' : '' }"><span>Perfil no Bisno</span></div>
@@ -1594,7 +1603,7 @@ async function abrirPerfilPublico(id) {
         <h2 class="nome-perfil-publico">${escaparHTML(nome)}</h2>
         <p class="meta-perfil-publico">${produtos.length} ${produtos.length === 1 ? "anúncio publicado" : "anúncios publicados"} no Bisno</p>
         <div class="bisno-social-stats"><span><strong>${produtos.length.toLocaleString("pt-AO")}</strong> anúncios</span><span><strong id="seguidores-vendedor-publico">…</strong> seguidores</span></div>
-        <div class="bisno-perfil-acoes"><button type="button" class="bisno-seguir-btn" data-seguir-vendedor="${escaparHTML(id)}" hidden>＋ Seguir</button></div>
+        <div class="bisno-perfil-acoes"><button type="button" class="bisno-seguir-btn" data-seguir-vendedor="${escaparHTML(id)}" hidden>＋ Seguir</button>${lojaVendedor?.id ? '<button type="button" id="visitar-loja-vendedor" class="botao-secundario">🏪 Visitar loja</button>' : ''}</div>
       </div>
       <h3>Anúncios deste vendedor</h3>
 
@@ -1619,6 +1628,19 @@ async function abrirPerfilPublico(id) {
 
 
     carregarEstadoSeguimento(id).catch(() => {});
+    $("#visitar-loja-vendedor")?.addEventListener("click", async () => {
+      const botaoLoja = $("#visitar-loja-vendedor");
+      if (!lojaVendedor?.id || !botaoLoja) return;
+      botaoLoja.disabled = true;
+      try {
+        abrirPagina("area-diretorio-lojas");
+        await abrirDetalheLoja(lojaVendedor.id);
+      } catch (erroLoja) {
+        mostrarMensagem(erroLoja.message || "Não foi possível abrir a loja deste vendedor.", "erro");
+      } finally {
+        botaoLoja.disabled = false;
+      }
+    });
     $("#voltar-perfil-publico")?.addEventListener("click", () => {
 
       area.hidden = true;
