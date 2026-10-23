@@ -904,6 +904,84 @@ async function terminarSessao() {
 
 
 
+async function publicarAnuncio(evento) {
+  evento.preventDefault();
+  evento.stopPropagation();
+  const form = evento.currentTarget;
+  if (form.dataset.enviando === "true" || !exigirLogin()) return;
+  if (!form.reportValidity()) return;
+
+  const campoImagem = form.querySelector('input[name="image"]');
+  const ficheiro = campoImagem?.files?.[0];
+  if (ficheiro && (!["image/jpeg", "image/png", "image/webp"].includes(ficheiro.type) || ficheiro.size > LIMITE_IMAGEM)) {
+    mostrarMensagem("A imagem deve ser JPG, PNG ou WEBP e não pode ultrapassar 5 MB.", "erro");
+    return;
+  }
+  const stock = Number(form.elements.namedItem("stock")?.value);
+  const preco = Number(form.elements.namedItem("price")?.value);
+  if (!Number.isSafeInteger(preco) || preco < 0 || preco > 1000000000000 || !Number.isSafeInteger(stock) || stock < 0 || stock > 1000000) {
+    mostrarMensagem("Confirma o preço e a quantidade em stock.", "erro");
+    return;
+  }
+
+  const preview = document.getElementById("anuncio-preview");
+  const submit = form.querySelector('button[type="submit"]');
+  const textoOriginal = submit?.textContent || "＋ Publicar anúncio";
+  const dados = new FormData(form);
+  if (!ficheiro || ficheiro.size === 0) dados.delete("image");
+  form.dataset.enviando = "true";
+  if (submit) { submit.disabled = true; submit.textContent = "A publicar…"; }
+  try {
+    const resultado = await pedidoAPI("/api/products", { method: "POST", body: dados });
+    form.reset();
+    if (preview) { preview.hidden = true; preview.replaceChildren(); }
+    mostrarMensagem(resultado.mensagem || "Anúncio publicado com sucesso!", "sucesso");
+    await carregarProdutos();
+    await carregarMeusAnuncios();
+    abrirPagina("area-produtos");
+  } catch (erro) {
+    mostrarMensagem(erro.message || "Não foi possível publicar o anúncio. Confirma os dados e tenta novamente.", "erro");
+  } finally {
+    delete form.dataset.enviando;
+    if (submit) { submit.disabled = false; submit.textContent = textoOriginal; }
+  }
+}
+
+function configurarPrevisualizacaoAnuncio() {
+  const campo = document.getElementById("anuncio-imagem");
+  const preview = document.getElementById("anuncio-preview");
+  if (!campo || !preview || campo.dataset.configurado === "true") return;
+  campo.dataset.configurado = "true";
+  let url = null;
+  campo.addEventListener("change", () => {
+    if (url) URL.revokeObjectURL(url);
+    url = null;
+    preview.replaceChildren();
+    preview.hidden = true;
+    const file = campo.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > LIMITE_IMAGEM) {
+      campo.value = "";
+      mostrarMensagem("A imagem deve ser JPG, PNG ou WEBP e não pode ultrapassar 5 MB.", "erro");
+      return;
+    }
+    url = URL.createObjectURL(file);
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Pré-visualização do produto";
+    img.className = "bisno-pedido-imagem";
+    img.style.maxWidth = "100%";
+    img.style.maxHeight = "240px";
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "botao-secundario";
+    remove.textContent = "Remover imagem";
+    remove.addEventListener("click", () => { campo.value = ""; if (url) URL.revokeObjectURL(url); url = null; preview.replaceChildren(); preview.hidden = true; });
+    preview.append(img, remove);
+    preview.hidden = false;
+  });
+}
+
 async function eProdutoDoUtilizador(produto) {
 
   const idUtilizador = obterIdUtilizador();
@@ -2681,6 +2759,8 @@ function configurarFiltros() {
 
 
 function configurarFormularios() {
+  $("#form-anuncio")?.addEventListener("submit", publicarAnuncio);
+  configurarPrevisualizacaoAnuncio();
 
   $("#form-login")?.addEventListener("submit", entrarUtilizador);
 
@@ -3218,6 +3298,7 @@ function configurarMenuPublicacao() {
   document.querySelectorAll("[data-publicar-tipo]").forEach(button => button.addEventListener("click", () => {
     if (!utilizadorAtual) { fechar(); mostrarAba("login"); abrirPagina("area-autenticacao"); return; }
     const type = button.dataset.publicarTipo; fechar();
+    if (type === "vendedor") { abrirPagina("area-publicar"); return; }
     if (type === "comprador") { const secao = document.getElementById("area-pedidos-procura"); const home = document.getElementById("area-produtos"); if (home) abrirPagina("area-produtos"); if (secao) { secao.hidden = false; secao.style.display = ""; secao.scrollIntoView({ behavior: "smooth", block: "start" }); } window.bisnoCarregarPedidosProcura?.(); }
   }));
   document.querySelectorAll("[data-menu-acao]").forEach(button => button.addEventListener("click", () => {
