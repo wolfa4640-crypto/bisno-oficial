@@ -1112,6 +1112,21 @@ async function carregarProdutos() {
   }
 }
 
+
+// Carrega os anúncios do utilizador sem depender de funções antigas.
+async function carregarMeusAnuncios() {
+  const alvo = $("#lista-meus-anuncios") || $("#area-meus-anuncios");
+  if (!alvo) return;
+  alvo.setAttribute("aria-busy", "true");
+  try {
+    const dados = await pedidoAPI("/api/products/mine");
+    const produtos = dados.produtos ?? dados.products ?? dados.anuncios ?? [];
+    alvo.innerHTML = produtos.length ? produtos.map(cartaoProduto).join("") : "<p>Ainda não publicaste anúncios.</p>";
+  } catch (erro) {
+    alvo.textContent = erro.message || "Não foi possível carregar os teus anúncios.";
+  } finally { alvo.setAttribute("aria-busy", "false"); }
+}
+
 function normalizarTexto(valor) {
   return String(valor ?? "")
     .normalize("NFD")
