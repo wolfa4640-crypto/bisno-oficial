@@ -34,4 +34,5 @@ test("a navegação define estados independentes para catálogo e pedidos", () =
   assert.match(script, /if\s*\(products\)\s*products\.hidden\s*=\s*id\s*!==\s*"area-produtos"/);
   assert.match(script, /if\s*\(wanted\)\s*wanted\.hidden\s*=\s*id\s*!==\s*"area-pedidos-procura"/);
   assert.doesNotMatch(html, /body\.bisno-pagina-pedidos\s+#area-produtos\s*>/);
+  assert.doesNotMatch(html, /feed-integrado-home|bisno-feed-compradores/);
 });
