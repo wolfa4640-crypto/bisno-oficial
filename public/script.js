@@ -1169,16 +1169,12 @@ function aplicarFiltros() {
       : `${produtos.length} anúncios encontrados`;
   }
 
-  const pedidosCompradores = Array.isArray(window.bisnoPedidosCompradoresCache) ? window.bisnoPedidosCompradoresCache.map(card => card.cloneNode(true)) : [];
-
   if (!produtos.length) {
     lista.innerHTML = `<div class="estado-vazio-catalogo"><p class="estado-vazio-titulo">Não encontrámos anúncios com estes filtros.</p><p>Tenta pesquisar por outras palavras, escolher outra categoria ou limpar os filtros.</p><button type="button" class="botao-limpar-filtros" data-limpar-filtros>Limpar filtros</button></div>`;
-    pedidosCompradores.forEach(card => lista.appendChild(card));
     return;
   }
 
   lista.innerHTML = produtos.map(cartaoProduto).join("");
-  pedidosCompradores.forEach(card => lista.appendChild(card));
 }
 
 function prepararAreaDetalhes() {
@@ -3134,13 +3130,6 @@ function configurarBannerDestaque() {
 }
 
 
-function ordenarFeedPorPublicacao(feed) {
- if(!feed)return;
- const cards=Array.from(feed.querySelectorAll(".cartao-produto"));
- cards.sort((a,b)=>(Date.parse(b.dataset.createdAt||"")||0)-(Date.parse(a.dataset.createdAt||"")||0));
- cards.forEach(card=>feed.appendChild(card));
-}
-
 function configurarPedidosProcura() {
   const form = document.getElementById("form-pedido-procura");
   const lista = document.getElementById("lista-pedidos-procura");
@@ -3153,7 +3142,6 @@ function configurarPedidosProcura() {
     try {
       const dados = await pedidoAPI("/api/wanted", { cache: "no-store" });
       if (!dados.ads || !dados.ads.length) {
-        window.bisnoPedidosCompradoresCache = [];
         lista.innerHTML = "<p>Ainda não existem pedidos de procura. Sê o primeiro a publicar!</p>";
         return;
       }
@@ -3171,19 +3159,6 @@ function configurarPedidosProcura() {
           ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario" aria-label="Encerrar este pedido">✓ Encerrar pedido</button>` : ""}
         </article>`;
       }).join("");
-      const feedPrincipal = document.getElementById("lista-produtos");
-      const secaoPedidos = document.getElementById("area-pedidos-procura");
-      if (feedPrincipal && secaoPedidos && document.getElementById("area-produtos")?.contains(secaoPedidos)) {
-        secaoPedidos.classList.add("feed-integrado-home");
-        const cardsCompradores = Array.from(lista.querySelectorAll(".bisno-pedido-procura"));
-        window.bisnoPedidosCompradoresCache = cardsCompradores.map(card => card.cloneNode(true));
-        // Remove pedidos da renderização anterior antes de anexar os dados atualizados.
-        // Sem esta limpeza, cada atualização/recarregamento acrescentava outra cópia ao feed.
-        feedPrincipal.querySelectorAll(".bisno-pedido-procura").forEach(card => card.remove());
-        cardsCompradores.forEach(card => feedPrincipal.appendChild(card));
-        ordenarFeedPorPublicacao(feedPrincipal);
-        lista.innerHTML = "";
-      }
     } catch (error) {
       lista.innerHTML = "<p>Não foi possível carregar os pedidos. Tenta novamente.</p>";
     }
