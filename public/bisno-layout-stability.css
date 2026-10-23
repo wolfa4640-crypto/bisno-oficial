@@ -1,0 +1,100 @@
+/* BISNO — camada final de estabilidade de layout
+   Mantém os estados de navegação definidos pelo JavaScript e evita
+   que regras visuais antigas reexibam painéis ou cubram conteúdo. */
+[hidden],
+[hidden] * { display: none !important; }
+
+html { scroll-padding-bottom: 120px; }
+body { overflow-x: clip; }
+main.container,
+main.container > section,
+#area-conta,
+#area-produtos,
+#area-publicar,
+#area-mensagens,
+#area-notificacoes,
+#area-loja,
+#area-diretorio-lojas,
+#area-meus-anuncios,
+#area-pedidos-procura {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+main.container > section.painel:not([hidden]) {
+  display: block;
+  position: relative;
+  width: 100%;
+  clear: both;
+}
+#area-conta > .painel-secundario:not([hidden]) {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+.bisno-nav { z-index: 9000; }
+.bisno-nav-inner {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.bisno-nav-inner > * { min-width: 0; }
+.bisno-nav-inner .nav-publish {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+.bisno-menu-overlay,
+#menu-publicar-overlay,
+#painel-pesquisa-overlay {
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.bisno-menu-overlay { z-index: 10050; }
+#painel-pesquisa-overlay { z-index: 10040; }
+#menu-publicar-overlay { z-index: 10060; }
+img, input, select, textarea, button { max-width: 100%; }
+@media (max-width: 600px) {
+  main.container {
+    width: calc(100% - 24px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  }
+  .bisno-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bisno-nav-inner {
+    width: 100%;
+    justify-content: space-around;
+    gap: 2px;
+    overflow: visible;
+  }
+  .bisno-nav-inner > a,
+  .bisno-nav-inner > button,
+  .bisno-nav-inner > .nav-social {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 20%;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+  .bisno-nav-inner .nav-publish {
+    flex: 1.15 1 0;
+    max-width: 22%;
+    margin-top: -7px;
+  }
+}
