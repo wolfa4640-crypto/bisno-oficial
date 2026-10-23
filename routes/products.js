@@ -221,8 +221,8 @@ router.get("/seller/:id", async (req, res) => {
     `).all(vendedorId);
 
     return res.json({
-      vendedor,
-      produtos: produtos.map(produto => ({ ...produto, image: urlImagemPublica(produto.image) }))
+      vendedor: vendedor ? { ...vendedor, avatar: urlImagemPublica(vendedor.avatar), cover: urlImagemPublica(vendedor.cover) } : null,
+      produtos: produtos.map(produto => ({ ...produto, image: urlImagemPublica(produto.image), seller_avatar: urlImagemPublica(produto.seller_avatar) }))
     });
   } catch (erro) {
     console.error("Erro ao carregar perfil do vendedor:", erro);
