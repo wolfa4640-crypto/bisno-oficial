@@ -161,25 +161,27 @@ function obterIdVendedor(produto) {
 
 
 function obterImagem(caminho) {
+  if (!caminho) return IMAGEM_PADRAO;
+  let resultado = String(caminho).trim();
+  if (!resultado) return IMAGEM_PADRAO;
+  if (/^data:image\//i.test(resultado)) return resultado;
 
-  if (!caminho) return IMAGEM_PADRAO;
+  if (!/^https?:\/\//i.test(resultado)) {
+    resultado = resultado.startsWith("/")
+      ? resultado
+      : "/" + resultado.replace(/^\.\//, "");
+  }
 
-
-
-  if (/^(https?:\/\/|data:image\/)/i.test(caminho)) {
-
-    return caminho;
-
-  }
-
-
-
-  return caminho.startsWith("/")
-
-    ? caminho
-
-    : "/" + caminho.replace(/^\.\//, "");
-
+  // Se uma imagem for substituída mantendo o mesmo endereço do proxy,
+  // força o navegador a pedir a versão atual em vez de reutilizar cache antigo.
+  try {
+    const url = new URL(resultado, window.location.origin);
+    if (url.origin === window.location.origin && url.pathname === "/api/media") {
+      url.searchParams.set("v", String(window.__bisnoImagemVersao || Date.now()));
+      return url.href;
+    }
+  } catch (_) {}
+  return resultado;
 }
 
 
