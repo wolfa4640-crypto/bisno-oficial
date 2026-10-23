@@ -77,11 +77,10 @@ function urlImagemPublica(url) {
   return key ? "/api/media?key=" + encodeURIComponent(key) : url;
 }
 
-async function transmitirImagemPorUrl(url, res) {
-  if (!url || typeof url !== "string") throw new Error("URL de imagem inválida.");
-  const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
-  const key = extrairChaveImagem(url);
-  if (!endpoint || !key) { const error = new Error("Imagem não encontrada."); error.statusCode = 404; throw error; }
+async function transmitirImagemPorChave(key, res) {
+  if (typeof key !== "string" || !key.trim() || key.split("/").some(part => !part || part === "." || part === "..")) {
+    const error = new Error("Chave de imagem inválida."); error.statusCode = 400; throw error;
+  }
   const result = await criarCliente().send(new GetObjectCommand({ Bucket: bucket, Key: key }));
   res.setHeader("Content-Type", /^image\/(jpeg|png|webp)$/.test(result.ContentType || "") ? result.ContentType : "application/octet-stream");
   res.setHeader("Cache-Control", "public, max-age=86400");
@@ -90,6 +89,12 @@ async function transmitirImagemPorUrl(url, res) {
   if (result.Body && typeof result.Body.pipe === "function") result.Body.pipe(res);
   else if (result.Body && typeof result.Body.transformToByteArray === "function") res.end(Buffer.from(await result.Body.transformToByteArray()));
   else throw new Error("Imagem ilegível.");
+}
+
+async function transmitirImagemPorUrl(url, res) {
+  const key = extrairChaveImagem(url);
+  if (!key) { const error = new Error("Imagem não encontrada."); error.statusCode = 404; throw error; }
+  return transmitirImagemPorChave(key, res);
 }
 
 async function eliminarImagem(key) {
@@ -128,4 +133,4 @@ async function eliminarImagemPorUrl(url) {
   await eliminarImagem(key);
 }
 
-module.exports = { guardarImagem, eliminarImagem, eliminarImagemPorUrl, verificarArmazenamento, urlImagemPublica, transmitirImagemPorUrl, bucket };
+module.exports = { guardarImagem, eliminarImagem, eliminarImagemPorUrl, verificarArmazenamento, urlImagemPublica, transmitirImagemPorUrl, transmitirImagemPorChave, bucket };
