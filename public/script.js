@@ -1155,7 +1155,7 @@ async function carregarProdutos() {
 
 
 // Carrega os anúncios do utilizador sem depender de funções antigas.
-async async function carregarMeusAnuncios() {
+async function carregarMeusAnuncios() {
   // Escrever apenas na grelha de anúncios: nunca substituir a secção inteira do perfil.
   const alvo = $("#lista-meus-anuncios");
   if (!alvo || !utilizadorAtual) return;
