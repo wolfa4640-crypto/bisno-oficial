@@ -67,7 +67,7 @@ app.use("/api/social", require("./routes/social"));
 app.use("/api/stores", require("./routes/stores"));
 app.use("/api/wanted", require("./routes/wanted"));
 app.get("/api/media", async (req, res) => {
-  try { await transmitirImagemPorUrl(req.query.url, res); }
+  try { if (typeof req.query.key === "string") await transmitirImagemPorChave(req.query.key, res); else await transmitirImagemPorUrl(req.query.url, res); }
   catch (error) {
     if (res.headersSent) return res.destroy(error);
     res.status(Number.isInteger(error.statusCode) ? error.statusCode : 404).json({ erro: "Não foi possível carregar esta imagem." });
