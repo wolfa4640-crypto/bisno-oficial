@@ -43,5 +43,24 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install
+      - name: Report dependency audit findings
+        run: |
+          npm audit --json > /tmp/npm-audit.json || true
+          node <<'NODE'
+          const audit = require("/tmp/npm-audit.json");
+          const vulnerabilities = audit.vulnerabilities || {};
+          console.log("npm audit summary:", JSON.stringify(audit.metadata?.vulnerabilities || {}));
+          for (const [name, item] of Object.entries(vulnerabilities)) {
+            console.log("[npm-audit]", JSON.stringify({
+              name,
+              severity: item.severity,
+              range: item.range,
+              fixAvailable: item.fixAvailable,
+              via: (item.via || []).map(entry => typeof entry === "string"
+                ? entry
+                : { title: entry.title, url: entry.url, range: entry.range })
+            }));
+          }
+          NODE
       - name: Check and run PostgreSQL integration tests
         run: npm test
