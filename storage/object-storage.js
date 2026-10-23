@@ -43,6 +43,30 @@ async function guardarImagem({ prefixo, nome, buffer, contentType }) {
   return { key, url };
 }
 
+function urlImagemPublica(url) {
+  if (!url || typeof url !== "string") return url || null;
+  const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
+  const prefix = endpoint + "/" + bucket + "/";
+  return endpoint && url.startsWith(prefix) ? "/api/media?url=" + encodeURIComponent(url) : url;
+}
+
+async function transmitirImagemPorUrl(url, res) {
+  if (!url || typeof url !== "string") throw new Error("URL de imagem inválida.");
+  const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
+  const prefix = endpoint + "/" + bucket + "/";
+  if (!endpoint || !url.startsWith(prefix)) { const error = new Error("Imagem não encontrada."); error.statusCode = 404; throw error; }
+  const key = url.slice(prefix.length).split("/").map(part => decodeURIComponent(part)).join("/");
+  if (!key || key.split("/").some(part => part === "." || part === "..")) { const error = new Error("Imagem inválida."); error.statusCode = 400; throw error; }
+  const result = await criarCliente().send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+  res.setHeader("Content-Type", /^image\/(jpeg|png|webp)$/.test(result.ContentType || "") ? result.ContentType : "application/octet-stream");
+  res.setHeader("Cache-Control", "public, max-age=86400");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  if (result.ContentLength != null) res.setHeader("Content-Length", String(result.ContentLength));
+  if (result.Body && typeof result.Body.pipe === "function") result.Body.pipe(res);
+  else if (result.Body && typeof result.Body.transformToByteArray === "function") res.end(Buffer.from(await result.Body.transformToByteArray()));
+  else throw new Error("Imagem ilegível.");
+}
+
 async function eliminarImagem(key) {
   if (!key || typeof key !== "string") return;
   await criarCliente().send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
@@ -79,4 +103,4 @@ async function eliminarImagemPorUrl(url) {
   await eliminarImagem(key);
 }
 
-module.exports = { guardarImagem, eliminarImagem, eliminarImagemPorUrl, verificarArmazenamento, bucket };
+module.exports = { guardarImagem, eliminarImagem, eliminarImagemPorUrl, verificarArmazenamento, urlImagemPublica, transmitirImagemPorUrl, bucket };
