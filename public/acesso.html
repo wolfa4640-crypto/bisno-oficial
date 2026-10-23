@@ -13,7 +13,7 @@
 .brand{display:flex;align-items:center;gap:11px;margin-bottom:24px}.logo{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:var(--green);color:#fff;font-size:25px;font-weight:900}.brand strong{font-size:25px;letter-spacing:-.7px}.brand small{display:block;color:var(--muted);margin-top:2px}
 h1{font-size:25px;line-height:1.2;margin:0 0 9px;letter-spacing:-.6px} .intro{color:var(--muted);line-height:1.55;margin:0 0 22px}
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f0f5f1;padding:5px;border-radius:12px;margin-bottom:20px}.tabs button{border:0;border-radius:9px;padding:11px;background:transparent;color:var(--muted);font-weight:750;cursor:pointer}.tabs button.active{background:#fff;color:var(--green);box-shadow:0 2px 7px #122e1c12}
-form{display:grid;gap:9px}form[hidden]{display:none}label{font-size:13px;font-weight:750;margin-top:5px}input{width:100%;padding:13px 14px;border:1px solid #d5e0d7;border-radius:11px;font:inherit;outline:none}input:focus{border-color:var(--green);box-shadow:0 0 0 3px #176b4517} .submit{margin-top:8px;padding:14px;border:0;border-radius:11px;background:var(--green);color:white;font:inherit;font-weight:800;cursor:pointer}.submit:disabled{opacity:.65;cursor:wait}.msg{margin:14px 0 0;padding:11px 12px;border-radius:10px;background:#f2f6f3;color:#344b3a;font-size:14px;line-height:1.45}.msg:empty{display:none}.note{font-size:12px;color:var(--muted);line-height:1.5;text-align:center;margin:18px 0 0}
+.password-toggle{justify-self:start;border:0;background:transparent;color:var(--green);font:inherit;font-size:13px;font-weight:750;padding:5px 2px;cursor:pointer}.password-toggle:focus-visible{outline:2px solid var(--green);outline-offset:3px;border-radius:4px} form{display:grid;gap:9px}form[hidden]{display:none}label{font-size:13px;font-weight:750;margin-top:5px}input{width:100%;padding:13px 14px;border:1px solid #d5e0d7;border-radius:11px;font:inherit;outline:none}input:focus{border-color:var(--green);box-shadow:0 0 0 3px #176b4517} .submit{margin-top:8px;padding:14px;border:0;border-radius:11px;background:var(--green);color:white;font:inherit;font-weight:800;cursor:pointer}.submit:disabled{opacity:.65;cursor:wait}.msg{margin:14px 0 0;padding:11px 12px;border-radius:10px;background:#f2f6f3;color:#344b3a;font-size:14px;line-height:1.45}.msg:empty{display:none}.note{font-size:12px;color:var(--muted);line-height:1.5;text-align:center;margin:18px 0 0}
 </style>
 </head>
 <body>
@@ -25,6 +25,7 @@ form{display:grid;gap:9px}form[hidden]{display:none}label{font-size:13px;font-we
   <form id="login">
     <label for="login-email">E-mail</label><input id="login-email" name="email" type="email" autocomplete="email" placeholder="nome@exemplo.com" required>
     <label for="login-password">Palavra-passe</label><input id="login-password" name="password" type="password" autocomplete="current-password" required>
+    <button class="password-toggle" type="button" data-password-target="login-password" aria-pressed="false">Mostrar palavra-passe</button>
     <button class="submit" type="submit">Entrar no Bisno</button>
   </form>
   <form id="register" hidden>
@@ -32,6 +33,7 @@ form{display:grid;gap:9px}form[hidden]{display:none}label{font-size:13px;font-we
     <label for="reg-email">E-mail</label><input id="reg-email" name="email" type="email" autocomplete="email" required>
     <label for="reg-phone">Telefone</label><input id="reg-phone" name="phone" type="tel" autocomplete="tel" required>
     <label for="reg-password">Palavra-passe (mínimo 8 caracteres)</label><input id="reg-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+    <button class="password-toggle" type="button" data-password-target="reg-password" aria-pressed="false">Mostrar palavra-passe</button>
     <button class="submit" type="submit">Criar conta</button>
   </form>
   <button id="forgot-toggle" type="button" style="display:block;margin:12px auto 0;border:0;background:transparent;color:var(--green);font:inherit;font-weight:750;cursor:pointer">Esqueci-me da palavra-passe</button>
@@ -54,6 +56,7 @@ form{display:grid;gap:9px}form[hidden]{display:none}label{font-size:13px;font-we
 const $=s=>document.querySelector(s), msg=$('#message');
 function tab(which){$('#login').hidden=which!=='login';$('#register').hidden=which!=='register';$('#forgot').hidden=which!=='forgot';$('#forgot-confirm').hidden=which!=='confirm';$('#forgot-toggle').hidden=which!=='login';$('#tab-login').classList.toggle('active',which==='login');$('#tab-register').classList.toggle('active',which==='register');}
 $('#tab-login').addEventListener('click',()=>tab('login'));$('#tab-register').addEventListener('click',()=>tab('register'));
+document.querySelectorAll('[data-password-target]').forEach(button=>button.addEventListener('click',()=>{const field=document.getElementById(button.dataset.passwordTarget);if(!field)return;const showing=field.type==='password';field.type=showing?'text':'password';button.textContent=showing?'Ocultar palavra-passe':'Mostrar palavra-passe';button.setAttribute('aria-pressed',String(showing));}));
 async function send(url,form){const data=Object.fromEntries(new FormData(form));const response=await fetch(url,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.erro||result.mensagem||'Não foi possível concluir. Tenta novamente.');return result;}
 $('#login').addEventListener('submit',async e=>{
   e.preventDefault();
