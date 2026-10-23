@@ -147,6 +147,18 @@ router.post('/media', uploadMedia.fields([{name:'logo',maxCount:1},{name:'cover'
   { const updated=await getStore.get(userId); res.json({store:{...updated,avatar:urlImagemPublica(updated.avatar),cover:urlImagemPublica(updated.cover),brand_image:urlImagemPublica(updated.brand_image)},stats:await storeSummary(store.id)}); }
  } catch(error){console.error('Erro ao guardar imagens da loja:',error.message);res.status(503).json({erro:'Não foi possível guardar as imagens. Confirma o armazenamento de imagens do servidor.'});}
 });
+router.get('/by-user/:userId', async (req,res) => {
+ const userId=validId(req.params.userId);
+ if(!userId) return res.status(400).json({erro:'Vendedor inválido.'});
+ try {
+  const store=await db.prepare('SELECT id,name FROM stores WHERE user_id=? AND is_active=1').get(userId);
+  if(!store) return res.json({store:null});
+  res.json({store});
+ } catch(error) {
+  console.error('Erro ao procurar loja do vendedor:',error.message);
+  res.status(500).json({erro:'Não foi possível verificar a loja deste vendedor.'});
+ }
+});
 router.post('/by-user/:userId/view', async (req,res) => {
  const userId=validId(req.params.userId); if(!userId) return res.status(400).json({erro:'Utilizador inválido.'});
  const store=await db.prepare('SELECT id,user_id FROM stores WHERE user_id=? AND is_active=1').get(userId);
