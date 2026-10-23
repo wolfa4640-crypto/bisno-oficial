@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const verificarImagem = require("../middleware/validar-imagem");
 const db = require("../data/database");
 const nodemailer = require("nodemailer");
-const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
+const { guardarImagem, eliminarImagemPorUrl, urlImagemPublica } = require("../storage/object-storage");
 
 function criarTransportadorEmail() {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
@@ -202,7 +202,7 @@ router.put("/profile", uploadAvatar.fields([{ name: "avatar", maxCount: 1 }, { n
     if (current?.avatar && avatar !== current.avatar) await eliminarImagemPorUrl(current.avatar).catch(() => {});
     if (current?.cover && cover !== current.cover) await eliminarImagemPorUrl(current.cover).catch(() => {});
     const user = await db.prepare("SELECT id,name,email,phone,avatar,cover,created_at,is_blocked FROM users WHERE id=?").get(req.session.userId);
-    res.json({ mensagem: "Perfil atualizado.", utilizador: { ...user, isAdmin: Boolean(process.env.ADMIN_EMAIL) && user.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase() } });
+    res.json({ mensagem: "Perfil atualizado.", utilizador: { ...user, avatar: urlImagemPublica(user.avatar), cover: urlImagemPublica(user.cover), isAdmin: Boolean(process.env.ADMIN_EMAIL) && user.email.toLowerCase() === String(process.env.ADMIN_EMAIL).trim().toLowerCase() } });
   } catch (error) {
     console.error("Erro ao atualizar perfil:", error.message);
     res.status(503).json({ erro: "Não foi possível guardar a fotografia. Confirma a configuração do armazenamento de imagens." });
