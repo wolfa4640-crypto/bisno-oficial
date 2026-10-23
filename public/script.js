@@ -444,7 +444,7 @@ function abrirPagina(id) {
 
   if (hero) hero.hidden = id !== "area-produtos";
   if (auth) auth.hidden = id !== "area-autenticacao";
-  if (products) products.hidden = !["area-produtos", "area-pedidos-procura"].includes(id);
+  if (products) products.hidden = id !== "area-produtos";
   document.body.classList.toggle("bisno-pagina-pedidos", id === "area-pedidos-procura");
   if (account) account.hidden = !autenticado || !dentroDaConta;
   if (messages) messages.hidden = id !== "area-mensagens";
@@ -454,12 +454,8 @@ function abrirPagina(id) {
   if (notifications) notifications.hidden = id !== "area-notificacoes";
   if (store) store.hidden = id !== "area-loja";
   if (storeDirectory) storeDirectory.hidden = id !== "area-diretorio-lojas";
-  if (wanted) {
-    wanted.hidden = !["area-pedidos-procura", "area-produtos"].includes(id);
-    wanted.classList.toggle("feed-integrado-home", id === "area-produtos");
-  }
+  if (wanted) wanted.hidden = id !== "area-pedidos-procura";
   if (footer) footer.hidden = id !== "area-produtos";
-  if (id === "area-produtos") { window.bisnoCarregarPedidosProcura?.(); }
 
   // Dentro do contentor da conta, mostrar somente a secção escolhida.
   if (account) {
@@ -688,14 +684,7 @@ async function verificarSessao() {
     const dados = await pedidoAPI("/api/auth/me");
     utilizadorAtual = dados.utilizador ?? dados.usuario ?? dados.user ?? (dados.id ? dados : null);
     document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
-  const feedCompradores = document.getElementById("area-pedidos-procura");
-  const feedVendedores = document.getElementById("area-produtos");
-  if (feedCompradores && feedVendedores && !feedCompradores.dataset.feedIntegrado) {
-    feedCompradores.dataset.feedIntegrado = "true";
-    feedVendedores.appendChild(feedCompradores);
-    feedCompradores.hidden = false;
-    feedCompradores.classList.add("bisno-feed-compradores");
-  }
+  // Mantém o catálogo de vendedores e os pedidos de compradores em secções separadas.
     document.body.classList.toggle("bisno-sem-sessao", !utilizadorAtual);
     mostrarConta();
     return utilizadorAtual;
