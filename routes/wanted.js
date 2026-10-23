@@ -1,7 +1,7 @@
 "use strict";
 const express = require("express");
 const multer = require("multer");
-const { guardarImagem, eliminarImagemPorUrl } = require("../storage/object-storage");
+const { guardarImagem, eliminarImagemPorUrl, urlImagemPublica } = require("../storage/object-storage");
 const uploadImage = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_req,file,cb) => cb(null, ["image/jpeg","image/png","image/webp"].includes(file.mimetype)) });
 const db = require("../data/database");
 const exigirLogin = require("../middleware/auth");
@@ -30,10 +30,13 @@ router.get("/", exigirLogin, async (req, res) => {
     `).all(search, search, search, city, city);
     res.json({ ads: ads.map(a => ({
       id: a.id, user_id: a.user_id, product_name: a.product_name,
-      description: a.description, budget: a.budget, city: a.city, image: a.image,
+      description: a.description, budget: a.budget, city: a.city, image: urlImagemPublica(a.image),
       buyer_name: a.buyer_name, created_at: a.created_at,
-      contact_url: "https://wa.me/" + (String(a.buyer_phone || "").replace(/\D/g, "").length === 9 ? "244" + String(a.buyer_phone || "").replace(/\D/g, "") : String(a.buyer_phone || "").replace(/\D/g, "")) +
-        "?text=" + encodeURIComponent("Olá " + a.buyer_name + ", vi o teu pedido no Bisno: " + a.product_name)
+      contact_url: (() => {
+        const raw = String(a.buyer_phone || "").replace(/\D/g, "");
+        const phone = raw.length === 9 ? "244" + raw : raw;
+        return phone.length >= 10 && phone.length <= 15 ? "https://wa.me/" + phone + "?text=" + encodeURIComponent("Olá " + a.buyer_name + ", vi o teu pedido no Bisno: " + a.product_name) : "";
+      })()
     })) });
   } catch (error) {
     console.error("Erro ao carregar pedidos de procura:", error);
