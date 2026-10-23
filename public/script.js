@@ -700,9 +700,24 @@ async function verificarSessao() {
     mostrarConta();
     return utilizadorAtual;
   } catch (erro) {
-    if (erro.status !== 401 && erro.status !== 404) console.warn("Não foi possível verificar a sessão:", erro.message);
-    utilizadorAtual = null;
-    document.body.classList.remove("bisno-autenticado");
+    // Só terminar a sessão visual quando o servidor confirmar que ela não existe.
+    // Falhas temporárias de rede/5xx não devem expulsar o utilizador nem esconder o catálogo.
+    if (erro.status === 401 || erro.status === 404) {
+      utilizadorAtual = null;
+      document.body.classList.remove("bisno-autenticado");
+      document.body.classList.add("bisno-sem-sessao");
+      mostrarConta();
+      return null;
+    }
+    console.warn("Falha temporária ao verificar a sessão; vou preservar o estado atual:", erro.message);
+    if (utilizadorAtual) {
+      document.body.classList.add("bisno-autenticado");
+      document.body.classList.remove("bisno-sem-sessao");
+      mostrarConta();
+      carregarProdutos().catch(() => {});
+      return utilizadorAtual;
+    }
+    // Sem estado local inicial, não inventar uma sessão: permitir nova tentativa.
     document.body.classList.add("bisno-sem-sessao");
     mostrarConta();
     return null;
