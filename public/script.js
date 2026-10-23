@@ -2928,8 +2928,24 @@ function preencherPainelLoja(data = {}) {
   if (marca) marca.innerHTML = store.brand_image && /^https:\/\//i.test(store.brand_image) ? '<img src="' + escaparHTML(store.brand_image) + '" alt="Logótipo de ' + escaparHTML(store.name || "loja") + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">': escaparHTML((store.name || "B").trim().charAt(0).toUpperCase());
 }
 async function carregarMinhaLoja() {
-  try { preencherPainelLoja(await pedidoLoja("/api/stores/mine")); }
-  catch (erro) { mostrarMensagem(erro.message || "Erro ao carregar a loja.", "erro"); }
+  try {
+    const data = await pedidoLoja("/api/stores/mine");
+    preencherPainelLoja(data);
+    // A montra do vendedor também apresenta os anúncios publicados pela própria conta.
+    const lista = document.getElementById("lista-anuncios-minha-loja");
+    if (lista) {
+      lista.setAttribute("aria-busy", "true");
+      try {
+        const meus = await pedidoAPI("/api/products/mine");
+        const produtos = meus.produtos ?? meus.products ?? meus.anuncios ?? [];
+        lista.innerHTML = produtos.length
+          ? produtos.map(cartaoProduto).join("")
+          : "<p>Ainda não tens anúncios publicados. Publica um produto e ele aparecerá aqui.</p>";
+      } catch (erroLista) {
+        lista.innerHTML = "<p>" + escaparHTML(erroLista.message || "Não foi possível carregar os anúncios da loja.") + "</p>";
+      } finally { lista.setAttribute("aria-busy", "false"); }
+    }
+  } catch (erro) { mostrarMensagem(erro.message || "Erro ao carregar a loja.", "erro"); }
 }
 function configurarLoja() {
   $("#form-loja")?.addEventListener("submit", async evento => {
@@ -3334,47 +3350,51 @@ function configurarMenuPublicacao() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-
-  // Mantém o conteúdo protegido enquanto a sessão é verificada.
-  document.body.classList.toggle("bisno-autenticado", Boolean(utilizadorAtual));
+  // Inicializar os componentes primeiro, mas só escolher a página depois de confirmar a sessão.
   configurarBannerDestaque();
   configurarPainelPesquisa();
   configurarMenuPublicacao();
-
-  configurarNavegacao();
-
-  configurarFormularios();
-
+  configurarNavegacao();
+  configurarFormularios();
   configurarLoja();
   configurarPedidosProcura();
   configurarDiretorioLojas();
   configurarPainelAdmin();
+  configurarFiltros();
+  configurarEventosProdutos();
 
-  configurarFiltros();
+  const paramsRecuperacao = new URLSearchParams(window.location.search);
+  if (paramsRecuperacao.get("reset") && paramsRecuperacao.get("email")) {
+    mostrarAba("login");
+    mostrarMensagem("Segue o processo de recuperação para definir uma nova palavra-passe.", "info");
+  } else mostrarAba("login");
 
-  configurarEventosProdutos();
+  // Evita a corrida entre a navegação inicial e /api/auth/me, que podia deixar
+  // todos os painéis ocultos depois de atualizar a página.
+  await verificarSessao().catch(erro => {
+    console.warn("Não foi possível confirmar a sessão agora:", erro);
+    return null;
+  });
 
+  if (utilizadorAtual) {
+    document.body.classList.add("bisno-autenticado");
+    document.body.classList.remove("bisno-requer-login", "bisno-sem-sessao");
+    abrirPagina("area-produtos");
+    atualizarAreasSociais();
+  } else {
+    document.body.classList.remove("bisno-autenticado");
+    document.body.classList.add("bisno-requer-login", "bisno-sem-sessao");
+    mostrarAba("login");
+    abrirPagina("area-autenticacao");
+  }
 
+  window.setInterval(() => {
+    if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {});
+  }, 5000);
 
-  const paramsRecuperacao = new URLSearchParams(window.location.search);
-  if (paramsRecuperacao.get("reset") && paramsRecuperacao.get("email")) { mostrarAba("nova"); mostrarMensagem("Define uma nova palavra-passe para a tua conta.", "info"); }
-  else mostrarAba("login");
-
-
-
-  verificarSessao().catch(erro => console.warn("Não foi possível confirmar a sessão agora:", erro));
-  // O catálogo inicial não deve depender da sessão ter sido reconhecida.
-  abrirPagina("area-produtos");
-  atualizarAreasSociais();
-  window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
-
-  // Carrega sempre os anúncios públicos, mesmo se /api/auth/me falhar ou atrasar.
-  await Promise.allSettled([
-    carregarProdutos(),
-    carregarCategoriasProdutos()
-  ]);
-  abrirPagina("area-produtos");
-
+  // Carregamento das listas não bloqueia a apresentação do painel inicial.
+  await Promise.allSettled([carregarProdutos(), carregarCategoriasProdutos()]);
+  if (utilizadorAtual) abrirPagina("area-produtos");
 });
 
 
