@@ -43,20 +43,45 @@ async function guardarImagem({ prefixo, nome, buffer, contentType }) {
   return { key, url };
 }
 
+function extrairChaveImagem(url) {
+  if (!url || typeof url !== "string") return null;
+  const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
+  let caminho = "";
+  try {
+    // Aceita URLs antigas do mesmo bucket mesmo que o domínio tenha mudado.
+    const parsed = new URL(url, endpoint || "http://localhost");
+    caminho = parsed.pathname || "";
+  } catch (_) {
+    caminho = url.split("?")[0].split("#")[0];
+  }
+  const segmentos = caminho.split("/").filter(Boolean);
+  const bucketIndex = segmentos.findIndex(segmento => {
+    try { return decodeURIComponent(segmento) === bucket; } catch (_) { return segmento === bucket; }
+  });
+  if (bucketIndex < 0 || bucketIndex >= segmentos.length - 1) return null;
+  try {
+    const key = segmentos.slice(bucketIndex + 1).map(part => decodeURIComponent(part)).join("/");
+    if (!key || key.split("/").some(part => part === "." || part === ".." || !part)) return null;
+    return key;
+  } catch (_) {
+    return null;
+  }
+}
+
 function urlImagemPublica(url) {
   if (!url || typeof url !== "string") return url || null;
   const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
-  const prefix = endpoint + "/" + bucket + "/";
-  return endpoint && url.startsWith(prefix) ? "/api/media?url=" + encodeURIComponent(url) : url;
+  if (!endpoint) return url;
+  const key = extrairChaveImagem(url);
+  // Proxy para o próprio domínio do Bisno: evita links diretos inválidos/privados do S3.
+  return key ? "/api/media?key=" + encodeURIComponent(key) : url;
 }
 
 async function transmitirImagemPorUrl(url, res) {
   if (!url || typeof url !== "string") throw new Error("URL de imagem inválida.");
   const endpoint = String(process.env.AWS_ENDPOINT_URL_S3 || "").replace(/\/+$/, "");
-  const prefix = endpoint + "/" + bucket + "/";
-  if (!endpoint || !url.startsWith(prefix)) { const error = new Error("Imagem não encontrada."); error.statusCode = 404; throw error; }
-  const key = url.slice(prefix.length).split("/").map(part => decodeURIComponent(part)).join("/");
-  if (!key || key.split("/").some(part => part === "." || part === "..")) { const error = new Error("Imagem inválida."); error.statusCode = 400; throw error; }
+  const key = extrairChaveImagem(url);
+  if (!endpoint || !key) { const error = new Error("Imagem não encontrada."); error.statusCode = 404; throw error; }
   const result = await criarCliente().send(new GetObjectCommand({ Bucket: bucket, Key: key }));
   res.setHeader("Content-Type", /^image\/(jpeg|png|webp)$/.test(result.ContentType || "") ? result.ContentType : "application/octet-stream");
   res.setHeader("Cache-Control", "public, max-age=86400");
