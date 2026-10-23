@@ -30,6 +30,11 @@ test("os pedidos de compradores continuam a ser renderizados na sua própria lis
   assert.match(html, /id="lista-produtos"/);
 });
 
+test("a navegação esconde painéis dinâmicos antigos", () => {
+  assert.match(script, /if\s*\(productDetails\)\s*productDetails\.hidden\s*=\s*id\s*!==\s*"detalhes-produto"/);
+  assert.match(script, /if\s*\(publicProfile\)\s*publicProfile\.hidden\s*=\s*id\s*!==\s*"perfil-publico"/);
+});
+
 test("a navegação define estados independentes para catálogo e pedidos", () => {
   assert.match(script, /if\s*\(products\)\s*products\.hidden\s*=\s*id\s*!==\s*"area-produtos"/);
   assert.match(script, /if\s*\(wanted\)\s*wanted\.hidden\s*=\s*id\s*!==\s*"area-pedidos-procura"/);
