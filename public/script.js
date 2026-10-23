@@ -256,19 +256,14 @@ function definirTexto(seletor, texto) {
 
 async function pedidoAPI(url, opcoes = {}) {
 
-  const configuracao = {
-
-    credentials: "same-origin",
-
-    ...opcoes,
-
-    headers: {
-
-      ...(opcoes.headers || {})
-
-    }
-
-  };
+  const controladorTimeout = !opcoes.signal && typeof AbortController !== "undefined" ? new AbortController() : null;
+  const temporizadorTimeout = controladorTimeout ? setTimeout(() => controladorTimeout.abort(), 15000) : null;
+  const configuracao = {
+    credentials: "same-origin",
+    ...opcoes,
+    ...(controladorTimeout ? { signal: controladorTimeout.signal } : {}),
+    headers: { ...(opcoes.headers || {}) }
+  }
 
 
 
@@ -291,7 +286,15 @@ async function pedidoAPI(url, opcoes = {}) {
 
 
   configuracao.cache = "no-store";
-  const resposta = await fetch(url, configuracao);
+  let resposta;
+  try {
+    resposta = await fetch(url, configuracao);
+  } catch (erro) {
+    if (controladorTimeout?.signal.aborted) throw new Error("O servidor demorou demasiado a responder. Tenta novamente.");
+    throw erro;
+  } finally {
+    if (temporizadorTimeout) clearTimeout(temporizadorTimeout);
+  }
 
 
 
@@ -1110,7 +1113,8 @@ async function carregarProdutos() {
       carregarEstadoInteresse(id).catch(() => {});
     });
   } catch (erro) {
-    lista.innerHTML = `<p>${escaparHTML(erro.message || "Não foi possível carregar os produtos.")}</p>`;
+    lista.innerHTML = `<p role="alert">${escaparHTML(erro.message || "Não foi possível carregar os produtos.")}</p><button type="button" id="bisno-tentar-carregar-produtos">Tentar novamente</button>`;
+    $("#bisno-tentar-carregar-produtos")?.addEventListener("click", () => carregarProdutos());
     lista.setAttribute("aria-busy", "false");
     if (contagem) contagem.textContent = "Não foi possível carregar os anúncios. Tenta novamente.";
   }
