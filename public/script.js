@@ -451,7 +451,7 @@ function abrirPagina(id) {
   if (messages) messages.hidden = id !== "area-mensagens";
   if (publish) publish.hidden = id !== "area-publicar";
   if (profile) profile.hidden = id !== "area-conta";
-  if (myAds) myAds.hidden = !["area-conta", "area-meus-anuncios"].includes(id);
+  if (myAds) myAds.hidden = id !== "area-meus-anuncios";
   if (notifications) notifications.hidden = id !== "area-notificacoes";
   if (store) store.hidden = id !== "area-loja";
   if (storeDirectory) storeDirectory.hidden = id !== "area-diretorio-lojas";
@@ -464,7 +464,7 @@ function abrirPagina(id) {
   if (account) {
     Array.from(account.children).forEach(child => {
       if (["area-notificacoes", "area-mensagens", "area-loja", "area-publicar", "perfil-vendedor", "area-meus-anuncios"].includes(child.id)) {
-        if (child.id === "area-meus-anuncios") child.hidden = !["area-conta", "area-meus-anuncios"].includes(id);
+        if (child.id === "area-meus-anuncios") child.hidden = id !== "area-meus-anuncios";
         else child.hidden = child.id !== id && !(child.id === "perfil-vendedor" && id === "area-conta");
       } else if (child.id === "bisno-account-summary") {
         child.hidden = id !== "area-conta";
