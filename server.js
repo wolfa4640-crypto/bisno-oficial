@@ -7,7 +7,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const PgSession = require("connect-pg-simple")(session);
 const db = require("./data/database");
-const { verificarArmazenamento } = require("./storage/object-storage");
+const { verificarArmazenamento, transmitirImagemPorUrl } = require("./storage/object-storage");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -66,6 +66,13 @@ app.use("/api/products", require("./routes/products"));
 app.use("/api/social", require("./routes/social"));
 app.use("/api/stores", require("./routes/stores"));
 app.use("/api/wanted", require("./routes/wanted"));
+app.get("/api/media", async (req, res) => {
+  try { await transmitirImagemPorUrl(req.query.url, res); }
+  catch (error) {
+    if (res.headersSent) return res.destroy(error);
+    res.status(Number.isInteger(error.statusCode) ? error.statusCode : 404).json({ erro: "Não foi possível carregar esta imagem." });
+  }
+});
 const exigirLogin = require("./middleware/auth");
 app.use("/uploads", exigirLogin, express.static(uploadsDir, { dotfiles: "deny", index: false, maxAge: isProduction ? "1d" : 0 }));
 const publicDir = path.join(__dirname, "public");
