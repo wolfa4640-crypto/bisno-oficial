@@ -177,7 +177,7 @@
       .bisno-nav-inner { overflow: visible; }
     }
   </style>
-  <script src="/script.js?v=20261023-navigation-stability-v3" defer></script>
+  <script src="/script.js?v=20261023-nav-grid-v5" defer></script>
   <script src="/pwa-register.js" defer></script>
 
   <style id="bisno-nav-publish-emphasis-v1">
@@ -190,7 +190,7 @@
     .bisno-nav-inner .nav-social.nav-messages .nav-svg-icon{width:22px;height:22px;}
     @media(max-width:600px){.bisno-nav-inner{justify-content:space-around;gap:2px}.bisno-nav-inner>a,.bisno-nav-inner>.nav-publish,.bisno-nav-inner>.nav-social{min-width:0;padding-left:5px;padding-right:5px}.bisno-nav-inner .nav-publish{margin-top:-7px;min-width:52px;min-height:53px}.bisno-nav-inner .nav-social.nav-messages{min-width:48px}}
   </style>
-  <link rel="stylesheet" href="/bisno-layout-stability.css?v=20261023-navigation-v4">
+  <link rel="stylesheet" href="/bisno-layout-stability.css?v=20261023-nav-grid-v5">
 </head>
 
 <body class="bisno-requer-login">
@@ -269,7 +269,7 @@
   <nav class="bisno-nav" aria-label="Navegação principal">
     <div class="bisno-nav-inner">
       <a href="#area-produtos" data-bisno-page="home" class="is-active"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></a>
-      <button type="button" class="nav-social" data-menu-acao="notifications" aria-label="Notificações" title="Notificações"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
+      <button type="button" class="nav-social nav-notifications" data-menu-acao="notifications" aria-label="Notificações" title="Notificações"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="nav-social-label">Notificações</span><span class="nav-count" id="nav-contador-notificacoes" hidden>0</span></button>
       <button type="button" data-abrir-publicacao class="nav-publish" aria-label="Publicar anúncio" title="Publicar anúncio"><span class="nav-icon" aria-hidden="true">＋</span><span>Publicar</span></button>
       <button type="button" class="nav-social nav-messages" data-menu-acao="messages" aria-label="Mensagens" title="Mensagens"><svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg><span class="nav-social-label">Mensagens</span><span class="nav-count" id="nav-contador-mensagens" hidden>0</span></button>
       <a href="#area-conta" data-bisno-page="profile"><span class="nav-icon" aria-hidden="true">♙</span><span>Perfil</span></a>
@@ -404,7 +404,7 @@
       <h2 class="bisno-conta-titulo">Perfil</h2>
 
 <!-- NOTIFICAÇÕES DO BISNO -->
-<section id="area-notificacoes" class="painel-secundario">
+<section id="area-notificacoes" class="painel-secundario" hidden>
   <h3>
     🔔 Notificações
     <span id="contador-notificacoes">0</span>
@@ -422,7 +422,7 @@
 <hr>
 
 <!-- CHAT INTERNO -->
-<section id="area-mensagens" class="painel-secundario bisno-mensagens">
+<section id="area-mensagens" class="painel-secundario bisno-mensagens" hidden>
   <header class="mensagens-cabecalho"><div><h3>Mensagens</h3><p>As tuas conversas com compradores e vendedores</p></div><button type="button" id="botao-atualizar-conversas" class="botao-icone" aria-label="Atualizar conversas" title="Atualizar conversas">↻</button></header>
 
   <div id="lista-conversas" aria-live="polite">
@@ -463,7 +463,7 @@
 <hr>
 
 <!-- PERFIL DO VENDEDOR -->
-      <section id="perfil-vendedor" class="painel-secundario">
+      <section id="perfil-vendedor" class="painel-secundario" hidden>
         <div class="bisno-perfil-topo-acoes"><h3>Perfil do vendedor</h3><button type="button" id="botao-chave-password" class="bisno-chave-password" aria-label="Alterar palavra-passe" title="Alterar palavra-passe"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"></circle><path d="M11 12l8-8 2 2-2 2 2 2-3 3-2-2-3 3"></path></svg></button></div>
 
         <div class="bisno-perfil-capa bisno-capa-clicavel" id="perfil-capa-clicavel" role="button" tabindex="0" aria-label="Tocar para trocar a foto de capa" title="Toca para trocar a foto de capa">
@@ -506,7 +506,7 @@
       <hr>
 
       <!-- OS MEUS ANÚNCIOS -->
-      <section id="area-meus-anuncios" class="painel-secundario">
+      <section id="area-meus-anuncios" class="painel-secundario" hidden>
         <h2>Os meus anúncios</h2>
         <p>Consulta e gere os produtos que publicaste no Bisno.</p>
 
