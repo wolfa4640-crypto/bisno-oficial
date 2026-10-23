@@ -71,12 +71,9 @@ router.delete("/:id", exigirLogin, async (req, res) => {
   try {
     const wantedId = id(req.params.id);
     if (!wantedId) return res.status(400).json({ erro: "Pedido inválido." });
-    const wanted = await db.prepare("SELECT id, image FROM wanted_ads WHERE id=? AND user_id=?").get(wantedId, req.session.userId);
-    if (!wanted) return res.status(404).json({ erro: "Pedido não encontrado ou não pertence à tua conta." });
-    const result = await db.prepare("DELETE FROM wanted_ads WHERE id=? AND user_id=?").run(wantedId, req.session.userId);
-    if (!result.changes) return res.status(404).json({ erro: "O pedido já não existe." });
-    if (wanted.image) await eliminarImagemPorUrl(wanted.image).catch(e => console.error("Pedido eliminado, mas a imagem não pôde ser removida:", e.message));
-    res.json({ mensagem: "Pedido e imagem eliminados definitivamente.", id: wantedId });
+    const result = await db.prepare("UPDATE wanted_ads SET status='closed' WHERE id=? AND user_id=? AND status='active'").run(wantedId, req.session.userId);
+    if (!result.changes) return res.status(404).json({ erro: "Pedido não encontrado, já encerrado ou não pertence à tua conta." });
+    res.json({ mensagem: "Pedido encerrado. O anúncio foi retirado da lista pública.", id: wantedId });
   } catch (error) {
     console.error("Erro ao encerrar pedido:", error);
     res.status(500).json({ erro: "Não foi possível encerrar o pedido." });
