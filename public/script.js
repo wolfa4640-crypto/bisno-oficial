@@ -1071,6 +1071,42 @@ function cartaoProduto(produto) {
 }
 
 
+
+// Pedidos publicados por compradores: também visíveis no menu inicial.
+async function carregarPedidosProcuraInicio() {
+  const lista = document.getElementById("lista-pedidos-procura-inicio");
+  if (!lista || !utilizadorAtual) return;
+  lista.setAttribute("aria-busy", "true");
+  try {
+    const dados = await pedidoAPI("/api/wanted", { cache: "no-store" });
+    const pedidos = Array.isArray(dados.ads) ? dados.ads : [];
+    if (!pedidos.length) {
+      lista.innerHTML = "<p>Ainda não existem pedidos de compradores.</p>";
+      return;
+    }
+    lista.innerHTML = pedidos.map(ad => {
+      const contacto = /^https:\\/\\/wa\\.me\\/[0-9]+\\?/.test(ad.contact_url || "") ? ad.contact_url : "";
+      const meuPedido = String(ad.user_id) === String(obterIdUtilizador());
+      return `<article class="cartao-produto bisno-pedido-procura" data-created-at="${escaparHTML(ad.created_at || "")}">
+        <span class="etiqueta-comprador">COMPRADOR</span>
+        <h3>${escaparHTML(ad.product_name || "Produto procurado")}</h3>
+        <p>${escaparHTML(ad.description || "")}</p>
+        <p><strong>Orçamento:</strong> ${ad.budget == null ? "A combinar" : escaparHTML(Number(ad.budget).toLocaleString("pt-AO")) + " Kz"}</p>
+        <p><small>📍 ${escaparHTML(ad.city || "Angola")} · Publicado por ${escaparHTML(ad.buyer_name || "Comprador")}</small></p>
+        ${ad.image ? '<img class="bisno-pedido-imagem" src="' + escaparHTML(obterImagem(ad.image)) + '" alt="Imagem do pedido" loading="lazy">' : ""}
+        ${contacto && !meuPedido ? `<a class="botao-secundario" href="${escaparHTML(contacto)}" target="_blank" rel="noopener noreferrer">Contactar comprador</a>` : ""}
+        ${meuPedido ? `<button type="button" data-encerrar-pedido="${Number(ad.id)}" class="botao-secundario">Encerrar pedido</button>` : ""}
+      </article>`;
+    }).join("");
+  } catch (erro) {
+    lista.innerHTML = "<p>Não foi possível carregar os pedidos dos compradores. <button type=\"button\" id=\"tentar-pedidos-inicio\">Tentar novamente</button></p>";
+    document.getElementById("tentar-pedidos-inicio")?.addEventListener("click", carregarPedidosProcuraInicio);
+  } finally {
+    lista.setAttribute("aria-busy", "false");
+  }
+}
+
+
 async function carregarCategoriasProdutos() {
   try {
     const data = await pedidoAPI("/api/products/categories");
@@ -1122,7 +1158,7 @@ async function carregarProdutos() {
 
 
 // Carrega os anúncios do utilizador sem depender de funções antigas.
-async function carregarMeusAnuncios() {
+async async function carregarMeusAnuncios() {
   // Escrever apenas na grelha de anúncios: nunca substituir a secção inteira do perfil.
   const alvo = $("#lista-meus-anuncios");
   if (!alvo || !utilizadorAtual) return;
@@ -3393,8 +3429,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 5000);
 
   // Carregamento das listas não bloqueia a apresentação do painel inicial.
-  await Promise.allSettled([carregarProdutos(), carregarCategoriasProdutos()]);
-  if (utilizadorAtual) abrirPagina("area-produtos");
+  await Promise.allSettled([carregarProdutos(), carregarCategoriasProdutos(), carregarPedidosProcuraInicio()]);
+  if (utilizadorAtual) { abrirPagina("area-produtos"); carregarPedidosProcuraInicio().catch(() => {}); }
 });
 
 
