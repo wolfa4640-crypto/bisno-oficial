@@ -3335,22 +3335,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
   await verificarSessao();
-  // Ao abrir ou atualizar o site, começa sempre no menu inicial.
-  // Ligações diretas a páginas internas não alteram o destino inicial.
-  if (utilizadorAtual) abrirPagina("area-produtos");
-  else abrirPagina("area-autenticacao");
+  // O catálogo inicial não deve depender da sessão ter sido reconhecida.
+  abrirPagina("area-produtos");
   atualizarAreasSociais();
   window.setInterval(() => { if (utilizadorAtual && !document.hidden) verificarMensagensNovas().catch(() => {}); }, 5000);
 
-  if (utilizadorAtual) {
-    await carregarProdutos();
-    await carregarCategoriasProdutos();
-    // Reaplica o destino inicial após carregar anúncios para manter o perfil oculto.
-    abrirPagina("area-produtos");
-  } else {
-    definirConteudo("#lista-produtos", "<p>Inicia sessão ou cria uma conta para ver os anúncios.</p>");
-    abrirPagina("area-autenticacao");
-  }
+  // Carrega sempre os anúncios públicos, mesmo se /api/auth/me falhar ou atrasar.
+  await Promise.allSettled([
+    carregarProdutos(),
+    carregarCategoriasProdutos()
+  ]);
+  abrirPagina("area-produtos");
 
 });
 
