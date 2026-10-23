@@ -1085,7 +1085,7 @@ async function carregarPedidosProcuraInicio() {
       return;
     }
     lista.innerHTML = pedidos.map(ad => {
-      const contacto = /^https:\\/\\/wa\\.me\\/[0-9]+\\?/.test(ad.contact_url || "") ? ad.contact_url : "";
+      const contacto = String(ad.contact_url || "").startsWith("https://wa.me/") ? String(ad.contact_url) : "";
       const meuPedido = String(ad.user_id) === String(obterIdUtilizador());
       return `<article class="cartao-produto bisno-pedido-procura" data-created-at="${escaparHTML(ad.created_at || "")}">
         <span class="etiqueta-comprador">COMPRADOR</span>
