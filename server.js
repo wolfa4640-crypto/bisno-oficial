@@ -7,7 +7,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const PgSession = require("connect-pg-simple")(session);
 const db = require("./data/database");
-const { verificarArmazenamento, transmitirImagemPorUrl } = require("./storage/object-storage");
+const { verificarArmazenamento, transmitirImagemPorUrl, transmitirImagemPorChave } = require("./storage/object-storage");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
