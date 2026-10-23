@@ -695,6 +695,11 @@ async function verificarSessao() {
   // Mantém o catálogo de vendedores e os pedidos de compradores em secções separadas.
     document.body.classList.toggle("bisno-sem-sessao", !utilizadorAtual);
     mostrarConta();
+    if (utilizadorAtual) {
+      carregarMeusAnuncios().catch(() => {});
+      atualizarNotificacoes().catch(() => {});
+      atualizarConversas().catch(() => {});
+    }
     return utilizadorAtual;
   } catch (erro) {
     // Só terminar a sessão visual quando o servidor confirmar que ela não existe.
@@ -712,6 +717,9 @@ async function verificarSessao() {
       document.body.classList.remove("bisno-sem-sessao");
       mostrarConta();
       carregarProdutos().catch(() => {});
+      carregarMeusAnuncios().catch(() => {});
+      atualizarNotificacoes().catch(() => {});
+      atualizarConversas().catch(() => {});
       return utilizadorAtual;
     }
     // Sem estado local inicial, não inventar uma sessão: permitir nova tentativa.
@@ -1115,16 +1123,21 @@ async function carregarProdutos() {
 
 // Carrega os anúncios do utilizador sem depender de funções antigas.
 async function carregarMeusAnuncios() {
-  const alvo = $("#lista-meus-anuncios") || $("#area-meus-anuncios");
-  if (!alvo) return;
+  // Escrever apenas na grelha de anúncios: nunca substituir a secção inteira do perfil.
+  const alvo = $("#lista-meus-anuncios");
+  if (!alvo || !utilizadorAtual) return;
   alvo.setAttribute("aria-busy", "true");
   try {
     const dados = await pedidoAPI("/api/products/mine");
     const produtos = dados.produtos ?? dados.products ?? dados.anuncios ?? [];
-    alvo.innerHTML = produtos.length ? produtos.map(cartaoProduto).join("") : "<p>Ainda não publicaste anúncios.</p>";
+    alvo.innerHTML = produtos.length
+      ? produtos.map(cartaoProduto).join("")
+      : "<p>Ainda não publicaste anúncios. Quando publicares, aparecerão aqui.</p>";
   } catch (erro) {
-    alvo.textContent = erro.message || "Não foi possível carregar os teus anúncios.";
-  } finally { alvo.setAttribute("aria-busy", "false"); }
+    alvo.innerHTML = "<p>" + escaparHTML(erro.message || "Não foi possível carregar os teus anúncios.") + "</p>";
+  } finally {
+    alvo.setAttribute("aria-busy", "false");
+  }
 }
 
 function normalizarTexto(valor) {
@@ -1833,7 +1846,7 @@ async function atualizarNotificacoes() {
 
 
     definirTexto("#contador-notificacoes", String(naoLidas));
-    atualizarBadge("#badge-notificacoes", naoLidas);
+    atualizarBadge("#nav-contador-notificacoes", naoLidas);
 
 
 
@@ -2027,7 +2040,7 @@ async function atualizarConversas() {
     const totalNaoLidas = conversas.reduce((total, conversa) => total + numero(
       conversa.unread_count ?? conversa.nao_lidas ?? conversa.naoLidas
     ), 0);
-    atualizarBadge("#badge-mensagens", totalNaoLidas);
+    atualizarBadge("#nav-contador-mensagens", totalNaoLidas);
 
 
 
