@@ -3334,7 +3334,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-  await verificarSessao();
+  verificarSessao().catch(erro => console.warn("Não foi possível confirmar a sessão agora:", erro));
   // O catálogo inicial não deve depender da sessão ter sido reconhecida.
   abrirPagina("area-produtos");
   atualizarAreasSociais();
