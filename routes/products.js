@@ -11,10 +11,7 @@ const exigirLogin = require("../middleware/auth");
 
 const router = express.Router();
 
-// O catálogo e os anúncios não podem ser consultados sem autenticação.
-router.use(exigirLogin);
-
-
+// O catálogo público fica acessível; as restantes rotas continuam protegidas após GET /.
 
 const extensoes = {
   "image/jpeg": ".jpg",
@@ -132,6 +129,9 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
+// Proteger todas as rotas seguintes (publicação, anúncios pessoais e gestão).
+router.use(exigirLogin);
 
 // ============================================
 // 2. ANÚNCIOS DO UTILIZADOR AUTENTICADO
