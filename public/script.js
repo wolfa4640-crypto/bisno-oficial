@@ -3287,7 +3287,7 @@ function configurarBannerDestaque() {
   fetch("/api/site-settings", { credentials: "same-origin" }).then(r => r.ok ? r.json() : null).then(settings => {
     if (settings && settings.bannerImage) {
       const imageUrl = String(settings.bannerImage).replace(/[^a-zA-Z0-9:/?&=._%+-]/g, "");
-      banner.style.setProperty("background-image", "linear-gradient(90deg,rgba(5,35,23,.88),rgba(5,35,23,.66) 58%,rgba(5,35,23,.3)),url(\\\"" + imageUrl + "\\\")", "important");
+      banner.style.setProperty("background-image", "linear-gradient(90deg,rgba(5,35,23,.88),rgba(5,35,23,.66) 58%,rgba(5,35,23,.3)),url(" + imageUrl + ")", "important");
     }
   }).catch(() => {});
 
