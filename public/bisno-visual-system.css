@@ -215,5 +215,6 @@ button:disabled{cursor:not-allowed;opacity:.58}
   pointer-events:none;animation:bisno-letra-b-flutuar 3.2s ease-in-out infinite;
 }
 @keyframes bisno-letra-b-flutuar{0%,100%{transform:translateY(-50%) translateY(-13px) rotate(-3deg)}50%{transform:translateY(-50%) translateY(13px) rotate(3deg)}}
-@media(max-width:600px){#bisno-banner-destaque .bisno-banner-b{right:15px;top:auto;bottom:12px;width:86px;height:86px;border-radius:20px;font-size:78px;opacity:.82;transform:none}}
-@media(prefers-reduced-motion:reduce){#bisno-banner-destaque .bisno-banner-b{animation:none;transform:translateY(-50%)}}
+@keyframes bisno-letra-b-flutuar-mobile{0%,100%{transform:translateY(-8px) rotate(-2deg)}50%{transform:translateY(8px) rotate(2deg)}}
+@media(max-width:600px){#bisno-banner-destaque .bisno-banner-b{right:15px;top:auto;bottom:12px;width:86px;height:86px;border-radius:20px;font-size:78px;opacity:.82;animation-name:bisno-letra-b-flutuar-mobile}}
+@media(prefers-reduced-motion:reduce){#bisno-banner-destaque .bisno-banner-b{animation:none;transform:none}}
