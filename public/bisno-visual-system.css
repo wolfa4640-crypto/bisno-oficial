@@ -200,3 +200,20 @@ button:disabled{cursor:not-allowed;opacity:.58}
  .bisno-footer-principal{grid-column:auto}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+
+/* BISNO — letra B animada no cartaz principal */
+#bisno-banner-destaque .bisno-banner-b{
+  position:absolute;z-index:1;right:clamp(28px,7vw,100px);top:50%;
+  display:grid;place-items:center;width:clamp(112px,18vw,220px);height:clamp(112px,18vw,220px);
+  border:1px solid rgba(255,255,255,.28);border-radius:34px;
+  color:rgba(255,255,255,.94);font-size:clamp(100px,16vw,190px);font-weight:950;
+  line-height:1;letter-spacing:-.12em;padding-right:.12em;
+  background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.035));
+  box-shadow:0 22px 55px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.22);
+  text-shadow:0 8px 28px rgba(0,0,0,.24);backdrop-filter:blur(5px);
+  pointer-events:none;animation:bisno-letra-b-flutuar 3.2s ease-in-out infinite;
+}
+@keyframes bisno-letra-b-flutuar{0%,100%{transform:translateY(-50%) translateY(-13px) rotate(-3deg)}50%{transform:translateY(-50%) translateY(13px) rotate(3deg)}}
+@media(max-width:600px){#bisno-banner-destaque .bisno-banner-b{right:15px;top:auto;bottom:12px;width:86px;height:86px;border-radius:20px;font-size:78px;opacity:.82;transform:none}}
+@media(prefers-reduced-motion:reduce){#bisno-banner-destaque .bisno-banner-b{animation:none;transform:translateY(-50%)}}
