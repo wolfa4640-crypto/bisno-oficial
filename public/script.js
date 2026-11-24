@@ -3274,52 +3274,87 @@ function configurarBannerDestaque() {
   if (!banner || !titulo || !descricao || !etiqueta || banner.dataset.rotacaoIniciada === "true") return;
   banner.dataset.rotacaoIniciada = "true";
   let destaques = [
-    { etiqueta: "O teu mercado, num só lugar", titulo: "Encontra. Compara. Compra.", descricao: "Descobre anúncios recentes de vários vendedores em Angola ou publica o teu produto.", cor: 0 },
-    { etiqueta: "Boas oportunidades esperam por ti", titulo: "Descobre. Escolhe. Poupa.", descricao: "Compara produtos novos e usados, explora opções e encontra uma oferta que combina contigo.", cor: 1 },
-    { etiqueta: "O teu próximo cliente está mais perto", titulo: "Publica. Conecta. Vende.", descricao: "Mostra o teu produto a pessoas de todo o país e combina diretamente com os interessados.", cor: 2 },
-    { etiqueta: "Mil possibilidades, num só lugar", titulo: "Procura. Encontra. Aproveita.", descricao: "Explora várias categorias e descobre produtos anunciados por vendedores de Angola.", cor: 3 }
+    { etiqueta: "BISNO • O teu mercado, num só lugar", titulo: "Encontra. Compara. Compra.", descricao: "Descobre produtos e oportunidades de vendedores de todo o país. O que procuras pode estar mais perto do que imaginas.", cor: 0 },
+    { etiqueta: "📢 RECADO À COMUNIDADE", titulo: "Bem-vindo ao mercado de todos.", descricao: "No Bisno podes descobrir produtos, explorar lojas e contactar vendedores diretamente. Compra com mais escolha e simplicidade.", cor: 1 },
+    { etiqueta: "🏪 ATENÇÃO, VENDEDORES", titulo: "O teu próximo cliente está à tua procura.", descricao: "Publica os teus produtos, apresenta a tua loja e dá mais visibilidade ao teu negócio em Angola.", cor: 2 },
+    { etiqueta: "💡 DICA BISNO", titulo: "Viste algo de que gostaste?", descricao: "Compara opções, confirma os detalhes com o vendedor e combina diretamente o pagamento e a entrega.", cor: 3 }
   ];
   const indicadores = Array.from(banner.querySelectorAll("[data-banner-slide]"));
   let atual = 0;
   let temporizador = null;
+  let inicioToque = null;
+  const reduzirMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   function mostrarDestaque(indice) {
     atual = (indice + destaques.length) % destaques.length;
     const item = destaques[atual];
-    etiqueta.textContent = item.etiqueta;
-    titulo.textContent = item.titulo;
-    descricao.textContent = item.descricao;
-    banner.classList.remove("bisno-banner-slide-0", "bisno-banner-slide-1", "bisno-banner-slide-2", "bisno-banner-slide-3");
-    banner.classList.add("bisno-banner-slide-" + item.cor);
-    indicadores.forEach((botao, i) => {
-      botao.classList.toggle("is-active", i === atual);
-      botao.setAttribute("aria-pressed", String(i === atual));
-    });
+    banner.classList.add("bisno-banner-a-mudar");
+    window.setTimeout(() => {
+      etiqueta.textContent = item.etiqueta;
+      titulo.textContent = item.titulo;
+      descricao.textContent = item.descricao;
+      banner.classList.remove("bisno-banner-slide-0", "bisno-banner-slide-1", "bisno-banner-slide-2", "bisno-banner-slide-3");
+      banner.classList.add("bisno-banner-slide-" + item.cor);
+      indicadores.forEach((botao, i) => {
+        botao.hidden = i >= destaques.length;
+        botao.classList.toggle("is-active", i === atual);
+        botao.setAttribute("aria-pressed", String(i === atual));
+      });
+      banner.classList.remove("bisno-banner-a-mudar");
+    }, reduzirMovimento ? 0 : 140);
   }
+  function pararRotacao() { window.clearTimeout(temporizador); }
   function agendarProximo() {
-    window.clearTimeout(temporizador);
+    pararRotacao();
+    if (document.hidden || banner.matches(":hover") || banner.contains(document.activeElement)) return;
     temporizador = window.setTimeout(() => {
-      if (!document.hidden) mostrarDestaque(atual + 1);
+      mostrarDestaque(atual + 1);
       agendarProximo();
-    }, 4000);
+    }, 5000);
   }
   indicadores.forEach(botao => botao.addEventListener("click", () => {
     mostrarDestaque(Number(botao.dataset.bannerSlide) || 0);
     agendarProximo();
   }));
+  banner.addEventListener("mouseenter", pararRotacao);
+  banner.addEventListener("mouseleave", agendarProximo);
+  banner.addEventListener("focusin", pararRotacao);
+  banner.addEventListener("focusout", agendarProximo);
+  banner.addEventListener("touchstart", event => {
+    inicioToque = event.changedTouches[0]?.clientX ?? null;
+    pararRotacao();
+  }, { passive: true });
+  banner.addEventListener("touchend", event => {
+    const fim = event.changedTouches[0]?.clientX;
+    if (inicioToque !== null && typeof fim === "number" && Math.abs(fim - inicioToque) > 45) {
+      mostrarDestaque(atual + (fim < inicioToque ? 1 : -1));
+    }
+    inicioToque = null;
+    agendarProximo();
+  }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) agendarProximo();
-    else window.clearTimeout(temporizador);
+    else pararRotacao();
   });
   mostrarDestaque(0);
   agendarProximo();
-  pedidoAPI("/api/site-settings").then(data=>{
-    if(!Array.isArray(data.phrases)||!data.phrases.length)return;
-    destaques=data.phrases.map((p,i)=>({etiqueta:p.etiqueta,titulo:p.titulo,descricao:p.descricao,cor:i%4}));
-    indicadores.forEach((button,i)=>{button.hidden=i>=destaques.length;});
-    mostrarDestaque(0); agendarProximo();
-  }).catch(()=>{});
-}
 
+  pedidoAPI("/api/site-settings").then(data => {
+    if (!Array.isArray(data.phrases) || !data.phrases.length) return;
+    const recados = data.phrases
+      .filter(p => p && typeof p.titulo === "string" && typeof p.descricao === "string")
+      .map((p, i) => ({
+        etiqueta: String(p.etiqueta || "📢 RECADO BISNO").slice(0, 90),
+        titulo: p.titulo.slice(0, 100),
+        descricao: p.descricao.slice(0, 260),
+        cor: i % 4
+      }));
+    if (!recados.length) return;
+    destaques = recados;
+    mostrarDestaque(0);
+    agendarProximo();
+  }).catch(() => {});
+}
 
 function configurarPedidosProcura() {
   const form = document.getElementById("form-pedido-procura");
