@@ -1865,3 +1865,45 @@ body.bisno-requer-login:not(.bisno-autenticado) .container {
 #area-autenticacao form button[type=submit]{min-height:48px;margin-top:8px;border-radius:12px;font-weight:800}
 #area-autenticacao form p{line-height:1.55;color:#52645a}
 #area-autenticacao input{box-sizing:border-box;margin-bottom:5px}
+
+
+/* BISNO — cartaz de publicidade e recados em carrossel */
+#bisno-banner-destaque{
+  isolation:isolate;min-height:218px;padding:clamp(25px,4vw,44px);
+  border:1px solid rgba(255,255,255,.16);border-radius:24px;
+  position:relative;overflow:hidden;box-sizing:border-box;
+  background-image:radial-gradient(circle at 82% 22%,rgba(255,255,255,.19),transparent 25%),linear-gradient(115deg,#0b4d32,#137448 58%,#21945e);
+}
+#bisno-banner-destaque:before{
+  content:"";position:absolute;z-index:0;width:270px;height:270px;right:7%;top:50%;
+  transform:translateY(-50%) rotate(-12deg);border:1px solid rgba(255,255,255,.16);
+  border-radius:42px;background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.025));
+  box-shadow:0 20px 55px rgba(0,0,0,.12),inset 0 1px rgba(255,255,255,.18);
+}
+#bisno-banner-destaque:after{
+  content:"B";position:absolute;z-index:0;right:clamp(34px,10vw,130px);top:50%;
+  transform:translateY(-53%) rotate(-9deg);font-size:clamp(150px,22vw,230px);
+  line-height:1;font-weight:950;letter-spacing:-.12em;color:rgba(255,255,255,.13);
+  text-shadow:0 10px 30px rgba(0,0,0,.08);pointer-events:none;
+}
+#bisno-banner-destaque .bisno-banner-texto{z-index:2;max-width:min(680px,75%);transition:opacity .22s ease,transform .22s ease}
+#bisno-banner-destaque.bisno-banner-a-mudar .bisno-banner-texto{opacity:0;transform:translateY(9px)}
+#bisno-banner-destaque .bisno-banner-etiqueta{display:inline-flex;align-items:center;min-height:28px;padding:5px 11px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.12);font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+#bisno-banner-destaque h2{max-width:620px;margin:15px 0 9px;font-size:clamp(27px,4.2vw,43px);line-height:1.07;letter-spacing:-1.2px;color:#fff}
+#bisno-banner-destaque p{max-width:560px;margin:0;color:rgba(255,255,255,.9);font-size:14px;line-height:1.65}
+#bisno-banner-destaque .bisno-banner-indicadores{display:flex;gap:7px;margin-top:23px}
+#bisno-banner-destaque .bisno-banner-indicadores button{width:8px;height:8px;min-width:8px;padding:0;border:0;border-radius:20px;background:rgba(255,255,255,.48);transition:width .25s ease,background .25s ease;cursor:pointer}
+#bisno-banner-destaque .bisno-banner-indicadores button.is-active{width:26px;background:#fff}
+#bisno-banner-destaque .bisno-banner-indicadores button:focus-visible{outline:2px solid #fff;outline-offset:4px}
+@media(max-width:600px){
+ #bisno-banner-destaque{min-height:205px;padding:23px 18px;border-radius:18px}
+ #bisno-banner-destaque:before{width:160px;height:160px;right:-42px;top:45%}
+ #bisno-banner-destaque:after{right:5px;font-size:145px}
+ #bisno-banner-destaque .bisno-banner-texto{max-width:100%}
+ #bisno-banner-destaque h2{max-width:88%;font-size:clamp(25px,7.2vw,34px)}
+ #bisno-banner-destaque p{max-width:92%;font-size:12px;line-height:1.55}
+ #bisno-banner-destaque .bisno-banner-indicadores{margin-top:17px}
+}
+@media(prefers-reduced-motion:reduce){
+ #bisno-banner-destaque,#bisno-banner-destaque *{transition:none!important;animation:none!important}
+}
