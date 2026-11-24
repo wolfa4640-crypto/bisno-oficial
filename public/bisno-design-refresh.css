@@ -2285,3 +2285,21 @@ body > footer.bisno-footer:before{
 @media(prefers-reduced-motion:reduce){
   .bisno-categorias-v2 .bisno-categorias-lista button{transition:none}
 }
+
+
+/* Categorias rápidas: apresentação apenas com ícones */
+.bisno-categorias-lista button{
+  min-height:68px!important;align-items:center!important;justify-content:center!important;
+  gap:0!important;padding:12px!important;text-align:center!important;
+}
+.bisno-categorias-lista button span{display:none!important}
+.bisno-categorias-lista button svg{
+  display:block;width:34px!important;height:34px!important;flex:0 0 34px;
+  fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  color:#167547;transition:transform .2s ease,color .2s ease;
+}
+.bisno-categorias-lista button:hover svg,.bisno-categorias-lista button:focus-visible svg{
+  transform:scale(1.12);color:#0b5735;
+}
+@media(max-width:720px){.bisno-categorias-lista button{min-height:58px!important;padding:9px!important}.bisno-categorias-lista button svg{width:30px!important;height:30px!important;flex-basis:30px}}
+@media(prefers-reduced-motion:reduce){.bisno-categorias-lista button svg{transition:none}}
