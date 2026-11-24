@@ -7,7 +7,7 @@ const db = require("../data/database");
 const multer = require("multer");
 const verificarImagem = require("../middleware/validar-imagem");
 const { guardarImagem, eliminarImagemPorUrl, urlImagemPublica } = require("../storage/object-storage");
-const uploadBanner = multer({storage:multer.memoryStorage(),limits:{fileSize:8*1024*1024,files:1},fileFilter:(_req,file,cb)=>/^image\\/(jpeg|png|webp)$/.test(file.mimetype)?cb(null,true):cb(new Error("Usa uma imagem JPG, PNG ou WEBP."))});
+const uploadBanner = multer({storage:multer.memoryStorage(),limits:{fileSize:8*1024*1024,files:1},fileFilter:(_req,file,cb)=>/^image\/(jpeg|png|webp)$/.test(file.mimetype)?cb(null,true):cb(new Error("Usa uma imagem JPG, PNG ou WEBP."))});
 const router = express.Router();
 const adminEmail = () => String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
 async function exigirAdmin(req,res,next) {
