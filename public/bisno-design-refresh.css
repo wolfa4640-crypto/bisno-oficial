@@ -1991,3 +1991,34 @@ body.bisno-requer-login:not(.bisno-autenticado) .container {
 @media(prefers-reduced-motion:reduce){
   #bisno-banner-destaque:after{animation:none;translate:0 0}
 }
+
+
+/* Cabeçalho verde institucional e logótipo apenas com o nome Bisno */
+.topo{
+  background:linear-gradient(110deg,#0b4d32 0%,#137448 58%,#198653 100%)!important;
+  border-bottom:1px solid rgba(255,255,255,.16)!important;
+  box-shadow:0 6px 22px rgba(8,57,35,.22)!important;
+}
+.topo .logo-simbolo{display:none!important}
+.topo .logo{gap:0}
+.topo .logo-texto strong{color:#fff!important}
+.topo .logo-texto small{color:rgba(255,255,255,.78)!important}
+.topo .topo-slogan{color:#f0fff5!important}
+.topo .topo-slogan:before{background:#a8edc1;box-shadow:0 0 0 4px rgba(255,255,255,.13)}
+.topo .topo-slogan-secundario{color:rgba(255,255,255,.82)!important}
+.topo .botao-abrir-pesquisa{
+  color:#fff!important;background:rgba(255,255,255,.13)!important;
+  border-color:rgba(255,255,255,.24)!important;
+}
+.topo .botao-abrir-pesquisa:hover,.topo .botao-abrir-pesquisa:focus-visible{
+  background:rgba(255,255,255,.23)!important;outline-color:rgba(255,255,255,.55);
+}
+.topo .botao-menu-superior{
+  color:#fff!important;background:rgba(255,255,255,.13)!important;
+  border-color:rgba(255,255,255,.24)!important;
+}
+.topo .botao-menu-superior:hover,.topo .botao-menu-superior:focus-visible{
+  color:#fff!important;background:rgba(255,255,255,.23)!important;
+  border-color:rgba(255,255,255,.45)!important;
+}
+.topo a:focus-visible{outline-color:#c4f5d5}
