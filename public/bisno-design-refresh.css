@@ -1974,3 +1974,20 @@ body.bisno-requer-login:not(.bisno-autenticado) .container {
  .topo .topo-slogan-secundario:before{display:none}
  .topo .botao-abrir-pesquisa{margin-left:8px!important}
 }
+
+
+/* Cartaz: a letra B flutua suavemente ao fundo, sem distrair a leitura */
+#bisno-banner-destaque:after{
+  translate:0 0;
+  animation:bisno-letra-flutuar 3.4s ease-in-out infinite;
+}
+@keyframes bisno-letra-flutuar{
+  0%,100%{translate:0 0}
+  50%{translate:0 -12px}
+}
+@media(max-width:600px){
+  #bisno-banner-destaque:after{animation-duration:3.1s}
+}
+@media(prefers-reduced-motion:reduce){
+  #bisno-banner-destaque:after{animation:none;translate:0 0}
+}
