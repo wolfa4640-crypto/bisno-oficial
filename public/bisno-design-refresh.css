@@ -1907,3 +1907,70 @@ body.bisno-requer-login:not(.bisno-autenticado) .container {
 @media(prefers-reduced-motion:reduce){
  #bisno-banner-destaque,#bisno-banner-destaque *{transition:none!important;animation:none!important}
 }
+
+
+/* BISNO — cabeçalho profissional e responsivo */
+.topo{
+  position:sticky;top:0;z-index:1100;
+  background:rgba(255,255,255,.94)!important;
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-bottom:1px solid #e5ece7!important;
+  box-shadow:0 5px 22px rgba(17,54,34,.065)!important;
+}
+.topo .topo-conteudo{
+  width:min(1380px,calc(100% - 48px));min-height:82px;
+  display:flex;align-items:center;gap:clamp(12px,2vw,26px);
+}
+.topo .logo{display:inline-flex;align-items:center;gap:11px;flex:0 0 auto;text-decoration:none}
+.topo .logo-simbolo{
+  display:grid;place-items:center;width:48px;height:48px;border-radius:15px;
+  color:#fff!important;font-size:25px;font-weight:950;
+  background:linear-gradient(145deg,#239b65,#0b5135)!important;
+  box-shadow:0 7px 17px rgba(19,116,72,.22);
+}
+.topo .logo-texto{display:flex;flex-direction:column;gap:1px}
+.topo .logo-texto strong{color:#153c2a!important;font-size:26px;line-height:1;letter-spacing:-1.1px}
+.topo .logo-texto small{color:#718078!important;font-size:10px;font-weight:700;letter-spacing:.035em;opacity:1!important}
+.topo .topo-slogan{
+  display:flex;align-items:center;gap:8px;margin-left:clamp(8px,2vw,24px);
+  color:#52665a!important;font-size:13px;font-weight:750;opacity:1!important;
+}
+.topo .topo-slogan:before{content:"";width:7px;height:7px;border-radius:50%;background:#27a56a;box-shadow:0 0 0 4px #e5f5eb}
+.topo .topo-slogan-secundario{display:none!important}
+.topo .botao-abrir-pesquisa{
+  margin-left:auto!important;width:46px;height:46px;flex:0 0 46px;
+  color:#176b45!important;background:#edf7f0!important;
+  border:1px solid #d9ecdf!important;border-radius:14px!important;
+  font-size:27px;box-shadow:none!important;
+}
+.topo .botao-abrir-pesquisa:hover,.topo .botao-abrir-pesquisa:focus-visible{
+  background:#dff1e5!important;transform:translateY(-1px);
+  outline:2px solid rgba(23,107,69,.2);outline-offset:2px;
+}
+.topo .botao-menu-superior{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:46px;height:46px;flex:0 0 46px;margin:0!important;
+  border:1px solid #dce8e0!important;border-radius:14px!important;
+  background:#fff!important;color:#244b36!important;
+  font-size:21px;box-shadow:0 3px 10px rgba(17,54,34,.045);
+  transition:background .2s,transform .2s,border-color .2s;
+}
+.topo .botao-menu-superior:hover,.topo .botao-menu-superior:focus-visible{
+  background:#f0f8f2!important;border-color:#b8ddc5!important;transform:translateY(-1px);
+  outline:2px solid rgba(23,107,69,.16);outline-offset:2px;
+}
+.topo a:focus-visible{outline:3px solid #9bd6b1;outline-offset:4px;border-radius:12px}
+@media(max-width:600px){
+ .topo .topo-conteudo{width:calc(100% - 28px);min-height:70px;gap:9px}
+ .topo .logo{gap:8px}
+ .topo .logo-simbolo{width:41px;height:41px;border-radius:13px;font-size:22px}
+ .topo .logo-texto strong{font-size:22px}
+ .topo .logo-texto small{font-size:9px}
+ .topo .topo-slogan{display:none!important}
+ .topo .botao-abrir-pesquisa,.topo .botao-menu-superior{width:41px;height:41px;flex-basis:41px;border-radius:13px!important}
+}
+@media(min-width:900px){
+ .topo .topo-slogan-secundario{display:flex!important;margin-left:auto;color:#718078!important;font-size:12px;font-weight:650}
+ .topo .topo-slogan-secundario:before{display:none}
+ .topo .botao-abrir-pesquisa{margin-left:8px!important}
+}
