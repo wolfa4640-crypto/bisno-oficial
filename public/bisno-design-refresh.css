@@ -2121,3 +2121,80 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(17,116,71,.28);outli
  html{scroll-behavior:auto}
  .lista-produtos>* ,.bisno-categorias-lista button{transition:none!important}
 }
+
+
+/* BISNO — rodapé institucional moderno e responsivo */
+body > footer.bisno-footer{
+  position:relative;isolation:isolate;overflow:hidden;
+  margin:48px 0 0!important;padding:0!important;
+  color:#e8f4ec!important;
+  background:linear-gradient(135deg,#082f20 0%,#0b4930 54%,#0e5b3b 100%)!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:0 -12px 36px rgba(10,54,33,.08);
+}
+body > footer.bisno-footer:before{
+  content:"";position:absolute;z-index:-1;width:430px;height:430px;
+  right:-145px;top:-235px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 0 0 34px rgba(255,255,255,.025),0 0 0 72px rgba(255,255,255,.018);
+}
+.bisno-footer-conteudo{
+  width:min(1240px,calc(100% - 48px));margin:auto;
+  display:grid;grid-template-columns:1.5fr 1fr 1.15fr;
+  gap:clamp(28px,5vw,76px);padding:58px 0 46px;
+}
+.bisno-footer-principal{max-width:390px}
+.bisno-footer-marca{display:inline-flex;align-items:center;gap:12px;color:#fff!important;text-decoration:none}
+.bisno-footer-logo{
+  display:grid;place-items:center;width:48px;height:48px;border-radius:15px;
+  color:#0b4930;background:#fff;font-size:27px;font-weight:950;
+  box-shadow:0 8px 22px rgba(0,0,0,.15)
+}
+.bisno-footer-marca>span:last-child{display:flex;flex-direction:column;gap:3px}
+.bisno-footer-marca strong{font-size:29px;line-height:1;letter-spacing:-1px}
+.bisno-footer-marca small{font-size:11px;color:#c4dfce;font-weight:600}
+.bisno-footer-descricao{max-width:360px;margin:19px 0;color:#c5dcd0;font-size:14px;line-height:1.8}
+.bisno-footer-redes{display:flex;gap:9px;margin-top:20px}
+.bisno-footer-redes a{
+  display:inline-flex;align-items:center;gap:9px;padding:9px 13px;
+  border:1px solid rgba(255,255,255,.19);border-radius:11px;
+  color:#fff!important;text-decoration:none;font-size:13px;font-weight:700;
+  background:rgba(255,255,255,.07);transition:background .2s,border-color .2s,transform .2s
+}
+.bisno-footer-redes a:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);transform:translateY(-2px)}
+.bisno-footer-coluna{display:flex;flex-direction:column;align-items:flex-start;gap:13px}
+.bisno-footer-coluna h2{margin:5px 0 7px;color:#fff;font-size:15px;font-weight:800;letter-spacing:.02em}
+.bisno-footer-coluna>a{color:#c5dcd0!important;text-decoration:none;font-size:13px;line-height:1.5;transition:color .2s,transform .2s}
+.bisno-footer-coluna>a:hover{color:#fff!important;transform:translateX(3px)}
+.bisno-footer .bisno-download-app{width:100%;max-width:260px;margin-top:7px}
+.bisno-footer .bisno-botao-download-app{
+  width:100%;min-height:45px;padding:11px 16px;border:0!important;border-radius:12px!important;
+  color:#0a4a30!important;background:#fff!important;font-size:13px;font-weight:800;
+  box-shadow:0 7px 18px rgba(0,0,0,.12);transition:transform .2s,box-shadow .2s
+}
+.bisno-footer .bisno-botao-download-app:hover{transform:translateY(-2px);box-shadow:0 11px 23px rgba(0,0,0,.2)}
+.bisno-footer .bisno-download-app-estado{margin:9px 0 0;color:#b8d5c4!important;font-size:11px;line-height:1.55}
+.bisno-footer-base{
+  width:min(1240px,calc(100% - 48px));margin:auto;
+  min-height:66px;padding:17px 0;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,.15)
+}
+.bisno-footer-base p{margin:0;color:#b8d5c4;font-size:11px;line-height:1.5}
+.bisno-footer-base p:nth-child(2) span{color:#9be0b4}
+.bisno-footer-base .credito-criador strong{color:#fff}
+@media(max-width:760px){
+  body > footer.bisno-footer{margin-top:32px!important}
+  .bisno-footer-conteudo{width:calc(100% - 36px);grid-template-columns:1fr 1fr;gap:30px 22px;padding:39px 0 30px}
+  .bisno-footer-principal{grid-column:1/-1;max-width:520px}
+  .bisno-footer-descricao{margin:14px 0}
+  .bisno-footer-base{width:calc(100% - 36px);align-items:flex-start;flex-direction:column;gap:7px;padding:17px 0 calc(22px + env(safe-area-inset-bottom))}
+}
+@media(max-width:390px){
+  .bisno-footer-conteudo{grid-template-columns:1fr;gap:25px}
+  .bisno-footer-principal{grid-column:auto}
+  .bisno-footer-coluna{gap:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  .bisno-footer a,.bisno-footer button{transition:none!important}
+}
