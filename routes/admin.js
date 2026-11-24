@@ -4,6 +4,10 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const db = require("../data/database");
+const multer = require("multer");
+const verificarImagem = require("../middleware/validar-imagem");
+const { guardarImagem, eliminarImagemPorUrl, urlImagemPublica } = require("../storage/object-storage");
+const uploadBanner = multer({storage:multer.memoryStorage(),limits:{fileSize:8*1024*1024,files:1},fileFilter:(_req,file,cb)=>/^image\\/(jpeg|png|webp)$/.test(file.mimetype)?cb(null,true):cb(new Error("Usa uma imagem JPG, PNG ou WEBP."))});
 const router = express.Router();
 const adminEmail = () => String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
 async function exigirAdmin(req,res,next) {
@@ -223,5 +227,27 @@ router.put("/site-phrases", async (req,res) => {
  await db.prepare("INSERT INTO site_settings(key,value,updated_at) VALUES(?,?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=CURRENT_TIMESTAMP").run("home_phrases",JSON.stringify(phrases));
  await log(req,"site.home_phrases.update","settings","home_phrases",null);
  res.json({mensagem:"Frases atualizadas.",phrases});
+});
+
+router.get("/site-banner",async (_req,res)=>{
+ const row=await db.prepare("SELECT value FROM site_settings WHERE key=?").get("home_banner_image");
+ const url=typeof row?.value==="string"?row.value:(row?.value?.url||null);
+ res.json({image:urlImagemPublica(url)});
+});
+router.post("/site-banner",async (req,res)=>{
+ uploadBanner.single("image")(req,res,async error=>{
+  if(error){const status=error instanceof multer.MulterError&&error.code==="LIMIT_FILE_SIZE"?413:400;return res.status(status).json({erro:status===413?"A imagem não pode ultrapassar 8 MB.":(error.message||"Não foi possível receber a imagem.")});}
+  try{
+   if(!req.file)return res.status(400).json({erro:"Seleciona uma imagem para o cartaz."});
+   if(!verificarImagem(req.file.buffer,req.file.mimetype))return res.status(400).json({erro:"O ficheiro não corresponde a uma imagem JPG, PNG ou WEBP válida."});
+   const saved=await guardarImagem({prefixo:"site/banner",nome:req.file.originalname,buffer:req.file.buffer,contentType:req.file.mimetype});
+   const previous=await db.prepare("SELECT value FROM site_settings WHERE key=?").get("home_banner_image");
+   const previousUrl=typeof previous?.value==="string"?previous.value:(previous?.value?.url||null);
+   await db.prepare("INSERT INTO site_settings(key,value,updated_at) VALUES(?,?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=CURRENT_TIMESTAMP").run("home_banner_image",JSON.stringify(saved.url));
+   await log(req,"site.home_banner.update","settings","home_banner_image",null);
+   if(previousUrl&&previousUrl!==saved.url){try{await eliminarImagemPorUrl(previousUrl);}catch(cleanError){console.warn("[Bisno] Não foi possível limpar a imagem anterior do cartaz:",cleanError.message);}}
+   res.json({mensagem:"Imagem do cartaz atualizada.",image:urlImagemPublica(saved.url)});
+  }catch(e){console.error("Erro ao atualizar imagem do cartaz:",e.message);res.status(500).json({erro:"Não foi possível guardar a imagem do cartaz. Confirma o armazenamento persistente."});}
+ });
 });
 module.exports={router,exigirAdmin};
