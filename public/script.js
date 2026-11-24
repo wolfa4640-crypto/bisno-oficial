@@ -3284,6 +3284,9 @@ function configurarBannerDestaque() {
   let temporizador = null;
   let inicioToque = null;
   const reduzirMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  fetch("/api/site-settings", { credentials: "same-origin" }).then(r => r.ok ? r.json() : null).then(settings => {
+    if (settings && settings.bannerImage) banner.style.backgroundImage = "linear-gradient(90deg,rgba(5,35,23,.88),rgba(5,35,23,.66) 58%,rgba(5,35,23,.3)),url(\"" + String(settings.bannerImage).replace(/[\"\\\\]/g, "") + "\")";
+  }).catch(() => {});
 
   function mostrarDestaque(indice) {
     atual = (indice + destaques.length) % destaques.length;
