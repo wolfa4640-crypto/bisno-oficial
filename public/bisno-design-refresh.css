@@ -2198,3 +2198,90 @@ body > footer.bisno-footer:before{
 @media(prefers-reduced-motion:reduce){
   .bisno-footer a,.bisno-footer button{transition:none!important}
 }
+
+
+/* BISNO — categorias rápidas simplificadas */
+.bisno-categorias-v2{
+  margin:22px 0 30px;
+  padding:22px 0 4px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.bisno-categorias-v2 .bisno-categorias-cabecalho{display:block;margin:0 0 15px}
+.bisno-categorias-v2 .bisno-secao-kicker{display:none}
+.bisno-categorias-v2 .bisno-categorias-cabecalho h2{
+  margin:0;
+  color:#17251c;
+  font-size:clamp(20px,2.5vw,25px);
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:-.035em;
+}
+.bisno-categorias-v2 .bisno-categorias-subtitulo{
+  margin:6px 0 0;
+  color:#78847c;
+  font-size:13px;
+  line-height:1.45;
+}
+.bisno-categorias-v2 .bisno-categorias-lista{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  margin:0;
+}
+.bisno-categorias-v2 .bisno-categorias-lista button{
+  display:flex;
+  min-width:0;
+  min-height:94px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:11px;
+  padding:13px 7px;
+  border:1px solid #e5ebe7;
+  border-radius:16px;
+  background:#fff;
+  color:#34443a;
+  box-shadow:0 2px 8px rgba(25,55,37,.035);
+  font-size:12px;
+  font-weight:700;
+  line-height:1.25;
+  text-align:center;
+  white-space:normal;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.bisno-categorias-v2 .bisno-categorias-lista button svg{
+  display:block;
+  width:25px;
+  height:25px;
+  flex:0 0 25px;
+  fill:none;
+  stroke:#18764b;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.bisno-categorias-v2 .bisno-categorias-lista button:hover,
+.bisno-categorias-v2 .bisno-categorias-lista button:focus-visible{
+  transform:translateY(-2px);
+  border-color:#9bc9ad;
+  background:#f5fbf7;
+  box-shadow:0 7px 18px rgba(23,107,69,.09);
+  outline:none;
+}
+.bisno-categorias-v2 .bisno-categorias-lista button:active{transform:scale(.97)}
+@media(max-width:760px){
+  .bisno-categorias-v2{margin:16px 0 24px;padding-top:16px}
+  .bisno-categorias-v2 .bisno-categorias-lista{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .bisno-categorias-v2 .bisno-categorias-lista button{min-height:84px;border-radius:14px;gap:8px;font-size:11.5px}
+  .bisno-categorias-v2 .bisno-categorias-lista button svg{width:23px;height:23px;flex-basis:23px}
+}
+@media(max-width:360px){
+  .bisno-categorias-v2 .bisno-categorias-lista{gap:7px}
+  .bisno-categorias-v2 .bisno-categorias-lista button{padding:11px 4px;font-size:10.5px}
+}
+@media(prefers-reduced-motion:reduce){
+  .bisno-categorias-v2 .bisno-categorias-lista button{transition:none}
+}
