@@ -2022,3 +2022,102 @@ body.bisno-requer-login:not(.bisno-autenticado) .container {
   border-color:rgba(255,255,255,.45)!important;
 }
 .topo a:focus-visible{outline-color:#c4f5d5}
+
+
+/* BISNO MARKETPLACE — renovação visual inspirada em grandes marketplaces */
+:root{
+  --bisno-green:#117447;--bisno-green-dark:#0b4d32;
+  --bisno-ink:#17251e;--bisno-muted:#6b7b72;--bisno-surface:#fff;
+  --bisno-page:#f4f6f4;--bisno-line:#e7ece8;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bisno-page)!important;color:var(--bisno-ink)}
+#area-produtos{width:min(1400px,calc(100% - 40px));margin:22px auto 110px!important}
+#area-produtos>hr{border:0;border-top:1px solid var(--bisno-line);margin:26px 0}
+#bisno-banner-destaque{
+  min-height:300px!important;padding:clamp(28px,5vw,58px)!important;
+  border-radius:25px!important;display:flex;align-items:center;
+  background-image:linear-gradient(90deg,rgba(5,35,23,.88),rgba(5,35,23,.58) 56%,rgba(5,35,23,.25)),url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2000&q=85')!important;
+  background-size:cover!important;background-position:center 48%!important;
+  box-shadow:0 18px 45px rgba(16,54,34,.16);
+}
+#bisno-banner-destaque:before{backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);border-color:rgba(255,255,255,.18)}
+#bisno-banner-destaque:after{color:rgba(255,255,255,.12)!important}
+#bisno-banner-destaque .bisno-banner-texto{max-width:700px!important}
+#bisno-banner-destaque .bisno-banner-etiqueta{background:rgba(255,255,255,.17);backdrop-filter:blur(8px)}
+#bisno-banner-destaque h2{font-size:clamp(32px,5vw,54px)!important;letter-spacing:-1.8px!important;text-shadow:0 3px 18px rgba(0,0,0,.2)}
+#bisno-banner-destaque p{font-size:clamp(14px,1.5vw,17px)!important;max-width:570px}
+.bisno-categorias-rapidas{
+  margin:25px 0!important;padding:24px!important;background:#fff;
+  border:1px solid var(--bisno-line);border-radius:20px;
+  box-shadow:0 8px 28px rgba(20,54,35,.045);
+}
+.bisno-categorias-cabecalho{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px}
+.bisno-categorias-cabecalho h2{margin:5px 0 0;font-size:clamp(20px,2.4vw,27px);letter-spacing:-.6px}
+.bisno-categorias-cabecalho>p{margin:0;color:var(--bisno-muted);font-size:13px}
+.bisno-categorias-lista{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:11px}
+.bisno-categorias-lista button{
+  min-height:78px!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  padding:12px!important;border:1px solid #e8eee9!important;border-radius:15px!important;
+  background:#f8faf8!important;color:#30483a!important;font-weight:750;
+  transition:transform .2s,border-color .2s,background .2s,box-shadow .2s;
+}
+.bisno-categorias-lista button span{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#e7f4eb;color:var(--bisno-green);font-size:19px}
+.bisno-categorias-lista button:hover,.bisno-categorias-lista button:focus-visible{
+  transform:translateY(-3px);border-color:#9acbad!important;background:#f0f8f2!important;
+  box-shadow:0 8px 20px rgba(17,116,71,.09);outline:none
+}
+#area-produtos h2{letter-spacing:-.45px}
+.lista-produtos{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px!important}
+.lista-produtos>*{min-width:0}
+.lista-produtos article,.lista-produtos .produto,.lista-produtos .produto-card{
+  overflow:hidden;border:1px solid var(--bisno-line)!important;border-radius:17px!important;
+  background:#fff!important;box-shadow:0 4px 18px rgba(20,54,35,.055)!important;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.lista-produtos article:hover,.lista-produtos .produto:hover,.lista-produtos .produto-card:hover{
+  transform:translateY(-4px);border-color:#c8dfcf!important;box-shadow:0 13px 30px rgba(20,54,35,.11)!important
+}
+.lista-produtos img{max-width:100%;object-fit:cover}
+#painel-pesquisa{
+  background:#fff!important;border:1px solid var(--bisno-line)!important;
+  border-radius:18px!important;padding:20px!important;box-shadow:0 12px 32px rgba(20,54,35,.1)
+}
+#painel-pesquisa input,#painel-pesquisa select{
+  min-height:46px!important;border:1px solid #dce6df!important;border-radius:11px!important;
+  background:#fff!important;color:var(--bisno-ink)!important
+}
+#painel-pesquisa input:focus,#painel-pesquisa select:focus{
+  border-color:#64ae81!important;outline:3px solid rgba(17,116,71,.12)!important
+}
+.bisno-nav{box-shadow:0 -8px 28px rgba(20,54,35,.09)!important;border-top:1px solid #e8eee9!important}
+.bisno-nav-inner{max-width:760px;margin:auto}
+button,a,input,select{ -webkit-tap-highlight-color:transparent }
+button:focus-visible,a:focus-visible{outline:3px solid rgba(17,116,71,.28);outline-offset:3px}
+@media(min-width:900px){
+ #area-produtos{margin-top:30px!important}
+ #bisno-banner-destaque{min-height:350px!important}
+ .lista-produtos{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:20px!important}
+}
+@media(min-width:600px) and (max-width:899px){
+ .lista-produtos{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:600px){
+ #area-produtos{width:calc(100% - 24px);margin:13px auto 100px!important}
+ #bisno-banner-destaque{min-height:245px!important;padding:24px 19px!important;border-radius:19px!important;background-position:center!important}
+ #bisno-banner-destaque:before{width:130px;height:130px;right:-30px}
+ #bisno-banner-destaque:after{font-size:120px!important;right:8px!important}
+ #bisno-banner-destaque h2{font-size:31px!important;max-width:95%!important}
+ #bisno-banner-destaque p{font-size:13px!important;max-width:95%!important}
+ .bisno-categorias-rapidas{padding:17px!important;border-radius:17px!important}
+ .bisno-categorias-cabecalho{display:block}
+ .bisno-categorias-cabecalho>p{margin-top:7px}
+ .bisno-categorias-lista{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+ .bisno-categorias-lista button{min-height:70px!important;padding:7px 3px!important;font-size:10px!important;gap:5px}
+ .bisno-categorias-lista button span{width:29px;height:29px;font-size:16px}
+ .lista-produtos{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .lista-produtos>* ,.bisno-categorias-lista button{transition:none!important}
+}
